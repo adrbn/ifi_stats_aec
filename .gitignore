@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Streamlit
+.streamlit/
+
+# macOS
+.DS_Store
+
+# Data files (AUCUNE donnée sensible ne doit être poussée!)
+*.xlsx
+*.xls
+*.zip
+*.csv
+data/
+exports/
+AEC_exports/
