@@ -282,6 +282,10 @@ TRANSLATIONS = {
         "showing_all_years": "Toutes les années",
         "view_mode": "Vue", "by_sede": "Par antenne", "year": "Année",
         "calculation_details": "Détails des calculs",
+        "pct_new": "% nouveaux", "pct_returning": "% réinscrits",
+        "choose_indicator": "Choisissez un indicateur", "global_view": "Vue globale",
+        "new_students": "Nouveaux inscrits", "returning_students": "Réinscrits",
+        "ifi_total": "IFI Total",
     },
     "it": {
         "title": "Institut français Italia",
@@ -363,6 +367,10 @@ TRANSLATIONS = {
         "showing_all_years": "Tutti gli anni",
         "view_mode": "Vista", "by_sede": "Per sede", "year": "Anno",
         "calculation_details": "Dettagli dei calcoli",
+        "pct_new": "% nuovi", "pct_returning": "% reiscritti",
+        "choose_indicator": "Scegli un indicatore", "global_view": "Vista globale",
+        "new_students": "Nuovi iscritti", "returning_students": "Reiscritti",
+        "ifi_total": "IFI Totale",
     }
 }
 
@@ -1380,10 +1388,16 @@ with tab1:
         year_planned_hours = df_year["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_year.columns else 0
         year_hours = df_year["Nombre total d'heures vendues (heures-étudiants)"].sum() if "Nombre total d'heures vendues (heures-étudiants)" in df_year.columns else 0
         year_revenue = df_year["Recettes"].sum() if "Recettes" in df_year.columns else 0
+        year_new = df_year["Nouveaux inscrits"].sum() if "Nouveaux inscrits" in df_year.columns else 0
+        year_returning = df_year["Réinscrits"].sum() if "Réinscrits" in df_year.columns else 0
+        pct_new = round(year_new / year_inscr * 100 if year_inscr > 0 else 0, 1)
+        pct_returning = round(year_returning / year_inscr * 100 if year_inscr > 0 else 0, 1)
         
         summary_metrics.append({
             t('year'): str(year),
             t('inscriptions'): int(year_inscr),
+            t('pct_new'): pct_new,
+            t('pct_returning'): pct_returning,
             t('courses'): int(year_courses),
             t('planned_hours'): int(year_planned_hours),
             t('student_hours'): int(year_hours),
@@ -1393,9 +1407,15 @@ with tab1:
 
     # Add total row if multiple years
     if len(selected_years_list) > 1:
+        total_new = df_filtered_years["Nouveaux inscrits"].sum() if "Nouveaux inscrits" in df_filtered_years.columns else 0
+        total_returning = df_filtered_years["Réinscrits"].sum() if "Réinscrits" in df_filtered_years.columns else 0
+        total_pct_new = round(total_new / total_inscriptions * 100 if total_inscriptions > 0 else 0, 1)
+        total_pct_returning = round(total_returning / total_inscriptions * 100 if total_inscriptions > 0 else 0, 1)
         summary_metrics.append({
             t('year'): "TOTAL",
             t('inscriptions'): int(total_inscriptions),
+            t('pct_new'): total_pct_new,
+            t('pct_returning'): total_pct_returning,
             t('courses'): int(total_courses),
             t('planned_hours'): int(df_filtered_years["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_filtered_years.columns else 0),
             t('student_hours'): int(total_hours),
@@ -1409,6 +1429,8 @@ with tab1:
         # Format columns for display
         df_display = df_summary.copy()
         df_display[t('inscriptions')] = df_display[t('inscriptions')].apply(lambda x: f"{x:,}")
+        df_display[t('pct_new')] = df_display[t('pct_new')].apply(lambda x: f"{x:.1f}%")
+        df_display[t('pct_returning')] = df_display[t('pct_returning')].apply(lambda x: f"{x:.1f}%")
         df_display[t('courses')] = df_display[t('courses')].apply(lambda x: f"{x:,}")
         df_display[t('planned_hours')] = df_display[t('planned_hours')].apply(lambda x: f"{x:,}")
         df_display[t('student_hours')] = df_display[t('student_hours')].apply(lambda x: f"{x:,}")
@@ -1549,22 +1571,84 @@ with tab3:
     else:
         df_tab3 = df_combined
     
-    sector_summary = df_tab3.groupby("Secteur").agg({inscr_col: "sum", "Nb. de Cours": "sum", "Recettes": "sum"}).reset_index()
-    sector_summary = sector_summary.sort_values(inscr_col, ascending=False)
+    # Get list of antennas
+    antennas = sorted(df_tab3["Sede"].unique().tolist())
     
-    # Two charts side by side: inscriptions and courses (horizontal bars like category tab)
-    col1, col2 = st.columns(2)
-    with col1:
-        fig = px.bar(sector_summary, y="Secteur", x=inscr_col, orientation='h',
-                    color=inscr_col, color_continuous_scale="Blues", title=t('inscriptions_by_sector'))
-        fig.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
-        st.plotly_chart(fig, use_container_width=True)
-    with col2:
-        fig = px.bar(sector_summary, y="Secteur", x="Nb. de Cours", orientation='h',
-                    color="Nb. de Cours", color_continuous_scale="Greens", title=t('courses_by_sector'))
-        fig.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
-        st.plotly_chart(fig, use_container_width=True)
+    # Text above sub-tabs
+    st.markdown(f"**{t('choose_indicator')}**")
     
+    # Sub-tabs for indicators
+    indicator_tabs = st.tabs([t('global_view'), t('inscriptions'), t('planned_hours'), t('courses'), t('revenue')])
+    
+    # Function to create 5-graph layout (IFI total + 4 antennas in 2x2)
+    def create_sector_graphs(df_data, value_col, title_suffix, color_scale):
+        # IFI Total (full width)
+        st.markdown(f"##### {t('ifi_total')}")
+        ifi_summary = df_data.groupby("Secteur").agg({value_col: "sum"}).reset_index()
+        ifi_summary = ifi_summary.sort_values(value_col, ascending=False)
+        fig_ifi = px.bar(ifi_summary, y="Secteur", x=value_col, orientation='h',
+                        color=value_col, color_continuous_scale=color_scale, 
+                        title=f"{title_suffix} - IFI ({t('ifi_total')})")
+        fig_ifi.update_layout(height=400, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
+        st.plotly_chart(fig_ifi, use_container_width=True)
+        
+        # 4 antennas in 2x2 layout
+        if len(antennas) >= 4:
+            row1_col1, row1_col2 = st.columns(2)
+            row2_col1, row2_col2 = st.columns(2)
+            antenna_cols = [row1_col1, row1_col2, row2_col1, row2_col2]
+            
+            for i, antenna in enumerate(antennas[:4]):
+                with antenna_cols[i]:
+                    antenna_data = df_data[df_data["Sede"] == antenna].groupby("Secteur").agg({value_col: "sum"}).reset_index()
+                    antenna_data = antenna_data.sort_values(value_col, ascending=False)
+                    fig = px.bar(antenna_data, y="Secteur", x=value_col, orientation='h',
+                                color=value_col, color_continuous_scale=color_scale,
+                                title=f"{title_suffix} - {antenna}")
+                    fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
+                                     showlegend=False, coloraxis_showscale=False)
+                    st.plotly_chart(fig, use_container_width=True)
+        elif len(antennas) > 0:
+            # Less than 4 antennas: show what we have in columns
+            cols = st.columns(len(antennas))
+            for i, antenna in enumerate(antennas):
+                with cols[i]:
+                    antenna_data = df_data[df_data["Sede"] == antenna].groupby("Secteur").agg({value_col: "sum"}).reset_index()
+                    antenna_data = antenna_data.sort_values(value_col, ascending=False)
+                    fig = px.bar(antenna_data, y="Secteur", x=value_col, orientation='h',
+                                color=value_col, color_continuous_scale=color_scale,
+                                title=f"{title_suffix} - {antenna}")
+                    fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
+                                     showlegend=False, coloraxis_showscale=False)
+                    st.plotly_chart(fig, use_container_width=True)
+    
+    # Tab: Global view (same as before, but no sub-indicator)
+    with indicator_tabs[0]:
+        create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues")
+    
+    # Tab: Inscriptions
+    with indicator_tabs[1]:
+        create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues")
+    
+    # Tab: Heures prévues
+    with indicator_tabs[2]:
+        if "Nombre d'heures prévues" in df_tab3.columns:
+            create_sector_graphs(df_tab3, "Nombre d'heures prévues", t('planned_hours'), "Purples")
+        else:
+            st.warning("Colonne 'Nombre d'heures prévues' non disponible")
+    
+    # Tab: Cours
+    with indicator_tabs[3]:
+        create_sector_graphs(df_tab3, "Nb. de Cours", t('courses'), "Greens")
+    
+    # Tab: Recettes
+    with indicator_tabs[4]:
+        if "Recettes" in df_tab3.columns:
+            create_sector_graphs(df_tab3, "Recettes", t('revenue'), "Oranges")
+        else:
+            st.warning("Colonne 'Recettes' non disponible")
+    
+    # Heatmap (always visible, after the tabs)
     st.markdown(f"#### {t('heatmap_title')}")
     heatmap_data = df_tab3.groupby(["Secteur", "Sede"])[inscr_col].sum().unstack(fill_value=0)
     fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Secteur", color=t("inscriptions")), aspect="auto", color_continuous_scale="YlOrRd", text_auto=True)
