@@ -692,10 +692,21 @@ def create_prova_stats_format(df, aggregate_year=False, add_total_row=False):
         "Heures synchrones vendues (heures-étudiants)": "Heures synchrones (h-élèves)"
     }
     agg = agg.rename(columns={k: v for k, v in rename_map.items() if k in agg.columns})
+    
+    # Calculate percentages for new/returning students
+    inscr_col = "Nb. d'inscriptions"
+    if inscr_col in agg.columns:
+        if "Nouveaux inscrits" in agg.columns:
+            agg["% nouveaux"] = (agg["Nouveaux inscrits"] / agg[inscr_col] * 100).round(1)
+            agg["% nouveaux"] = agg["% nouveaux"].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
+        if "Réinscrits" in agg.columns:
+            agg["% réinscrits"] = (agg["Réinscrits"] / agg[inscr_col] * 100).round(1)
+            agg["% réinscrits"] = agg["% réinscrits"].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
+    
     # Column order matching IFI totals table
     desired_cols = [
         "Année", "Période", "Sede", "Secteur", "Nb. de Cours", "Nb. d'inscriptions",
-        "Nouveaux inscrits", "Réinscrits", "Nombre d'heures prévues",
+        "Nouveaux inscrits", "% nouveaux", "Réinscrits", "% réinscrits", "Nombre d'heures prévues",
         "Nombre d'heures-élèves", "Heures synchrones (h-élèves)", 
         "Recettes", "Dépenses", "N. élèves/cours"
     ]
