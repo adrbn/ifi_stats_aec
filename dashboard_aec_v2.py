@@ -1575,21 +1575,53 @@ with tab2:
 with tab3:
     st.markdown(f"### {t('analysis_by_sector')}")
     
-    # Year selector for this tab
-    tab3_years = sorted(df_combined["Année"].unique())
-    if len(tab3_years) > 1:
-        selected_year_tab3 = st.selectbox(
-            t("filter_by_period"), 
-            tab3_years, 
-            index=len(tab3_years)-1,  # Default to most recent year
-            key="sector_year_filter"
-        )
-        df_tab3 = df_combined[df_combined["Année"] == selected_year_tab3]
-    else:
-        df_tab3 = df_combined
+    # Filters row: Year, Antenna, Sector
+    filter_col1, filter_col2, filter_col3 = st.columns(3)
     
-    # Get list of antennas
-    antennas = sorted(df_tab3["Sede"].unique().tolist())
+    # Year selector
+    tab3_years = sorted(df_combined["Année"].unique())
+    with filter_col1:
+        if len(tab3_years) > 1:
+            selected_year_tab3 = st.selectbox(
+                t("filter_by_period"), 
+                tab3_years, 
+                index=len(tab3_years)-1,
+                key="sector_year_filter"
+            )
+            df_tab3_base = df_combined[df_combined["Année"] == selected_year_tab3]
+        else:
+            df_tab3_base = df_combined
+    
+    # Get list of antennas and sectors
+    antennas = sorted(df_tab3_base["Sede"].unique().tolist())
+    sectors = sorted(df_tab3_base["Secteur"].unique().tolist())
+    
+    # Antenna filter
+    with filter_col2:
+        antenna_options = [t("all")] + antennas
+        selected_antenna_tab3 = st.selectbox(
+            t("filter_by_sede"), 
+            antenna_options, 
+            key="sector_antenna_filter"
+        )
+    
+    # Sector filter
+    with filter_col3:
+        sector_options = [t("all")] + sectors
+        selected_sector_tab3 = st.selectbox(
+            "Filtrer par secteur", 
+            sector_options, 
+            key="sector_sector_filter"
+        )
+    
+    # Apply antenna filter
+    if selected_antenna_tab3 != t("all"):
+        df_tab3 = df_tab3_base[df_tab3_base["Sede"] == selected_antenna_tab3]
+    else:
+        df_tab3 = df_tab3_base
+    
+    # Check if single sector is selected
+    single_sector_mode = selected_sector_tab3 != t("all")
     
     # Text above sub-tabs
     st.markdown(f"**{t('choose_indicator')}**")
@@ -1606,101 +1638,121 @@ with tab3:
         t('revenue')
     ])
     
+    # Indicator configurations: (column_name, translation_key, color_scale)
+    indicator_configs = [
+        (inscr_col, 'inscriptions', "Blues"),
+        (inscr_col, 'inscriptions', "Blues"),
+        ("Nouveaux inscrits", 'new_students', "Teal"),
+        ("Réinscrits", 'returning_students', "Mint"),
+        ("Nb. de Cours", 'courses', "Greens"),
+        ("Nombre d'heures prévues", 'planned_hours', "Purples"),
+        ("Nombre total d'heures vendues (heures-étudiants)", 'student_hours', "Reds"),
+        ("Recettes", 'revenue', "Oranges")
+    ]
+    
+    # Function to create sector comparison graph for a single sector
+    def create_single_sector_comparison(df_data, value_col, sector_name, title_suffix, color_scale, tab_key):
+        # Aggregate by antenna for the selected sector
+        sector_data = df_data[df_data["Secteur"] == sector_name].copy()
+        antenna_summary = sector_data.groupby("Sede").agg({value_col: "sum"}).reset_index()
+        
+        # Add IFI total
+        ifi_total = sector_data[value_col].sum()
+        ifi_row = pd.DataFrame([{"Sede": "IFI (Total)", value_col: ifi_total}])
+        antenna_summary = pd.concat([ifi_row, antenna_summary], ignore_index=True)
+        
+        # Create bar chart
+        fig = px.bar(antenna_summary, x="Sede", y=value_col,
+                    color=value_col, color_continuous_scale=color_scale,
+                    title=f"{title_suffix} - {sector_name}")
+        fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
+        st.plotly_chart(fig, use_container_width=True, key=f"single_sector_{tab_key}")
+        
+        # Separator
+        st.markdown("---")
+    
     # Function to create 5-graph layout (IFI total + 4 antennas in 2x2)
-    def create_sector_graphs(df_data, value_col, title_suffix, color_scale, tab_key):
+    def create_sector_graphs(df_data, value_col, title_suffix, color_scale, tab_key, show_single_sector=False, single_sector_name=None):
+        # If single sector mode, first show the comparison graph
+        if show_single_sector and single_sector_name:
+            create_single_sector_comparison(df_data, value_col, single_sector_name, title_suffix, color_scale, tab_key)
+        
+        # Filter data if single sector mode
+        if show_single_sector and single_sector_name:
+            df_display = df_data[df_data["Secteur"] == single_sector_name]
+        else:
+            df_display = df_data
+        
         # IFI Total (full width)
         st.markdown(f"##### {t('ifi_total')}")
-        ifi_summary = df_data.groupby("Secteur").agg({value_col: "sum"}).reset_index()
+        ifi_summary = df_display.groupby("Secteur").agg({value_col: "sum"}).reset_index()
         ifi_summary = ifi_summary.sort_values(value_col, ascending=False)
         fig_ifi = px.bar(ifi_summary, y="Secteur", x=value_col, orientation='h',
                         color=value_col, color_continuous_scale=color_scale, 
                         title=f"{title_suffix} - IFI ({t('ifi_total')})")
-        fig_ifi.update_layout(height=400, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
+        fig_ifi.update_layout(height=400 if not show_single_sector else 200, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
         st.plotly_chart(fig_ifi, use_container_width=True, key=f"sector_ifi_{tab_key}")
         
+        # Get current antennas from filtered data
+        current_antennas = sorted(df_display["Sede"].unique().tolist())
+        
         # 4 antennas in 2x2 layout
-        if len(antennas) >= 4:
+        if len(current_antennas) >= 4:
             row1_col1, row1_col2 = st.columns(2)
             row2_col1, row2_col2 = st.columns(2)
             antenna_cols = [row1_col1, row1_col2, row2_col1, row2_col2]
             
-            for i, antenna in enumerate(antennas[:4]):
+            for i, antenna in enumerate(current_antennas[:4]):
                 with antenna_cols[i]:
-                    antenna_data = df_data[df_data["Sede"] == antenna].groupby("Secteur").agg({value_col: "sum"}).reset_index()
+                    antenna_data = df_display[df_display["Sede"] == antenna].groupby("Secteur").agg({value_col: "sum"}).reset_index()
                     antenna_data = antenna_data.sort_values(value_col, ascending=False)
                     fig = px.bar(antenna_data, y="Secteur", x=value_col, orientation='h',
                                 color=value_col, color_continuous_scale=color_scale,
                                 title=f"{title_suffix} - {antenna}")
-                    fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
+                    fig.update_layout(height=350 if not show_single_sector else 200, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                                      showlegend=False, coloraxis_showscale=False)
                     st.plotly_chart(fig, use_container_width=True, key=f"sector_{antenna}_{tab_key}")
-        elif len(antennas) > 0:
-            # Less than 4 antennas: show what we have in columns
-            cols = st.columns(len(antennas))
-            for i, antenna in enumerate(antennas):
+        elif len(current_antennas) > 0:
+            cols = st.columns(len(current_antennas))
+            for i, antenna in enumerate(current_antennas):
                 with cols[i]:
-                    antenna_data = df_data[df_data["Sede"] == antenna].groupby("Secteur").agg({value_col: "sum"}).reset_index()
+                    antenna_data = df_display[df_display["Sede"] == antenna].groupby("Secteur").agg({value_col: "sum"}).reset_index()
                     antenna_data = antenna_data.sort_values(value_col, ascending=False)
                     fig = px.bar(antenna_data, y="Secteur", x=value_col, orientation='h',
                                 color=value_col, color_continuous_scale=color_scale,
                                 title=f"{title_suffix} - {antenna}")
-                    fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
+                    fig.update_layout(height=350 if not show_single_sector else 200, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                                      showlegend=False, coloraxis_showscale=False)
                     st.plotly_chart(fig, use_container_width=True, key=f"sector_{antenna}_{tab_key}")
+        
+        # Heatmap for this indicator (with IFI total)
+        st.markdown(f"#### {t('heatmap_title')}")
+        
+        # Create heatmap data with IFI total
+        heatmap_base = df_tab3_base.groupby(["Secteur", "Sede"])[value_col].sum().unstack(fill_value=0)
+        # Add IFI column (sum of all antennas)
+        heatmap_base["IFI"] = heatmap_base.sum(axis=1)
+        # Reorder columns to put IFI first
+        cols_order = ["IFI"] + [c for c in heatmap_base.columns if c != "IFI"]
+        heatmap_base = heatmap_base[cols_order]
+        
+        fig = px.imshow(heatmap_base, labels=dict(x="Sede", y="Secteur", color=title_suffix), 
+                       aspect="auto", color_continuous_scale="YlOrRd", text_auto=True)
+        fig.update_layout(height=550, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
+        st.plotly_chart(fig, use_container_width=True, key=f"heatmap_{tab_key}")
     
-    # Tab: Global view (same as before, but no sub-indicator)
-    with indicator_tabs[0]:
-        create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues", "global")
-    
-    # Tab: Inscriptions
-    with indicator_tabs[1]:
-        create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues", "inscr")
-    
-    # Tab: Nouveaux inscrits
-    with indicator_tabs[2]:
-        if "Nouveaux inscrits" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Nouveaux inscrits", t('new_students'), "Teal", "new")
-        else:
-            st.warning("Colonne 'Nouveaux inscrits' non disponible")
-    
-    # Tab: Réinscrits
-    with indicator_tabs[3]:
-        if "Réinscrits" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Réinscrits", t('returning_students'), "Mint", "returning")
-        else:
-            st.warning("Colonne 'Réinscrits' non disponible")
-    
-    # Tab: Cours
-    with indicator_tabs[4]:
-        create_sector_graphs(df_tab3, "Nb. de Cours", t('courses'), "Greens", "courses")
-    
-    # Tab: Heures prévues
-    with indicator_tabs[5]:
-        if "Nombre d'heures prévues" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Nombre d'heures prévues", t('planned_hours'), "Purples", "planned_hours")
-        else:
-            st.warning("Colonne 'Nombre d'heures prévues' non disponible")
-    
-    # Tab: Heures-étudiants
-    with indicator_tabs[6]:
-        if "Nombre total d'heures vendues (heures-étudiants)" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Nombre total d'heures vendues (heures-étudiants)", t('student_hours'), "Reds", "student_hours")
-        else:
-            st.warning("Colonne 'Heures-étudiants' non disponible")
-    
-    # Tab: Recettes
-    with indicator_tabs[7]:
-        if "Recettes" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Recettes", t('revenue'), "Oranges", "revenue")
-        else:
-            st.warning("Colonne 'Recettes' non disponible")
-    
-    # Heatmap (always visible, after the tabs)
-    st.markdown(f"#### {t('heatmap_title')}")
-    heatmap_data = df_tab3.groupby(["Secteur", "Sede"])[inscr_col].sum().unstack(fill_value=0)
-    fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Secteur", color=t("inscriptions")), aspect="auto", color_continuous_scale="YlOrRd", text_auto=True)
-    fig.update_layout(height=550, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
-    st.plotly_chart(fig, use_container_width=True)
+    # Render each indicator tab
+    for i, (value_col, trans_key, color_scale) in enumerate(indicator_configs):
+        with indicator_tabs[i]:
+            if value_col in df_tab3.columns:
+                create_sector_graphs(
+                    df_tab3, value_col, t(trans_key), color_scale, 
+                    f"{trans_key}_{i}",
+                    show_single_sector=single_sector_mode,
+                    single_sector_name=selected_sector_tab3 if single_sector_mode else None
+                )
+            else:
+                st.warning(f"Colonne '{value_col}' non disponible")
 
 # TAB 3B: PAR CATÉGORIE (granular view)
 with tab3b:
