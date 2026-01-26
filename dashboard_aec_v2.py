@@ -1659,14 +1659,14 @@ with tab3:
     # Tab: Nouveaux inscrits
     with indicator_tabs[2]:
         if "Nouveaux inscrits" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Nouveaux inscrits", t('new_students'), "Teals", "new")
+            create_sector_graphs(df_tab3, "Nouveaux inscrits", t('new_students'), "Teal", "new")
         else:
             st.warning("Colonne 'Nouveaux inscrits' non disponible")
     
     # Tab: Réinscrits
     with indicator_tabs[3]:
         if "Réinscrits" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Réinscrits", t('returning_students'), "Cyans", "returning")
+            create_sector_graphs(df_tab3, "Réinscrits", t('returning_students'), "Mint", "returning")
         else:
             st.warning("Colonne 'Réinscrits' non disponible")
     
@@ -1684,7 +1684,7 @@ with tab3:
     # Tab: Heures-étudiants
     with indicator_tabs[6]:
         if "Nombre total d'heures vendues (heures-étudiants)" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Nombre total d'heures vendues (heures-étudiants)", t('student_hours'), "Magentas", "student_hours")
+            create_sector_graphs(df_tab3, "Nombre total d'heures vendues (heures-étudiants)", t('student_hours'), "Reds", "student_hours")
         else:
             st.warning("Colonne 'Heures-étudiants' non disponible")
     
