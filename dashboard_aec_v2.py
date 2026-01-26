@@ -1396,7 +1396,9 @@ with tab1:
         summary_metrics.append({
             t('year'): str(year),
             t('inscriptions'): int(year_inscr),
+            t('new_students'): int(year_new),
             t('pct_new'): pct_new,
+            t('returning_students'): int(year_returning),
             t('pct_returning'): pct_returning,
             t('courses'): int(year_courses),
             t('planned_hours'): int(year_planned_hours),
@@ -1414,7 +1416,9 @@ with tab1:
         summary_metrics.append({
             t('year'): "TOTAL",
             t('inscriptions'): int(total_inscriptions),
+            t('new_students'): int(total_new),
             t('pct_new'): total_pct_new,
+            t('returning_students'): int(total_returning),
             t('pct_returning'): total_pct_returning,
             t('courses'): int(total_courses),
             t('planned_hours'): int(df_filtered_years["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_filtered_years.columns else 0),
@@ -1429,7 +1433,9 @@ with tab1:
         # Format columns for display
         df_display = df_summary.copy()
         df_display[t('inscriptions')] = df_display[t('inscriptions')].apply(lambda x: f"{x:,}")
+        df_display[t('new_students')] = df_display[t('new_students')].apply(lambda x: f"{x:,}")
         df_display[t('pct_new')] = df_display[t('pct_new')].apply(lambda x: f"{x:.1f}%")
+        df_display[t('returning_students')] = df_display[t('returning_students')].apply(lambda x: f"{x:,}")
         df_display[t('pct_returning')] = df_display[t('pct_returning')].apply(lambda x: f"{x:.1f}%")
         df_display[t('courses')] = df_display[t('courses')].apply(lambda x: f"{x:,}")
         df_display[t('planned_hours')] = df_display[t('planned_hours')].apply(lambda x: f"{x:,}")
@@ -1581,7 +1587,7 @@ with tab3:
     indicator_tabs = st.tabs([t('global_view'), t('inscriptions'), t('planned_hours'), t('courses'), t('revenue')])
     
     # Function to create 5-graph layout (IFI total + 4 antennas in 2x2)
-    def create_sector_graphs(df_data, value_col, title_suffix, color_scale):
+    def create_sector_graphs(df_data, value_col, title_suffix, color_scale, tab_key):
         # IFI Total (full width)
         st.markdown(f"##### {t('ifi_total')}")
         ifi_summary = df_data.groupby("Secteur").agg({value_col: "sum"}).reset_index()
@@ -1590,7 +1596,7 @@ with tab3:
                         color=value_col, color_continuous_scale=color_scale, 
                         title=f"{title_suffix} - IFI ({t('ifi_total')})")
         fig_ifi.update_layout(height=400, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
-        st.plotly_chart(fig_ifi, use_container_width=True)
+        st.plotly_chart(fig_ifi, use_container_width=True, key=f"sector_ifi_{tab_key}")
         
         # 4 antennas in 2x2 layout
         if len(antennas) >= 4:
@@ -1607,7 +1613,7 @@ with tab3:
                                 title=f"{title_suffix} - {antenna}")
                     fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                                      showlegend=False, coloraxis_showscale=False)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key=f"sector_{antenna}_{tab_key}")
         elif len(antennas) > 0:
             # Less than 4 antennas: show what we have in columns
             cols = st.columns(len(antennas))
@@ -1620,31 +1626,31 @@ with tab3:
                                 title=f"{title_suffix} - {antenna}")
                     fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                                      showlegend=False, coloraxis_showscale=False)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key=f"sector_{antenna}_{tab_key}")
     
     # Tab: Global view (same as before, but no sub-indicator)
     with indicator_tabs[0]:
-        create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues")
+        create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues", "global")
     
     # Tab: Inscriptions
     with indicator_tabs[1]:
-        create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues")
+        create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues", "inscr")
     
     # Tab: Heures prévues
     with indicator_tabs[2]:
         if "Nombre d'heures prévues" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Nombre d'heures prévues", t('planned_hours'), "Purples")
+            create_sector_graphs(df_tab3, "Nombre d'heures prévues", t('planned_hours'), "Purples", "hours")
         else:
             st.warning("Colonne 'Nombre d'heures prévues' non disponible")
     
     # Tab: Cours
     with indicator_tabs[3]:
-        create_sector_graphs(df_tab3, "Nb. de Cours", t('courses'), "Greens")
+        create_sector_graphs(df_tab3, "Nb. de Cours", t('courses'), "Greens", "courses")
     
     # Tab: Recettes
     with indicator_tabs[4]:
         if "Recettes" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Recettes", t('revenue'), "Oranges")
+            create_sector_graphs(df_tab3, "Recettes", t('revenue'), "Oranges", "revenue")
         else:
             st.warning("Colonne 'Recettes' non disponible")
     
