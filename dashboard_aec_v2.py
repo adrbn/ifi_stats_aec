@@ -1594,8 +1594,17 @@ with tab3:
     # Text above sub-tabs
     st.markdown(f"**{t('choose_indicator')}**")
     
-    # Sub-tabs for indicators
-    indicator_tabs = st.tabs([t('global_view'), t('inscriptions'), t('planned_hours'), t('courses'), t('revenue')])
+    # Sub-tabs for indicators (matching Synthèse table columns, except percentages)
+    indicator_tabs = st.tabs([
+        t('global_view'), 
+        t('inscriptions'), 
+        t('new_students'), 
+        t('returning_students'), 
+        t('courses'), 
+        t('planned_hours'), 
+        t('student_hours'), 
+        t('revenue')
+    ])
     
     # Function to create 5-graph layout (IFI total + 4 antennas in 2x2)
     def create_sector_graphs(df_data, value_col, title_suffix, color_scale, tab_key):
@@ -1647,19 +1656,40 @@ with tab3:
     with indicator_tabs[1]:
         create_sector_graphs(df_tab3, inscr_col, t('inscriptions'), "Blues", "inscr")
     
-    # Tab: Heures prévues
+    # Tab: Nouveaux inscrits
     with indicator_tabs[2]:
+        if "Nouveaux inscrits" in df_tab3.columns:
+            create_sector_graphs(df_tab3, "Nouveaux inscrits", t('new_students'), "Teals", "new")
+        else:
+            st.warning("Colonne 'Nouveaux inscrits' non disponible")
+    
+    # Tab: Réinscrits
+    with indicator_tabs[3]:
+        if "Réinscrits" in df_tab3.columns:
+            create_sector_graphs(df_tab3, "Réinscrits", t('returning_students'), "Cyans", "returning")
+        else:
+            st.warning("Colonne 'Réinscrits' non disponible")
+    
+    # Tab: Cours
+    with indicator_tabs[4]:
+        create_sector_graphs(df_tab3, "Nb. de Cours", t('courses'), "Greens", "courses")
+    
+    # Tab: Heures prévues
+    with indicator_tabs[5]:
         if "Nombre d'heures prévues" in df_tab3.columns:
-            create_sector_graphs(df_tab3, "Nombre d'heures prévues", t('planned_hours'), "Purples", "hours")
+            create_sector_graphs(df_tab3, "Nombre d'heures prévues", t('planned_hours'), "Purples", "planned_hours")
         else:
             st.warning("Colonne 'Nombre d'heures prévues' non disponible")
     
-    # Tab: Cours
-    with indicator_tabs[3]:
-        create_sector_graphs(df_tab3, "Nb. de Cours", t('courses'), "Greens", "courses")
+    # Tab: Heures-étudiants
+    with indicator_tabs[6]:
+        if "Nombre total d'heures vendues (heures-étudiants)" in df_tab3.columns:
+            create_sector_graphs(df_tab3, "Nombre total d'heures vendues (heures-étudiants)", t('student_hours'), "Magentas", "student_hours")
+        else:
+            st.warning("Colonne 'Heures-étudiants' non disponible")
     
     # Tab: Recettes
-    with indicator_tabs[4]:
+    with indicator_tabs[7]:
         if "Recettes" in df_tab3.columns:
             create_sector_graphs(df_tab3, "Recettes", t('revenue'), "Oranges", "revenue")
         else:
