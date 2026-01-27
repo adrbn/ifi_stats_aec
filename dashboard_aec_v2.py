@@ -1674,11 +1674,12 @@ with tab3:
             st.plotly_chart(fig_bar, use_container_width=True, key=f"ifi_bar_{tab_key}")
         
         with col2:
-            # Pie chart with darker blue shades
-            blue_colors = ['#1e3a8a', '#1e40af', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe']
+            # Pie chart with high contrast blue shades
+            blue_colors = ['#0c1445', '#1e3a8a', '#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#c7d9f5', '#e8f0fc']
             fig_pie = px.pie(ifi_summary, values=value_col, names="Secteur",
                             title=f"{title_suffix} - Répartition",
                             color_discrete_sequence=blue_colors)
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
             fig_pie.update_layout(height=400 if not single_sector else 300, 
                                  paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
                                  font=dict(color=text_color))
@@ -1704,10 +1705,10 @@ with tab3:
             return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
         
         base_rgb = hex_to_rgb(antenna_color)
-        # Create color gradient from dark to light
+        # Create color gradient from very dark to very light for better contrast
         color_scale = []
         for i in range(10):
-            factor = 0.3 + (i * 0.07)  # 0.3 to 0.93
+            factor = 0.15 + (i * 0.09)  # 0.15 to 0.96 - wider range for more contrast
             new_rgb = tuple(min(255, int(c * factor + 255 * (1 - factor))) for c in base_rgb)
             color_scale.append(rgb_to_hex(new_rgb))
         
@@ -1725,6 +1726,7 @@ with tab3:
             fig_pie = px.pie(antenna_data, values=value_col, names="Secteur",
                             title=f"{title_suffix} - {antenna}",
                             color_discrete_sequence=color_scale)
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
             fig_pie.update_layout(height=300, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
                                  font=dict(color=text_color))
             st.plotly_chart(fig_pie, use_container_width=True, key=f"antenna_pie_{antenna}_{tab_key}")
@@ -1741,12 +1743,15 @@ with tab3:
         
         fig = px.imshow(heatmap_base, labels=dict(x="Sede", y="Secteur", color=title_suffix), 
                        aspect="auto", color_continuous_scale="YlOrRd", text_auto=True)
-        fig.update_layout(height=500, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
+        fig.update_layout(height=500, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
+                         xaxis=dict(side="top", tickfont=dict(size=14)),
+                         yaxis=dict(tickfont=dict(size=12)))
+        fig.update_traces(textfont=dict(size=14))
         st.plotly_chart(fig, use_container_width=True, key=f"heatmap_{tab_key}")
     
     # Function to create sector comparison histogram (when single sector is selected)
     def create_sector_antenna_comparison(df_data, value_col, sector_name, title_suffix, tab_key):
-        """Create histogram comparing antennas for a single sector"""
+        """Create histogram + pie chart comparing antennas for a single sector"""
         sector_data = df_data[df_data["Secteur"] == sector_name].copy()
         antenna_summary = sector_data.groupby("Sede").agg({value_col: "sum"}).reset_index()
         
@@ -1758,12 +1763,25 @@ with tab3:
         # Apply antenna colors
         antenna_summary["color"] = antenna_summary["Sede"].map(lambda x: SEDE_COLORS.get(x, "#888888"))
         
-        fig = px.bar(antenna_summary, x="Sede", y=value_col,
-                    color="Sede", color_discrete_map=SEDE_COLORS,
-                    title=f"{title_suffix} - {sector_name} (comparaison par antenne)")
-        fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                         font=dict(color=text_color), showlegend=False)
-        st.plotly_chart(fig, use_container_width=True, key=f"sector_compare_{tab_key}")
+        col1, col2 = st.columns(2)
+        with col1:
+            fig = px.bar(antenna_summary, x="Sede", y=value_col,
+                        color="Sede", color_discrete_map=SEDE_COLORS,
+                        title=f"{title_suffix} - {sector_name} (Histogramme)")
+            fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                             font=dict(color=text_color), showlegend=False)
+            st.plotly_chart(fig, use_container_width=True, key=f"sector_compare_bar_{tab_key}")
+        
+        with col2:
+            # Pie chart with antenna colors
+            antenna_colors = [SEDE_COLORS.get(s, "#888888") for s in antenna_summary["Sede"]]
+            fig_pie = px.pie(antenna_summary, values=value_col, names="Sede",
+                            title=f"{title_suffix} - {sector_name} (Répartition)",
+                            color="Sede", color_discrete_map=SEDE_COLORS)
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+            fig_pie.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                 font=dict(color=text_color))
+            st.plotly_chart(fig_pie, use_container_width=True, key=f"sector_compare_pie_{tab_key}")
     
     # Function to render full view for an indicator
     def render_indicator_view(df_data, value_col, title_suffix, tab_key, is_global_view=False):
