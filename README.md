@@ -1,6 +1,6 @@
 # 📊 Dashboard Statistiques AEC - Institut français Italia
 
-Dashboard interactif pour l'analyse des données AEC (Activity-Based Costing).
+Dashboard interactif pour l'analyse des données AEC.
 
 ## 🚀 Fonctionnalités
 
