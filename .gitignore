@@ -23,6 +23,9 @@ AEC_exports/
 
 # Exception: Le fichier de mapping des catégories DOIT être versionné
 # car il contient la configuration métier, pas des données sensibles
+# Les exports AEC annuels (ZIP) sont également versionnés pour permettre
+# un chargement rapide au démarrage du dashboard
 !data/
 data/*
 !data/category_mapping.csv
+!data/exports_AEC_*.zip

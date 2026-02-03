@@ -168,7 +168,7 @@ import os
 # Configurable CSV path - can be overridden by environment variable for server deployment
 CSV_MAPPING_PATH = os.environ.get(
     "AEC_CATEGORY_MAPPING_PATH",
-    os.path.join(os.path.dirname(__file__), "data", "category_mapping.csv")
+    os.path.join(os.path.dirname(__file__), "2. FEUILLE DE TRAVAIL", "category_mapping.csv")
 )
 
 def get_csv_mapping_path():
@@ -256,6 +256,7 @@ TRANSLATIONS = {
         "subtitle": "Dashboard statistiques AEC - Analyse des cours de français",
         "mode": "Thème", "language": "Langue", "default_year": "Année par défaut",
         "load_files": "Charger les données", "sedi_semesters": "4 sedi × 2 semestres",
+        "preloaded_files": "📦 Données disponibles", "load_year": "Charger l'année", "or_upload_files": "Ou importez vos propres fichiers",
         "drag_files": "Glissez vos fichiers Excel", "files_detected": "Fichiers détectés",
         "expected_structure": "Structure attendue", "you_must_load": "Vous devez charger",
         "files": "fichiers", "sede": "Sede", "semester1": "Semestre 1", "semester2": "Semestre 2",
@@ -266,7 +267,7 @@ TRANSLATIONS = {
         "tab_prova_stats": "Synthèse", "tab_by_sede": "Par antenne",
         "tab_by_sector": "Par secteurs", "tab_by_sous_secteur": "Par sous-secteurs", "tab_by_macro_category": "Par macro-catégories", "tab_by_category": "Par catégories", "tab_comparisons": "Comparaisons",
         "tab_graphs": "Graphiques", "tab_ai": "Assistant IA", "tab_export": "Export", "tab_config": "Configuration",
-        "filter_by_sede": "Filtrer par antenne", "filter_by_period": "Filtrer par période",
+        "filter_by_sede": "Filtrer par antenne", "filter_by_period": "Filtrer par période", "filter_by_sector": "Filtrer par secteur",
         "all": "Tous", "ifi_totals": "Totaux IFI (toutes sedi)",
         "analysis_by_sede": "Analyse par antenne", "inscriptions_by_sede": "Inscriptions par antenne",
         "distribution": "Répartition des inscriptions", "detail_by_sede": "Détail par antenne",
@@ -319,7 +320,7 @@ TRANSLATIONS = {
         "profitability_by_sede": "Rentabilité par antenne", "age_groups": "Tranches d'âge",
         "filter_by_age": "Filtrer par âge", "adults": "Adultes", "teens": "Ados", "children": "Enfants",
         "age_distribution": "Répartition par âge", "italy_map": "Carte d'Italie",
-        "map_by_inscriptions": "Inscriptions par ville", "tab_yoy": "Année vs Année",
+        "map_by_inscriptions": "Inscriptions par ville", "tab_yoy": "Par année",
         "tab_profitability": "Rentabilité", "tab_map": "Carte",
         "increase": "hausse", "decrease": "baisse", "stable": "stable",
         "multi_year_evolution": "Évolution pluriannuelle", "need_multiple_years": "Chargez les données de plusieurs années pour voir l'évolution.",
@@ -349,6 +350,7 @@ TRANSLATIONS = {
         "subtitle": "Dashboard statistiche AEC - Analisi dei corsi di francese",
         "mode": "Tema", "language": "Lingua", "default_year": "Anno predefinito",
         "load_files": "Caricare gli 8 file AEC", "sedi_semesters": "4 sedi × 2 semestri",
+        "preloaded_files": "📦 Dati disponibili", "load_year": "Carica l'anno", "or_upload_files": "Oppure importa i tuoi file",
         "drag_files": "Trascina i tuoi file Excel", "files_detected": "File rilevati",
         "expected_structure": "Struttura prevista", "you_must_load": "Devi caricare",
         "files": "file", "sede": "Sede", "semester1": "Semestre 1", "semester2": "Semestre 2",
@@ -359,7 +361,7 @@ TRANSLATIONS = {
         "tab_prova_stats": "Sintesi", "tab_by_sede": "Per sede",
         "tab_by_sector": "Per settori", "tab_by_sous_secteur": "Per sotto-settori", "tab_by_macro_category": "Per macro-categorie", "tab_by_category": "Per categorie", "tab_comparisons": "Confronti",
         "tab_graphs": "Grafici", "tab_ai": "Assistente IA", "tab_export": "Esporta", "tab_config": "Configurazione",
-        "filter_by_sede": "Filtra per sede", "filter_by_period": "Filtra per periodo",
+        "filter_by_sede": "Filtra per sede", "filter_by_sector": "Filtra per settore", "filter_by_period": "Filtra per periodo",
         "all": "Tutti", "ifi_totals": "Totali IFI (tutte le sedi)",
         "analysis_by_sede": "Analisi per sede", "inscriptions_by_sede": "Iscrizioni per sede",
         "distribution": "Distribuzione delle iscrizioni", "detail_by_sede": "Dettaglio per sede",
@@ -412,7 +414,7 @@ TRANSLATIONS = {
         "profitability_by_sede": "Redditività per sede", "age_groups": "Fasce d'età",
         "filter_by_age": "Filtra per età", "adults": "Adulti", "teens": "Ado", "children": "Bambini",
         "age_distribution": "Distribuzione per età", "italy_map": "Mappa d'Italia",
-        "map_by_inscriptions": "Iscrizioni per città", "tab_yoy": "Année vs Année",
+        "map_by_inscriptions": "Iscrizioni per città", "tab_yoy": "Per anno",
         "tab_profitability": "Redditività", "tab_map": "Mappa",
         "increase": "aumento", "decrease": "calo", "stable": "stabile",
         "multi_year_evolution": "Evoluzione pluriennale", "need_multiple_years": "Carica i dati di più anni per vedere l'evoluzione.",
@@ -543,11 +545,17 @@ def get_css():
             gap: 4px !important;
         }
         .stTabs [data-baseweb="tab"] {
-            padding: 10px 20px !important;
-            font-size: 14px !important;
-            min-width: 100px !important;
+            padding: 10px 16px !important;
+            font-size: 13px !important;
+            white-space: nowrap !important;
+            width: auto !important;
+            min-width: auto !important;
             border-radius: 8px !important;
             transition: all 0.2s ease !important;
+            flex-shrink: 0 !important;
+        }
+        .stTabs [data-baseweb="tab-list"] button {
+            overflow: visible !important;
         }
         .stTabs [aria-selected="true"] {
             background: #3b82f6 !important;
@@ -1147,6 +1155,22 @@ class DataAssistant:
 # =====================================================
 # SIDEBAR
 # =====================================================
+
+# Check for preloaded data files (available on Streamlit Cloud)
+import os
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(SCRIPT_DIR, "data")
+PRELOADED_FILES = {}
+
+if os.path.exists(DATA_DIR):
+    for filename in os.listdir(DATA_DIR):
+        if filename.endswith('.zip') and 'exports_AEC_' in filename:
+            # Extract year from filename: exports_AEC_2024_annuel.zip -> 2024
+            match = re.search(r'exports_AEC_(\d{4})_annuel\.zip', filename)
+            if match:
+                year = match.group(1)
+                PRELOADED_FILES[year] = os.path.join(DATA_DIR, filename)
+
 with st.sidebar:
     st.markdown("## 🇫🇷 Institut français Italia")
     st.markdown("### Dashboard Stats AEC")
@@ -1154,7 +1178,42 @@ with st.sidebar:
     st.markdown("---")
     
     with st.expander(t('load_files'), expanded=True):
-        st.caption(t('sedi_semesters'))
+        # Show preloaded files section if available
+        if PRELOADED_FILES:
+            st.markdown(f"**{t('preloaded_files')}**")
+            available_years = sorted(PRELOADED_FILES.keys(), reverse=True)
+            
+            # Create columns for year buttons
+            cols = st.columns(len(available_years))
+            for idx, year in enumerate(available_years):
+                with cols[idx]:
+                    if st.button(f"📅 {year}", key=f"load_preloaded_{year}", use_container_width=True):
+                        # Load the preloaded ZIP file
+                        zip_path = PRELOADED_FILES[year]
+                        try:
+                            with open(zip_path, 'rb') as f:
+                                zip_data = f.read()
+                            with zipfile.ZipFile(BytesIO(zip_data), 'r') as zf:
+                                st.session_state.stored_files = []
+                                for name in zf.namelist():
+                                    if name.lower().endswith(('.xlsx', '.xls')) and not name.startswith('__MACOSX'):
+                                        file_data = zf.read(name)
+                                        st.session_state.stored_files.append({
+                                            'name': name.split('/')[-1],
+                                            'data': file_data
+                                        })
+                            # Clear processed data to force reprocessing
+                            if 'processed_data' in st.session_state:
+                                del st.session_state.processed_data
+                            if 'file_info' in st.session_state:
+                                del st.session_state.file_info
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Erreur: {e}")
+            
+            st.caption(t('or_upload_files'))
+        else:
+            st.caption(t('sedi_semesters'))
         
         raw_uploaded_files = st.file_uploader(
             t('drag_files'), type=['xlsx', 'xls', 'zip'], accept_multiple_files=True,
@@ -1974,41 +2033,52 @@ with tab3:
                                  font=dict(color=text_color))
             st.plotly_chart(fig_pie, use_container_width=True, key=f"sector_compare_pie_{tab_key}")
     
-    # Function to render full view for an indicator
+    # Function to render full view for an indicator (with proper order based on filter)
     def render_indicator_view(df_data, value_col, title_suffix, tab_key, is_global_view=False, is_revenue=False):
         """Render the full view for an indicator"""
         
         # Chart height depends on sector filter
         chart_height = 450 if sector_filter_active else 400
         
-        # SECTION 1: IFI - Total toutes antennes confondues
-        st.markdown(f"##### {t('ifi_all_antennas')}")
-        create_ifi_graphs(df_data, value_col, title_suffix, tab_key, single_sector=sector_filter_active)
-        
-        # Separator
-        st.markdown("---")
-        
-        # SECTION 2: Heatmap with dynamic title
-        st.markdown(f"#### {t('heatmap_title')} - {title_suffix}")
-        create_heatmap(df_tab3_base, value_col, title_suffix, tab_key, is_revenue=is_revenue)
-        
-        # If sector(s) selected, add comparison section with anchor for scroll
+        # If sector(s) selected, show filtered content FIRST
         if sector_filter_active:
+            # SECTION 1: Filtered sector(s) graphs
+            df_filtered = df_data[df_data["Secteur"].isin(selected_sectors_tab3)]
+            
+            filter_label = '/'.join(selected_sectors_tab3[:3]) + ('...' if len(selected_sectors_tab3) > 3 else '')
+            st.markdown(f"#### 🎯 Sélection : {filter_label}")
+            
+            # Filtered IFI graphs
+            create_ifi_graphs(df_filtered, value_col, title_suffix, f"{tab_key}_filtered", single_sector=True)
             st.markdown("---")
-            # Create anchor for scroll
+            
+            # Filtered heatmap
+            st.markdown(f"#### {t('heatmap_title')} - {filter_label}")
+            create_heatmap(df_filtered, value_col, title_suffix, f"{tab_key}_filtered_heatmap", is_revenue=is_revenue)
+            st.markdown("---")
+            
+            # Comparison by antenna for selected sector(s)
             comparison_title = f"{t('comparison_by_antenna')} - "
             if is_multi_sector:
-                comparison_title += f"Sélection multiple ({'/'.join(selected_sectors_tab3[:3])}{'...' if len(selected_sectors_tab3) > 3 else ''})"
+                comparison_title += f"Sélection multiple ({filter_label})"
             else:
                 comparison_title += selected_sectors_tab3[0]
             st.markdown(f"<div id='comparison-section'></div>", unsafe_allow_html=True)
             st.markdown(f"#### {comparison_title}")
             create_sector_antenna_comparison(df_tab3_base, value_col, selected_sectors_tab3, title_suffix, f"{tab_key}_sector_cmp", is_multi=is_multi_sector)
+            st.markdown("---")
         
-        # Separator
+        # IFI - Total toutes antennes confondues
+        st.markdown(f"#### {t('ifi_all_antennas')}")
+        create_ifi_graphs(df_data, value_col, title_suffix, tab_key, single_sector=sector_filter_active)
         st.markdown("---")
         
-        # SECTION 3: Détails par antenne
+        # Heatmap with dynamic title
+        st.markdown(f"#### {t('heatmap_title')} - {title_suffix}")
+        create_heatmap(df_tab3_base, value_col, title_suffix, f"{tab_key}_heatmap", is_revenue=is_revenue)
+        st.markdown("---")
+        
+        # SECTION: Détails par antenne
         st.markdown(f"#### {t('details_by_antenna')}")
         
         # Display antennas in order: Milan, Florence, Naples, Palermo
@@ -2178,12 +2248,141 @@ with tab3_ss:
             fig.update_traces(textfont=dict(size=12))
             st.plotly_chart(fig, use_container_width=True, key=f"ss_heatmap_{tab_key}")
         
-        # Function to render sous-secteur indicator view
+        # Function to create antenna graphs for sous-secteur view
+        def create_ss_antenna_graphs(df_data, value_col, antenna, title_suffix, tab_key):
+            """Create histogram + pie chart pair for a specific antenna (sous-secteur view)"""
+            antenna_data = df_data[df_data["Sede"] == antenna].groupby("Sous-secteur").agg({value_col: "sum"}).reset_index()
+            antenna_data = antenna_data.sort_values(value_col, ascending=False)
+            
+            if antenna_data.empty:
+                st.info(f"Aucune donnée pour {antenna}")
+                return
+            
+            antenna_color = SEDE_COLORS.get(antenna, "#888888")
+            # Create gradient for this antenna color
+            def hex_to_rgb(hex_color):
+                hex_color = hex_color.lstrip('#')
+                return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            
+            def rgb_to_hex(rgb):
+                return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+            
+            base_rgb = hex_to_rgb(antenna_color)
+            color_scale = []
+            for i in range(10):
+                factor = 0.15 + (i * 0.09)
+                new_rgb = tuple(min(255, int(c * factor + 255 * (1 - factor))) for c in base_rgb)
+                color_scale.append(rgb_to_hex(new_rgb))
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                fig_bar = px.bar(antenna_data, y="Sous-secteur", x=value_col, orientation='h',
+                                color=value_col, 
+                                color_continuous_scale=[[0, color_scale[0]], [0.5, antenna_color], [1, color_scale[-1]]],
+                                title=f"{title_suffix} - {antenna}",
+                                text=value_col)
+                fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+                fig_bar.update_layout(height=400, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color), coloraxis_showscale=False)
+                st.plotly_chart(fig_bar, use_container_width=True, key=f"ss_antenna_bar_{antenna}_{tab_key}")
+            
+            with col2:
+                fig_pie = px.pie(antenna_data, values=value_col, names="Sous-secteur",
+                                title=f"{title_suffix} - {antenna}",
+                                color_discrete_sequence=color_scale)
+                fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+                fig_pie.update_layout(height=400, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color))
+                st.plotly_chart(fig_pie, use_container_width=True, key=f"ss_antenna_pie_{antenna}_{tab_key}")
+        
+        # Function to create sous-secteur comparison by antenna (when filter is active)
+        def create_ss_antenna_comparison(df_data, value_col, ss_names, title_suffix, tab_key, is_multi=False):
+            """Create histogram + pie chart comparing antennas for selected sous-secteur(s)"""
+            if isinstance(ss_names, str):
+                ss_names = [ss_names]
+            
+            ss_data = df_data[df_data["Sous-secteur"].isin(ss_names)].copy()
+            antenna_summary = ss_data.groupby("Sede").agg({value_col: "sum"}).reset_index()
+            
+            # For histogram: include IFI total
+            ifi_total = ss_data[value_col].sum()
+            ifi_row = pd.DataFrame([{"Sede": "IFI", value_col: ifi_total}])
+            antenna_summary_with_ifi = pd.concat([ifi_row, antenna_summary], ignore_index=True)
+            
+            # Reorder: IFI first, then antennas
+            sede_order = ["IFI"] + ANTENNA_ORDER
+            antenna_summary_with_ifi["Sede"] = pd.Categorical(antenna_summary_with_ifi["Sede"], categories=sede_order, ordered=True)
+            antenna_summary_with_ifi = antenna_summary_with_ifi.sort_values("Sede")
+            
+            # Title based on selection
+            if is_multi or len(ss_names) > 1:
+                title_label = f"Sélection multiple ({'/'.join(ss_names[:3])}{'...' if len(ss_names) > 3 else ''})"
+            else:
+                title_label = ss_names[0]
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                fig = px.bar(antenna_summary_with_ifi, x="Sede", y=value_col,
+                            color="Sede", color_discrete_map=SEDE_COLORS,
+                            title=f"{title_suffix} - {title_label} (Histogramme)",
+                            text=value_col)
+                fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+                fig.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                 font=dict(color=text_color), showlegend=False)
+                st.plotly_chart(fig, use_container_width=True, key=f"ss_compare_bar_{tab_key}")
+            
+            with col2:
+                # Pie chart WITHOUT IFI
+                antenna_summary["Sede"] = pd.Categorical(antenna_summary["Sede"], categories=ANTENNA_ORDER, ordered=True)
+                antenna_summary = antenna_summary.sort_values("Sede")
+                
+                fig_pie = px.pie(antenna_summary, values=value_col, names="Sede",
+                                title=f"{title_suffix} - {title_label} (Répartition)",
+                                color="Sede", color_discrete_map=SEDE_COLORS)
+                fig_pie.update_traces(textposition='inside', textinfo='percent+label+value')
+                fig_pie.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color))
+                st.plotly_chart(fig_pie, use_container_width=True, key=f"ss_compare_pie_{tab_key}")
+        
+        # Function to render sous-secteur indicator view (with proper order based on filter)
         def render_sous_secteur_indicator_view(df_data, value_col, title_suffix, tab_key, is_revenue=False):
+            # If filter is active, show filtered content first
+            if sous_secteur_filter_active:
+                # SECTION 1: Filtered sous-secteur(s) graphs
+                is_multi = len(selected_sous_secteurs) > 1
+                df_filtered = df_data[df_data["Sous-secteur"].isin(selected_sous_secteurs)]
+                
+                filter_label = '/'.join(selected_sous_secteurs[:3]) + ('...' if len(selected_sous_secteurs) > 3 else '')
+                st.markdown(f"#### 🎯 Sélection : {filter_label}")
+                
+                # Filtered IFI graphs
+                create_sous_secteur_ifi_graphs(df_filtered, value_col, title_suffix, f"{tab_key}_filtered")
+                st.markdown("---")
+                
+                # Filtered heatmap
+                create_sous_secteur_heatmap(df_filtered, value_col, title_suffix, f"{tab_key}_filtered_heatmap", is_revenue=is_revenue)
+                st.markdown("---")
+                
+                # Comparison by antenna for selected sous-secteur(s)
+                comparison_title = f"{t('comparison_by_antenna')} - {filter_label}"
+                st.markdown(f"#### {comparison_title}")
+                create_ss_antenna_comparison(df_data, value_col, selected_sous_secteurs, title_suffix, f"{tab_key}_ss_cmp", is_multi=is_multi)
+                st.markdown("---")
+            
+            # IFI Total (all antennas combined)
             st.markdown(f"#### {t('ifi_all_antennas')}")
             create_sous_secteur_ifi_graphs(df_data, value_col, title_suffix, tab_key)
             st.markdown("---")
+            
+            # Heatmap
             create_sous_secteur_heatmap(df_data, value_col, title_suffix, f"{tab_key}_heatmap", is_revenue=is_revenue)
+            st.markdown("---")
+            
+            # SECTION: Détails par antenne
+            st.markdown(f"#### {t('details_by_antenna')}")
+            for antenna in ANTENNA_ORDER:
+                if antenna in df_data["Sede"].unique():
+                    create_ss_antenna_graphs(df_data, value_col, antenna, title_suffix, f"{tab_key}_{antenna}")
         
         indicator_configs_ss = [
             (inscr_col, 'inscriptions'),
@@ -2353,12 +2552,141 @@ with tab3_mc:
             fig.update_traces(textfont=dict(size=12))
             st.plotly_chart(fig, use_container_width=True, key=f"mc_heatmap_{tab_key}")
         
-        # Function to render macro-catégorie indicator view
+        # Function to create antenna graphs for macro-catégorie view
+        def create_mc_antenna_graphs(df_data, value_col, antenna, title_suffix, tab_key):
+            """Create histogram + pie chart pair for a specific antenna (macro-catégorie view)"""
+            antenna_data = df_data[df_data["Sede"] == antenna].groupby("Macro-catégorie").agg({value_col: "sum"}).reset_index()
+            antenna_data = antenna_data.sort_values(value_col, ascending=False).head(15)
+            
+            if antenna_data.empty:
+                st.info(f"Aucune donnée pour {antenna}")
+                return
+            
+            antenna_color = SEDE_COLORS.get(antenna, "#888888")
+            # Create gradient for this antenna color
+            def hex_to_rgb(hex_color):
+                hex_color = hex_color.lstrip('#')
+                return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            
+            def rgb_to_hex(rgb):
+                return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+            
+            base_rgb = hex_to_rgb(antenna_color)
+            color_scale = []
+            for i in range(10):
+                factor = 0.15 + (i * 0.09)
+                new_rgb = tuple(min(255, int(c * factor + 255 * (1 - factor))) for c in base_rgb)
+                color_scale.append(rgb_to_hex(new_rgb))
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                fig_bar = px.bar(antenna_data, y="Macro-catégorie", x=value_col, orientation='h',
+                                color=value_col, 
+                                color_continuous_scale=[[0, color_scale[0]], [0.5, antenna_color], [1, color_scale[-1]]],
+                                title=f"{title_suffix} - {antenna}",
+                                text=value_col)
+                fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+                fig_bar.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color), coloraxis_showscale=False)
+                st.plotly_chart(fig_bar, use_container_width=True, key=f"mc_antenna_bar_{antenna}_{tab_key}")
+            
+            with col2:
+                fig_pie = px.pie(antenna_data, values=value_col, names="Macro-catégorie",
+                                title=f"{title_suffix} - {antenna}",
+                                color_discrete_sequence=color_scale)
+                fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+                fig_pie.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color))
+                st.plotly_chart(fig_pie, use_container_width=True, key=f"mc_antenna_pie_{antenna}_{tab_key}")
+        
+        # Function to create macro-catégorie comparison by antenna (when filter is active)
+        def create_mc_antenna_comparison(df_data, value_col, mc_names, title_suffix, tab_key, is_multi=False):
+            """Create histogram + pie chart comparing antennas for selected macro-catégorie(s)"""
+            if isinstance(mc_names, str):
+                mc_names = [mc_names]
+            
+            mc_data = df_data[df_data["Macro-catégorie"].isin(mc_names)].copy()
+            antenna_summary = mc_data.groupby("Sede").agg({value_col: "sum"}).reset_index()
+            
+            # For histogram: include IFI total
+            ifi_total = mc_data[value_col].sum()
+            ifi_row = pd.DataFrame([{"Sede": "IFI", value_col: ifi_total}])
+            antenna_summary_with_ifi = pd.concat([ifi_row, antenna_summary], ignore_index=True)
+            
+            # Reorder: IFI first, then antennas
+            sede_order = ["IFI"] + ANTENNA_ORDER
+            antenna_summary_with_ifi["Sede"] = pd.Categorical(antenna_summary_with_ifi["Sede"], categories=sede_order, ordered=True)
+            antenna_summary_with_ifi = antenna_summary_with_ifi.sort_values("Sede")
+            
+            # Title based on selection
+            if is_multi or len(mc_names) > 1:
+                title_label = f"Sélection multiple ({'/'.join(mc_names[:3])}{'...' if len(mc_names) > 3 else ''})"
+            else:
+                title_label = mc_names[0]
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                fig = px.bar(antenna_summary_with_ifi, x="Sede", y=value_col,
+                            color="Sede", color_discrete_map=SEDE_COLORS,
+                            title=f"{title_suffix} - {title_label} (Histogramme)",
+                            text=value_col)
+                fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+                fig.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                 font=dict(color=text_color), showlegend=False)
+                st.plotly_chart(fig, use_container_width=True, key=f"mc_compare_bar_{tab_key}")
+            
+            with col2:
+                # Pie chart WITHOUT IFI
+                antenna_summary["Sede"] = pd.Categorical(antenna_summary["Sede"], categories=ANTENNA_ORDER, ordered=True)
+                antenna_summary = antenna_summary.sort_values("Sede")
+                
+                fig_pie = px.pie(antenna_summary, values=value_col, names="Sede",
+                                title=f"{title_suffix} - {title_label} (Répartition)",
+                                color="Sede", color_discrete_map=SEDE_COLORS)
+                fig_pie.update_traces(textposition='inside', textinfo='percent+label+value')
+                fig_pie.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color))
+                st.plotly_chart(fig_pie, use_container_width=True, key=f"mc_compare_pie_{tab_key}")
+        
+        # Function to render macro-catégorie indicator view (with proper order based on filter)
         def render_macro_category_indicator_view(df_data, value_col, title_suffix, tab_key, is_revenue=False):
+            # If filter is active, show filtered content first
+            if macro_category_filter_active:
+                # SECTION 1: Filtered macro-catégorie(s) graphs
+                is_multi = len(selected_macro_categories) > 1
+                df_filtered = df_data[df_data["Macro-catégorie"].isin(selected_macro_categories)]
+                
+                filter_label = '/'.join(selected_macro_categories[:3]) + ('...' if len(selected_macro_categories) > 3 else '')
+                st.markdown(f"#### 🎯 Sélection : {filter_label}")
+                
+                # Filtered IFI graphs
+                create_macro_category_ifi_graphs(df_filtered, value_col, title_suffix, f"{tab_key}_filtered")
+                st.markdown("---")
+                
+                # Filtered heatmap
+                create_macro_category_heatmap(df_filtered, value_col, title_suffix, f"{tab_key}_filtered_heatmap", is_revenue=is_revenue)
+                st.markdown("---")
+                
+                # Comparison by antenna for selected macro-catégorie(s)
+                comparison_title = f"{t('comparison_by_antenna')} - {filter_label}"
+                st.markdown(f"#### {comparison_title}")
+                create_mc_antenna_comparison(df_data, value_col, selected_macro_categories, title_suffix, f"{tab_key}_mc_cmp", is_multi=is_multi)
+                st.markdown("---")
+            
+            # IFI Total (all antennas combined)
             st.markdown(f"#### {t('ifi_all_antennas')}")
             create_macro_category_ifi_graphs(df_data, value_col, title_suffix, tab_key)
             st.markdown("---")
+            
+            # Heatmap
             create_macro_category_heatmap(df_data, value_col, title_suffix, f"{tab_key}_heatmap", is_revenue=is_revenue)
+            st.markdown("---")
+            
+            # SECTION: Détails par antenne
+            st.markdown(f"#### {t('details_by_antenna')}")
+            for antenna in ANTENNA_ORDER:
+                if antenna in df_data["Sede"].unique():
+                    create_mc_antenna_graphs(df_data, value_col, antenna, title_suffix, f"{tab_key}_{antenna}")
         
         indicator_configs_mc = [
             (inscr_col, 'inscriptions'),
@@ -2625,34 +2953,44 @@ with tab3b:
                                      font=dict(color=text_color))
                 st.plotly_chart(fig_pie, use_container_width=True, key=f"cat_antenna_pie_{antenna}_{tab_key}")
         
-        # Function to render full category view
+        # Function to render full category view (with proper order based on filter)
         def render_category_indicator_view(df_data, value_col, title_suffix, tab_key, is_revenue=False):
             """Render the full view for an indicator in category tab"""
             
-            # SECTION 1: IFI level - by category
-            st.markdown(f"##### {t('ifi_all_antennas')} - Par catégorie")
-            create_category_ifi_graphs(df_data, value_col, title_suffix, tab_key)
-            
-            st.markdown("---")
-            
-            # SECTION 2: Heatmap
-            st.markdown(f"#### {t('heatmap_title')} - {title_suffix}")
-            create_category_heatmap(df_tab3b_base, value_col, title_suffix, tab_key, is_revenue=is_revenue)
-            
-            # If category(ies) selected, add comparison section
+            # If filter is active, show filtered content first
             if category_filter_active:
+                # SECTION 1: Filtered category(ies) graphs
+                is_multi = len(selected_categories) > 1
+                df_filtered = df_data[df_data["Catégorie de cours"].isin(selected_categories)]
+                
+                filter_label = '/'.join([c[:25] for c in selected_categories[:2]]) + ('...' if len(selected_categories) > 2 else '')
+                st.markdown(f"#### 🎯 Sélection : {filter_label}")
+                
+                # Filtered IFI graphs
+                create_category_ifi_graphs(df_filtered, value_col, title_suffix, f"{tab_key}_filtered")
                 st.markdown("---")
-                comparison_title = f"{t('comparison_by_antenna')} - "
-                if is_multi_category:
-                    comparison_title += f"Sélection multiple"
-                else:
-                    comparison_title += selected_categories[0]
+                
+                # Filtered heatmap
+                create_category_heatmap(df_filtered, value_col, title_suffix, f"{tab_key}_filtered_heatmap", is_revenue=is_revenue)
+                st.markdown("---")
+                
+                # Comparison by antenna for selected category(ies)
+                comparison_title = f"{t('comparison_by_antenna')} - {filter_label}"
                 st.markdown(f"#### {comparison_title}")
-                create_category_antenna_comparison(df_tab3b_base, value_col, selected_categories, title_suffix, f"{tab_key}_cat_cmp", is_multi=is_multi_category)
+                create_category_antenna_comparison(df_tab3b_base, value_col, selected_categories, title_suffix, f"{tab_key}_cat_cmp", is_multi=is_multi)
+                st.markdown("---")
             
+            # IFI Total (all antennas combined) - by category
+            st.markdown(f"#### {t('ifi_all_antennas')} - Par catégorie")
+            create_category_ifi_graphs(df_data, value_col, title_suffix, tab_key)
             st.markdown("---")
             
-            # SECTION 3: Details by antenna
+            # Heatmap
+            st.markdown(f"#### {t('heatmap_title')} - {title_suffix}")
+            create_category_heatmap(df_tab3b_base, value_col, title_suffix, f"{tab_key}_heatmap", is_revenue=is_revenue)
+            st.markdown("---")
+            
+            # SECTION: Détails par antenne
             st.markdown(f"#### {t('details_by_antenna')}")
             for antenna in ANTENNA_ORDER:
                 if antenna in df_data["Sede"].unique():
@@ -2686,141 +3024,354 @@ with tab3b:
     else:
         st.warning("La colonne 'Catégorie de cours' n'est pas disponible dans les données.")
 
-# TAB 4: YEAR VS YEAR (NEW!)
+# TAB 4: PAR ANNÉE (refonte complète)
 with tab4:
-    st.markdown(f"### {t('year_comparison')}")
+    st.markdown("### 📅 Analyse par année")
     
     years = sorted(df_combined["Année"].unique())
     
-    if len(years) < 2:
-        st.warning(t('need_multiple_years'))
-        st.info(f"""
-        **{t('load_more_years')}**
-        
-        Actuellement chargé : **{', '.join(map(str, years))}**
-        
-        Pour comparer les années, chargez les exports AEC de plusieurs années (ex: 2024 + 2025).
-        """)
+    if len(years) < 1:
+        st.warning("Aucune donnée chargée.")
     else:
-        # Year-over-year comparison
-        comparison_df, _ = calculate_yoy_comparison(df_combined)
+        # 3 sub-levels using expanders
         
-        if comparison_df is not None:
-            st.markdown(f"#### {t('evolution')} {min(years)} → {max(years)}")
+        # ============================================
+        # NIVEAU 1: RÉSUMÉ DE L'ANNÉE
+        # ============================================
+        with st.expander("📊 Résumé de l'année", expanded=True):
+            # Year filter for this section
+            col_filter1, col_filter2, col_filter3 = st.columns([1, 2, 2])
+            with col_filter1:
+                selected_year_resume = st.selectbox(
+                    "Année à analyser",
+                    years,
+                    index=len(years)-1,
+                    key="resume_year_filter"
+                )
             
-            # Show metrics with variations
+            # Filter data for selected year only (no multi-year sum)
+            df_resume = df_combined[df_combined["Année"] == selected_year_resume]
+            
+            st.markdown(f"#### Indicateurs {selected_year_resume}")
+            
+            # Show metrics for selected year
             col1, col2, col3, col4 = st.columns(4)
-            
-            latest = comparison_df.iloc[-1]
-            previous = comparison_df.iloc[-2]
-            
-            def get_delta_color(val):
-                return "normal" if val >= 0 else "inverse"
+            col5, col6, col7, col8 = st.columns(4)
             
             with col1:
-                var = latest.get("Inscriptions_var", 0)
-                st.metric(
-                    t('inscriptions'), 
-                    f"{latest['Inscriptions']:,.0f}",
-                    f"{var:+.1f}%" if not pd.isna(var) else None,
-                    delta_color=get_delta_color(var) if not pd.isna(var) else "off"
-                )
+                val = df_resume[inscr_col].sum() if inscr_col in df_resume.columns else 0
+                st.metric(t('inscriptions'), f"{val:,.0f}")
             with col2:
-                var = latest.get("Cours_var", 0)
-                st.metric(
-                    t('courses'), 
-                    f"{latest['Cours']:,.0f}",
-                    f"{var:+.1f}%" if not pd.isna(var) else None,
-                    delta_color=get_delta_color(var) if not pd.isna(var) else "off"
-                )
+                val = df_resume["Nb. de Cours"].sum() if "Nb. de Cours" in df_resume.columns else 0
+                st.metric(t('courses'), f"{val:,.0f}")
             with col3:
-                var = latest.get("Recettes_var", 0)
-                st.metric(
-                    t('revenue'), 
-                    f"€{latest['Recettes']:,.0f}",
-                    f"{var:+.1f}%" if not pd.isna(var) else None,
-                    delta_color=get_delta_color(var) if not pd.isna(var) else "off"
-                )
+                val = df_resume["Recettes"].sum() if "Recettes" in df_resume.columns else 0
+                st.metric(t('revenue'), f"€{val:,.0f}")
             with col4:
-                var = latest.get("Heures_var", 0)
-                st.metric(
-                    t('student_hours'), 
-                    f"{latest['Heures']:,.0f}",
-                    f"{var:+.1f}%" if not pd.isna(var) else None,
-                    delta_color=get_delta_color(var) if not pd.isna(var) else "off"
-                )
+                val = df_resume["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_resume.columns else 0
+                st.metric(t('planned_hours'), f"{val:,.0f}")
+            with col5:
+                val = df_resume["Nouveaux inscrits"].sum() if "Nouveaux inscrits" in df_resume.columns else 0
+                st.metric(t('new_students'), f"{val:,.0f}")
+            with col6:
+                val = df_resume["Réinscrits"].sum() if "Réinscrits" in df_resume.columns else 0
+                st.metric(t('returning_students'), f"{val:,.0f}")
+            with col7:
+                val = df_resume["Nombre total d'heures vendues (heures-étudiants)"].sum() if "Nombre total d'heures vendues (heures-étudiants)" in df_resume.columns else 0
+                st.metric(t('student_hours'), f"{val:,.0f}")
+            with col8:
+                # ARPI
+                inscr = df_resume[inscr_col].sum() if inscr_col in df_resume.columns else 0
+                recettes = df_resume["Recettes"].sum() if "Recettes" in df_resume.columns else 0
+                arpi = recettes / inscr if inscr > 0 else 0
+                st.metric("ARPI (€/inscr)", f"€{arpi:.2f}")
             
-            # Evolution chart
-            st.markdown(f"#### {t('multi_year_evolution')}")
+            # Répartition par antenne pour l'année sélectionnée
+            st.markdown(f"#### Répartition par antenne - {selected_year_resume}")
+            sede_resume = df_resume.groupby("Sede").agg({
+                inscr_col: "sum",
+                "Nb. de Cours": "sum",
+                "Recettes": "sum"
+            }).reset_index() if all(c in df_resume.columns for c in [inscr_col, "Nb. de Cours", "Recettes"]) else None
             
-            fig = make_subplots(rows=2, cols=2, subplot_titles=[
-                t("inscriptions"), t("courses"), t("revenue"), t("student_hours")
-            ])
-            
-            metrics = ["Inscriptions", "Cours", "Recettes", "Heures"]
-            positions = [(1, 1), (1, 2), (2, 1), (2, 2)]
-            colors = ["#6366f1", "#10b981", "#f59e0b", "#ef4444"]
-            
-            for metric, pos, color in zip(metrics, positions, colors):
-                fig.add_trace(
-                    go.Bar(
-                        x=comparison_df["Année"].astype(str),
-                        y=comparison_df[metric],
-                        marker_color=color,
-                        name=metric,
-                        text=comparison_df[metric].apply(lambda x: f"{x:,.0f}"),
-                        textposition="outside"
-                    ),
-                    row=pos[0], col=pos[1]
-                )
-            
-            fig.update_layout(
-                height=550,
-                showlegend=False,
-                paper_bgcolor=bg_color,
-                plot_bgcolor=bg_color,
-                font=dict(color=text_color),
-                margin=dict(t=80, b=40, l=40, r=40)  # More top margin for labels
-            )
-            # Ensure y-axes have enough room for text labels
-            fig.update_yaxes(automargin=True)
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # Year comparison by sede
-            st.markdown(f"#### {t('yoy_variation')} {t('by_sede')}")
-            yoy_sede = calculate_yoy_by_sede(df_combined)
-            
-            if yoy_sede is not None:
-                pivot_inscr = yoy_sede.pivot(index="Sede", columns="Année", values="Inscriptions").reset_index()
+            if sede_resume is not None:
+                col1, col2 = st.columns(2)
+                with col1:
+                    fig = px.bar(sede_resume, x="Sede", y=inscr_col, color="Sede", 
+                                color_discrete_map=SEDE_COLORS, text=inscr_col,
+                                title=f"Inscriptions par antenne - {selected_year_resume}")
+                    fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+                    fig.update_layout(height=400, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
+                    st.plotly_chart(fig, use_container_width=True, key="resume_inscr_sede")
+                with col2:
+                    fig = px.pie(sede_resume, values=inscr_col, names="Sede", color="Sede",
+                                color_discrete_map=SEDE_COLORS, title=f"Répartition - {selected_year_resume}")
+                    fig.update_traces(textposition='inside', textinfo='percent+label+value')
+                    fig.update_layout(height=400, paper_bgcolor=bg_color, font=dict(color=text_color))
+                    st.plotly_chart(fig, use_container_width=True, key="resume_inscr_pie")
+        
+        # ============================================
+        # NIVEAU 2: ÉVOLUTION PLURIANNUELLE
+        # ============================================
+        with st.expander("📈 Évolution pluriannuelle", expanded=True if len(years) > 1 else False):
+            if len(years) < 2:
+                st.info("Chargez les données de plusieurs années pour voir l'évolution.")
+            else:
+                # Filters row
+                filter_col1, filter_col2, filter_col3, filter_col4, filter_col5 = st.columns(5)
                 
-                # Calculate variation
-                if len(years) >= 2:
-                    y1, y2 = years[-2], years[-1]
-                    pivot_inscr["Variation"] = ((pivot_inscr[y2] - pivot_inscr[y1]) / pivot_inscr[y1] * 100).round(1)
+                with filter_col1:
+                    antenna_options_yoy = [t("all")] + sorted(df_combined["Sede"].unique().tolist())
+                    selected_antenna_yoy = st.selectbox(
+                        t("filter_by_sede"),
+                        antenna_options_yoy,
+                        key="yoy_antenna_filter"
+                    )
+                
+                with filter_col2:
+                    sector_options_yoy = [t("all")] + sorted(df_combined["Secteur"].dropna().unique().tolist()) if "Secteur" in df_combined.columns else [t("all")]
+                    selected_sector_yoy = st.selectbox(
+                        t("filter_by_sector"),
+                        sector_options_yoy,
+                        key="yoy_sector_filter"
+                    )
+                
+                with filter_col3:
+                    ss_options_yoy = [t("all")] + sorted(df_combined["Sous-secteur"].dropna().unique().tolist()) if "Sous-secteur" in df_combined.columns else [t("all")]
+                    selected_ss_yoy = st.selectbox(
+                        t("filter_by_sous_secteur"),
+                        ss_options_yoy,
+                        key="yoy_ss_filter"
+                    )
+                
+                with filter_col4:
+                    mc_options_yoy = [t("all")] + sorted(df_combined["Macro-catégorie"].dropna().unique().tolist()) if "Macro-catégorie" in df_combined.columns else [t("all")]
+                    selected_mc_yoy = st.selectbox(
+                        t("filter_by_macro_category"),
+                        mc_options_yoy,
+                        key="yoy_mc_filter"
+                    )
+                
+                with filter_col5:
+                    cat_options_yoy = [t("all")] + sorted(df_combined["Catégorie de cours"].dropna().unique().tolist()) if "Catégorie de cours" in df_combined.columns else [t("all")]
+                    selected_cat_yoy = st.selectbox(
+                        t("filter_by_category"),
+                        cat_options_yoy,
+                        key="yoy_cat_filter"
+                    )
+                
+                # Apply filters
+                df_yoy = df_combined.copy()
+                if selected_antenna_yoy != t("all"):
+                    df_yoy = df_yoy[df_yoy["Sede"] == selected_antenna_yoy]
+                if selected_sector_yoy != t("all") and "Secteur" in df_yoy.columns:
+                    df_yoy = df_yoy[df_yoy["Secteur"] == selected_sector_yoy]
+                if selected_ss_yoy != t("all") and "Sous-secteur" in df_yoy.columns:
+                    df_yoy = df_yoy[df_yoy["Sous-secteur"] == selected_ss_yoy]
+                if selected_mc_yoy != t("all") and "Macro-catégorie" in df_yoy.columns:
+                    df_yoy = df_yoy[df_yoy["Macro-catégorie"] == selected_mc_yoy]
+                if selected_cat_yoy != t("all") and "Catégorie de cours" in df_yoy.columns:
+                    df_yoy = df_yoy[df_yoy["Catégorie de cours"] == selected_cat_yoy]
+                
+                # Build evolution data
+                evolution_data = df_yoy.groupby("Année").agg({
+                    inscr_col: "sum",
+                    "Nb. de Cours": "sum",
+                    "Recettes": "sum",
+                    "Nombre d'heures prévues": "sum",
+                    "Nouveaux inscrits": "sum",
+                    "Réinscrits": "sum",
+                    "Nombre total d'heures vendues (heures-étudiants)": "sum"
+                }).reset_index() if all(c in df_yoy.columns for c in [inscr_col, "Nb. de Cours", "Recettes"]) else None
+                
+                if evolution_data is not None and len(evolution_data) > 0:
+                    # Rename columns for easier use
+                    evolution_data.columns = ["Année", "Inscriptions", "Cours", "Recettes", "Heures prévues", "Nouveaux", "Réinscrits", "Heures-élèves"]
                     
-                    # Format with colors using HTML/markdown style for streamlit
-                    def format_variation_with_color(val):
-                        if val > 0:
-                            return f"+{val:.1f}%"
-                        elif val < 0:
-                            return f"{val:.1f}%"
-                        else:
-                            return f"{val:.1f}%"
+                    # Grid of histograms: 2 rows x 4 cols
+                    st.markdown("#### Évolution des indicateurs")
                     
-                    pivot_inscr["Variation"] = pivot_inscr["Variation"].apply(format_variation_with_color)
+                    indicators_yoy = [
+                        ("Inscriptions", "#6366f1"),
+                        ("Cours", "#10b981"),
+                        ("Recettes", "#f59e0b"),
+                        ("Heures prévues", "#ef4444"),
+                        ("Nouveaux", "#8b5cf6"),
+                        ("Réinscrits", "#ec4899"),
+                        ("Heures-élèves", "#14b8a6"),
+                    ]
+                    
+                    # 2 rows of histograms
+                    col1, col2, col3, col4 = st.columns(4)
+                    cols_row1 = [col1, col2, col3, col4]
+                    
+                    for i, (indicator, color) in enumerate(indicators_yoy[:4]):
+                        with cols_row1[i]:
+                            fig = px.bar(evolution_data, x="Année", y=indicator, color_discrete_sequence=[color],
+                                        title=indicator, text=indicator)
+                            fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+                            fig.update_layout(height=300, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                            font=dict(color=text_color), margin=dict(t=40, b=20))
+                            fig.update_xaxes(type='category')
+                            st.plotly_chart(fig, use_container_width=True, key=f"yoy_evol_{indicator}")
+                    
+                    col5, col6, col7, _ = st.columns(4)
+                    cols_row2 = [col5, col6, col7]
+                    
+                    for i, (indicator, color) in enumerate(indicators_yoy[4:7]):
+                        with cols_row2[i]:
+                            fig = px.bar(evolution_data, x="Année", y=indicator, color_discrete_sequence=[color],
+                                        title=indicator, text=indicator)
+                            fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+                            fig.update_layout(height=300, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                            font=dict(color=text_color), margin=dict(t=40, b=20))
+                            fig.update_xaxes(type='category')
+                            st.plotly_chart(fig, use_container_width=True, key=f"yoy_evol_{indicator}")
+                else:
+                    st.warning("Données insuffisantes pour l'évolution pluriannuelle avec les filtres sélectionnés.")
+        
+        # ============================================
+        # NIVEAU 3: VARIATIONS PAR ANTENNE
+        # ============================================
+        with st.expander("📊 Variations par antenne", expanded=True if len(years) > 1 else False):
+            if len(years) < 2:
+                st.info("Chargez les données de plusieurs années pour voir les variations.")
+            else:
+                # Filters row (same as level 2)
+                var_filter_col1, var_filter_col2, var_filter_col3, var_filter_col4, var_filter_col5 = st.columns(5)
                 
-                st.dataframe(pivot_inscr, hide_index=True, use_container_width=True)
+                with var_filter_col1:
+                    var_antenna_options = [t("all")] + sorted(df_combined["Sede"].unique().tolist())
+                    var_selected_antenna = st.selectbox(
+                        t("filter_by_sede"),
+                        var_antenna_options,
+                        key="var_antenna_filter"
+                    )
                 
-                # Chart
-                fig = px.bar(
-                    yoy_sede, x="Sede", y="Inscriptions", color="Année",
-                    barmode="group", color_discrete_sequence=px.colors.qualitative.Set2,
-                    title=f"{t('inscriptions_by_sede')} - {t('year_comparison')}",
-                    text="Inscriptions"
-                )
-                fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig.update_layout(height=400, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
-                st.plotly_chart(fig, use_container_width=True)
+                with var_filter_col2:
+                    var_sector_options = [t("all")] + sorted(df_combined["Secteur"].dropna().unique().tolist()) if "Secteur" in df_combined.columns else [t("all")]
+                    var_selected_sector = st.selectbox(
+                        t("filter_by_sector"),
+                        var_sector_options,
+                        key="var_sector_filter"
+                    )
+                
+                with var_filter_col3:
+                    var_ss_options = [t("all")] + sorted(df_combined["Sous-secteur"].dropna().unique().tolist()) if "Sous-secteur" in df_combined.columns else [t("all")]
+                    var_selected_ss = st.selectbox(
+                        t("filter_by_sous_secteur"),
+                        var_ss_options,
+                        key="var_ss_filter"
+                    )
+                
+                with var_filter_col4:
+                    var_mc_options = [t("all")] + sorted(df_combined["Macro-catégorie"].dropna().unique().tolist()) if "Macro-catégorie" in df_combined.columns else [t("all")]
+                    var_selected_mc = st.selectbox(
+                        t("filter_by_macro_category"),
+                        var_mc_options,
+                        key="var_mc_filter"
+                    )
+                
+                with var_filter_col5:
+                    var_cat_options = [t("all")] + sorted(df_combined["Catégorie de cours"].dropna().unique().tolist()) if "Catégorie de cours" in df_combined.columns else [t("all")]
+                    var_selected_cat = st.selectbox(
+                        t("filter_by_category"),
+                        var_cat_options,
+                        key="var_cat_filter"
+                    )
+                
+                # Apply filters
+                df_var = df_combined.copy()
+                if var_selected_antenna != t("all"):
+                    df_var = df_var[df_var["Sede"] == var_selected_antenna]
+                if var_selected_sector != t("all") and "Secteur" in df_var.columns:
+                    df_var = df_var[df_var["Secteur"] == var_selected_sector]
+                if var_selected_ss != t("all") and "Sous-secteur" in df_var.columns:
+                    df_var = df_var[df_var["Sous-secteur"] == var_selected_ss]
+                if var_selected_mc != t("all") and "Macro-catégorie" in df_var.columns:
+                    df_var = df_var[df_var["Macro-catégorie"] == var_selected_mc]
+                if var_selected_cat != t("all") and "Catégorie de cours" in df_var.columns:
+                    df_var = df_var[df_var["Catégorie de cours"] == var_selected_cat]
+                
+                st.markdown("#### Tableaux de variations et histogrammes par indicateur")
+                
+                # Indicator configs for this section
+                variation_indicators = [
+                    (inscr_col, "Inscriptions", "#6366f1"),
+                    ("Nb. de Cours", "Cours", "#10b981"),
+                    ("Recettes", "Recettes (€)", "#f59e0b"),
+                    ("Nombre d'heures prévues", "Heures prévues", "#ef4444"),
+                    ("Nouveaux inscrits", "Nouveaux inscrits", "#8b5cf6"),
+                    ("Réinscrits", "Réinscrits", "#ec4899"),
+                    ("Nombre total d'heures vendues (heures-étudiants)", "Heures-élèves", "#14b8a6"),
+                ]
+                
+                for col_name, indicator_label, color in variation_indicators:
+                    if col_name not in df_var.columns:
+                        continue
+                    
+                    st.markdown(f"##### {indicator_label}")
+                    
+                    # Create pivot: Years as rows, Antennas as columns
+                    pivot_data = df_var.groupby(["Année", "Sede"])[col_name].sum().unstack(fill_value=0)
+                    
+                    # Add IFI total column
+                    pivot_data["IFI (Total)"] = pivot_data.sum(axis=1)
+                    
+                    # Reorder columns
+                    ordered_cols = [a for a in ANTENNA_ORDER if a in pivot_data.columns] + ["IFI (Total)"]
+                    pivot_data = pivot_data[[c for c in ordered_cols if c in pivot_data.columns]]
+                    
+                    # Create variation rows between years
+                    years_list = sorted(pivot_data.index.tolist())
+                    result_rows = []
+                    
+                    for i, year in enumerate(years_list):
+                        # Add year data row
+                        row_data = {"Période": str(year)}
+                        for col in pivot_data.columns:
+                            val = pivot_data.loc[year, col]
+                            row_data[col] = f"{val:,.0f}" if indicator_label != "Recettes (€)" else f"€{val:,.0f}"
+                        result_rows.append(row_data)
+                        
+                        # Add variation row if not last year
+                        if i < len(years_list) - 1:
+                            next_year = years_list[i + 1]
+                            var_row = {"Période": f"Δ {year}→{next_year}"}
+                            for col in pivot_data.columns:
+                                prev_val = pivot_data.loc[year, col]
+                                next_val = pivot_data.loc[next_year, col]
+                                if prev_val > 0:
+                                    pct_change = ((next_val - prev_val) / prev_val) * 100
+                                    var_row[col] = f"{pct_change:+.1f}%"
+                                else:
+                                    var_row[col] = "N/A"
+                            result_rows.append(var_row)
+                    
+                    result_df = pd.DataFrame(result_rows)
+                    
+                    # Display table and histogram side by side
+                    col_table, col_chart = st.columns([1, 1])
+                    
+                    with col_table:
+                        st.dataframe(result_df, hide_index=True, use_container_width=True)
+                    
+                    with col_chart:
+                        # Histogram: grouped bar by year
+                        chart_data = df_var.groupby(["Année", "Sede"])[col_name].sum().reset_index()
+                        fig = px.bar(
+                            chart_data, x="Sede", y=col_name, color="Année",
+                            barmode="group", 
+                            color_discrete_sequence=px.colors.qualitative.Set2,
+                            title=f"{indicator_label} par antenne - Comparaison annuelle",
+                            text=col_name
+                        )
+                        fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+                        fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                         font=dict(color=text_color), margin=dict(t=40, b=20))
+                        st.plotly_chart(fig, use_container_width=True, key=f"var_chart_{indicator_label}")
+                    
+                    st.markdown("---")
 
 # TAB 5: PROFITABILITY (NEW!)
 with tab5:
@@ -3228,6 +3779,75 @@ with tab11:
             },
             key="mapping_editor"
         )
+        
+        # Button to save edits from the main mapping table
+        if st.button("💾 Sauvegarder les modifications", type="primary", key="save_main_mappings"):
+            try:
+                # Find rows that have been modified (compare with original CATEGORY_MAPPING)
+                modified_mappings = []
+                for idx, row in edited_df.iterrows():
+                    cat = row["Catégorie"]
+                    new_macro = row["Macro-catégorie"] if row["Macro-catégorie"] != "⚠️ MANQUANT" else ""
+                    new_ss = row["Sous-secteur"] if row["Sous-secteur"] != "⚠️ MANQUANT" else ""
+                    new_sect = row["Secteur"] if row["Secteur"] != "⚠️ MANQUANT" else ""
+                    
+                    # Get original values
+                    original = CATEGORY_MAPPING.get(cat, ("", "", ""))
+                    orig_macro, orig_ss, orig_sect = original
+                    
+                    # Check if modified
+                    if (new_macro != orig_macro) or (new_ss != orig_ss) or (new_sect != orig_sect):
+                        modified_mappings.append({
+                            "Catégorie": cat,
+                            "Macro-catégorie": new_macro,
+                            "Sous-secteur": new_ss,
+                            "Secteur": new_sect
+                        })
+                
+                if modified_mappings:
+                    # Use configurable CSV path
+                    csv_path = get_csv_mapping_path()
+                    csv_dir = os.path.dirname(csv_path)
+                    
+                    # Create directory if it doesn't exist
+                    if csv_dir:
+                        os.makedirs(csv_dir, exist_ok=True)
+                    
+                    # Check if file exists
+                    if os.path.exists(csv_path):
+                        existing_df = pd.read_csv(csv_path)
+                    else:
+                        existing_df = pd.DataFrame(columns=["Catégorie", "Macro-catégorie", "Sous-secteur", "Secteur"])
+                    
+                    # Add modified mappings
+                    new_df = pd.DataFrame(modified_mappings)
+                    combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+                    
+                    # Remove duplicates (keep last = keep new mappings)
+                    combined_df = combined_df.drop_duplicates(subset=["Catégorie"], keep="last")
+                    
+                    # Sort by Secteur, Sous-secteur, Macro-catégorie, Catégorie
+                    combined_df = combined_df.sort_values(["Secteur", "Sous-secteur", "Macro-catégorie", "Catégorie"])
+                    
+                    # Save to CSV
+                    combined_df.to_csv(csv_path, index=False)
+                    
+                    # Update in-memory CATEGORY_MAPPING
+                    for mapping in modified_mappings:
+                        CATEGORY_MAPPING[mapping["Catégorie"]] = (
+                            mapping["Macro-catégorie"],
+                            mapping["Sous-secteur"],
+                            mapping["Secteur"]
+                        )
+                    
+                    st.success(f"✅ {len(modified_mappings)} correspondance(s) modifiée(s) sauvegardée(s) !")
+                    st.balloons()
+                    st.rerun()
+                else:
+                    st.info("ℹ️ Aucune modification détectée dans le tableau.")
+                    
+            except Exception as e:
+                st.error(f"❌ Erreur lors de la sauvegarde : {str(e)}")
     
     # Show unlinked categories warning if any exist
     unlinked_cats = get_unknown_categories()
