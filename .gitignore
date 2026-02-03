@@ -18,7 +18,11 @@ ENV/
 *.xlsx
 *.xls
 *.zip
-*.csv
-data/
 exports/
 AEC_exports/
+
+# Exception: Le fichier de mapping des catégories DOIT être versionné
+# car il contient la configuration métier, pas des données sensibles
+!data/
+data/*
+!data/category_mapping.csv
