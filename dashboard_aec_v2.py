@@ -1183,18 +1183,25 @@ with st.sidebar:
             st.markdown(f"**{t('preloaded_files')}**")
             available_years = sorted(PRELOADED_FILES.keys(), reverse=True)
             
-            # Create columns for year buttons
+            # Multi-select checkboxes for years
+            selected_years = []
             cols = st.columns(len(available_years))
             for idx, year in enumerate(available_years):
                 with cols[idx]:
-                    if st.button(f"📅 {year}", key=f"load_preloaded_{year}", use_container_width=True):
-                        # Load the preloaded ZIP file
+                    if st.checkbox(f"📅 {year}", key=f"check_year_{year}", value=False):
+                        selected_years.append(year)
+            
+            # Load button - only show if at least one year selected
+            if selected_years:
+                if st.button(f"📥 Charger {', '.join(sorted(selected_years))}", key="load_selected_years", use_container_width=True):
+                    # Load all selected years' ZIP files
+                    st.session_state.stored_files = []
+                    for year in selected_years:
                         zip_path = PRELOADED_FILES[year]
                         try:
                             with open(zip_path, 'rb') as f:
                                 zip_data = f.read()
                             with zipfile.ZipFile(BytesIO(zip_data), 'r') as zf:
-                                st.session_state.stored_files = []
                                 for name in zf.namelist():
                                     if name.lower().endswith(('.xlsx', '.xls')) and not name.startswith('__MACOSX'):
                                         file_data = zf.read(name)
@@ -1202,14 +1209,14 @@ with st.sidebar:
                                             'name': name.split('/')[-1],
                                             'data': file_data
                                         })
-                            # Clear processed data to force reprocessing
-                            if 'processed_data' in st.session_state:
-                                del st.session_state.processed_data
-                            if 'file_info' in st.session_state:
-                                del st.session_state.file_info
-                            st.rerun()
                         except Exception as e:
-                            st.error(f"Erreur: {e}")
+                            st.error(f"Erreur {year}: {e}")
+                    # Clear processed data to force reprocessing
+                    if 'processed_data' in st.session_state:
+                        del st.session_state.processed_data
+                    if 'file_info' in st.session_state:
+                        del st.session_state.file_info
+                    st.rerun()
             
             st.caption(t('or_upload_files'))
         else:
