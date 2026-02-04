@@ -321,7 +321,8 @@ TRANSLATIONS = {
         "filter_by_age": "Filtrer par âge", "adults": "Adultes", "teens": "Ados", "children": "Enfants",
         "age_distribution": "Répartition par âge", "italy_map": "Carte d'Italie",
         "map_by_inscriptions": "Inscriptions par ville", "tab_yoy": "Par année",
-        "tab_profitability": "Rentabilité", "tab_map": "Carte",
+        "tab_profitability": "Rentabilité", "tab_map": "Carte", "tab_evolutions": "Évolutions",
+        "evolution_title": "Évolution multi-indicateurs", "evolution_ifi": "IFI - Total national", "evolution_by_antenna": "Par antenne",
         "increase": "hausse", "decrease": "baisse", "stable": "stable",
         "multi_year_evolution": "Évolution pluriannuelle", "need_multiple_years": "Chargez les données de plusieurs années pour voir l'évolution.",
         "arpi": "ARPI (€/inscr)", "total_years": "Années", "load_more_years": "Chargez plus d'années pour comparer",
@@ -415,7 +416,8 @@ TRANSLATIONS = {
         "filter_by_age": "Filtra per età", "adults": "Adulti", "teens": "Ado", "children": "Bambini",
         "age_distribution": "Distribuzione per età", "italy_map": "Mappa d'Italia",
         "map_by_inscriptions": "Iscrizioni per città", "tab_yoy": "Per anno",
-        "tab_profitability": "Redditività", "tab_map": "Mappa",
+        "tab_profitability": "Redditività", "tab_map": "Mappa", "tab_evolutions": "Evoluzioni",
+        "evolution_title": "Evoluzione multi-indicatori", "evolution_ifi": "IFI - Totale nazionale", "evolution_by_antenna": "Per sede",
         "increase": "aumento", "decrease": "calo", "stable": "stabile",
         "multi_year_evolution": "Evoluzione pluriennale", "need_multiple_years": "Carica i dati di più anni per vedere l'evoluzione.",
         "arpi": "ARPI (€/iscr)", "total_years": "Anni", "load_more_years": "Carica più anni per confrontare",
@@ -1502,9 +1504,9 @@ if multiple_years:
 # =====================================================
 # TABS - Right after year selection
 # =====================================================
-tab1, tab2, tab3, tab3_ss, tab3_mc, tab3b, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
+tab1, tab2, tab3, tab3_ss, tab3_mc, tab3b, tab4, tab_evo, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
     t("tab_prova_stats"), t("tab_by_sede"), t("tab_by_sector"), t("tab_by_sous_secteur"), t("tab_by_macro_category"), t("tab_by_category"),
-    t("tab_yoy"), t("tab_profitability"), t("tab_map"),
+    t("tab_yoy"), t("tab_evolutions"), t("tab_profitability"), t("tab_map"),
     t("tab_comparisons"), t("tab_graphs"), t("tab_ai"), t("tab_export"), t("tab_config")
 ])
 
@@ -1783,8 +1785,9 @@ with tab3:
         </script>
         """, unsafe_allow_html=True)
     
-    # Custom blue scale with darker minimum for better visibility
-    BLUE_SCALE_IFI = [[0, "#1e40af"], [0.25, "#3b82f6"], [0.5, "#60a5fa"], [0.75, "#93c5fd"], [1, "#dbeafe"]]
+    # Custom blue scale with darker minimum for better visibility on white background
+    # Min value = medium blue (visible), Max value = dark blue
+    BLUE_SCALE_IFI = [[0, "#93c5fd"], [0.25, "#60a5fa"], [0.5, "#3b82f6"], [0.75, "#2563eb"], [1, "#1e40af"]]
     
     # Text above sub-tabs
     st.markdown(f"**{t('choose_indicator')}**")
@@ -1896,14 +1899,15 @@ with tab3:
         
         col1, col2 = st.columns(2)
         with col1:
+            # Inverse scale: low values get medium color, high values get darker
             fig_bar = px.bar(antenna_data, y="Secteur", x=value_col, orientation='h',
                             color=value_col, 
-                            color_continuous_scale=[[0, color_scale[0]], [0.5, antenna_color], [1, color_scale[-1]]],
+                            color_continuous_scale=[[0, color_scale[3]], [0.5, antenna_color], [1, color_scale[-1]]],
                             title=f"{title_suffix} - {antenna}",
                             text=value_col)
             fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
             fig_bar.update_layout(height=chart_height, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                 font=dict(color=text_color), coloraxis_showscale=False)
+                                 font=dict(color=text_color), coloraxis_showscale=False, margin=dict(l=150))
             st.plotly_chart(fig_bar, use_container_width=True, key=f"antenna_bar_{antenna}_{tab_key}")
         
         with col2:
@@ -2214,15 +2218,18 @@ with tab3_ss:
             ss_summary = df_data.groupby("Sous-secteur").agg({value_col: "sum"}).reset_index()
             ss_summary = ss_summary.sort_values(value_col, ascending=False)
             
+            # Custom green scale with visible minimum
+            GREEN_SCALE = [[0, "#86efac"], [0.25, "#4ade80"], [0.5, "#22c55e"], [0.75, "#16a34a"], [1, "#166534"]]
+            
             col1, col2 = st.columns(2)
             with col1:
                 fig_bar = px.bar(ss_summary, y="Sous-secteur", x=value_col, orientation='h',
-                                color=value_col, color_continuous_scale="Greens",
+                                color=value_col, color_continuous_scale=GREEN_SCALE,
                                 title=f"{title_suffix} - Histogramme (IFI)",
                                 text=value_col)
                 fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig_bar.update_layout(height=500, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color))
+                fig_bar.update_layout(height=max(500, len(ss_summary)*25), paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color), margin=dict(l=200))
                 st.plotly_chart(fig_bar, use_container_width=True, key=f"ss_ifi_bar_{tab_key}")
             
             with col2:
@@ -2247,7 +2254,7 @@ with tab3_ss:
             text_template = "€%{text:,.0f}" if is_revenue else "%{text:.0f}"
             
             fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Sous-secteur", color=title_suffix), 
-                           aspect="auto", color_continuous_scale="YlGn", text_auto=True)
+                           aspect="auto", color_continuous_scale=[[0, "#d9f99d"], [0.25, "#a3e635"], [0.5, "#65a30d"], [0.75, "#4d7c0f"], [1, "#3f6212"]], text_auto=True)
             fig.update_layout(height=600, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                              title=f"Heatmap - {title_suffix}",
                              xaxis=dict(side="top", tickfont=dict(size=14)),
@@ -2283,14 +2290,15 @@ with tab3_ss:
             
             col1, col2 = st.columns(2)
             with col1:
+                # Inverse scale: low values get visible color
                 fig_bar = px.bar(antenna_data, y="Sous-secteur", x=value_col, orientation='h',
                                 color=value_col, 
-                                color_continuous_scale=[[0, color_scale[0]], [0.5, antenna_color], [1, color_scale[-1]]],
+                                color_continuous_scale=[[0, color_scale[3]], [0.5, antenna_color], [1, color_scale[-1]]],
                                 title=f"{title_suffix} - {antenna}",
                                 text=value_col)
                 fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig_bar.update_layout(height=400, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color), coloraxis_showscale=False)
+                fig_bar.update_layout(height=max(400, len(antenna_data)*25), paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color), coloraxis_showscale=False, margin=dict(l=200))
                 st.plotly_chart(fig_bar, use_container_width=True, key=f"ss_antenna_bar_{antenna}_{tab_key}")
             
             with col2:
@@ -2518,15 +2526,18 @@ with tab3_mc:
             mc_summary = df_data.groupby("Macro-catégorie").agg({value_col: "sum"}).reset_index()
             mc_summary = mc_summary.sort_values(value_col, ascending=False).head(15)
             
+            # Custom purple scale with visible minimum
+            PURPLE_SCALE = [[0, "#c4b5fd"], [0.25, "#a78bfa"], [0.5, "#8b5cf6"], [0.75, "#7c3aed"], [1, "#5b21b6"]]
+            
             col1, col2 = st.columns(2)
             with col1:
                 fig_bar = px.bar(mc_summary, y="Macro-catégorie", x=value_col, orientation='h',
-                                color=value_col, color_continuous_scale="Purples",
+                                color=value_col, color_continuous_scale=PURPLE_SCALE,
                                 title=f"{title_suffix} - Histogramme (IFI)",
                                 text=value_col)
                 fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig_bar.update_layout(height=500, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color))
+                fig_bar.update_layout(height=max(500, len(mc_summary)*30), paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color), margin=dict(l=220))
                 st.plotly_chart(fig_bar, use_container_width=True, key=f"mc_ifi_bar_{tab_key}")
             
             with col2:
@@ -2551,7 +2562,7 @@ with tab3_mc:
             text_template = "€%{text:,.0f}" if is_revenue else "%{text:.0f}"
             
             fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Macro-catégorie", color=title_suffix), 
-                           aspect="auto", color_continuous_scale="RdPu", text_auto=True)
+                           aspect="auto", color_continuous_scale=[[0, "#fbcfe8"], [0.25, "#f472b6"], [0.5, "#db2777"], [0.75, "#be185d"], [1, "#9d174d"]], text_auto=True)
             fig.update_layout(height=600, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                              title=f"Heatmap - {title_suffix}",
                              xaxis=dict(side="top", tickfont=dict(size=14)),
@@ -2587,14 +2598,15 @@ with tab3_mc:
             
             col1, col2 = st.columns(2)
             with col1:
+                # Inverse scale: low values get visible color
                 fig_bar = px.bar(antenna_data, y="Macro-catégorie", x=value_col, orientation='h',
                                 color=value_col, 
-                                color_continuous_scale=[[0, color_scale[0]], [0.5, antenna_color], [1, color_scale[-1]]],
+                                color_continuous_scale=[[0, color_scale[3]], [0.5, antenna_color], [1, color_scale[-1]]],
                                 title=f"{title_suffix} - {antenna}",
                                 text=value_col)
                 fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig_bar.update_layout(height=450, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color), coloraxis_showscale=False)
+                fig_bar.update_layout(height=max(450, len(antenna_data)*25), paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color), coloraxis_showscale=False, margin=dict(l=220))
                 st.plotly_chart(fig_bar, use_container_width=True, key=f"mc_antenna_bar_{antenna}_{tab_key}")
             
             with col2:
@@ -2836,15 +2848,18 @@ with tab3b:
             cat_summary = df_data.groupby("Catégorie de cours").agg({value_col: "sum"}).reset_index()
             cat_summary = cat_summary.sort_values(value_col, ascending=False).head(15)  # Top 15 for readability
             
+            # Custom blue scale with visible minimum
+            BLUE_SCALE = [[0, "#93c5fd"], [0.25, "#60a5fa"], [0.5, "#3b82f6"], [0.75, "#2563eb"], [1, "#1e40af"]]
+            
             col1, col2 = st.columns(2)
             with col1:
                 fig_bar = px.bar(cat_summary, y="Catégorie de cours", x=value_col, orientation='h',
-                                color=value_col, color_continuous_scale="Blues",
+                                color=value_col, color_continuous_scale=BLUE_SCALE,
                                 title=f"{title_suffix} - Top catégories (IFI)",
                                 text=value_col)
                 fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig_bar.update_layout(height=500, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color))
+                fig_bar.update_layout(height=max(500, len(cat_summary)*30), paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color), margin=dict(l=200))
                 st.plotly_chart(fig_bar, use_container_width=True, key=f"cat_ifi_bar_{tab_key}")
             
             with col2:
@@ -2873,7 +2888,7 @@ with tab3b:
             text_template = "€%{text:,.0f}" if is_revenue else "%{text:.0f}"
             
             fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Catégorie", color=title_suffix), 
-                           aspect="auto", color_continuous_scale="YlOrRd", text_auto=True)
+                           aspect="auto", color_continuous_scale=[[0, "#fef3c7"], [0.25, "#fcd34d"], [0.5, "#f97316"], [0.75, "#ea580c"], [1, "#c2410c"]], text_auto=True)
             fig.update_layout(height=600, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                              xaxis=dict(side="top", tickfont=dict(size=14)),
                              yaxis=dict(tickfont=dict(size=10)))
@@ -2942,14 +2957,28 @@ with tab3b:
             
             col1, col2 = st.columns(2)
             with col1:
+                # Create gradient for this antenna with visible min/max
+                def hex_to_rgb(hex_color):
+                    hex_color = hex_color.lstrip('#')
+                    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+                
+                def rgb_to_hex(rgb):
+                    return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+                
+                base_rgb = hex_to_rgb(antenna_color)
+                # Light version of antenna color for min values
+                light_color = rgb_to_hex(tuple(min(255, int(c * 0.4 + 255 * 0.6)) for c in base_rgb))
+                # Dark version for max values
+                dark_color = rgb_to_hex(tuple(int(c * 0.7) for c in base_rgb))
+                
                 fig_bar = px.bar(antenna_data, y="Catégorie de cours", x=value_col, orientation='h',
                                 color=value_col, 
-                                color_continuous_scale=[[0, antenna_color], [1, "#ffffff"]],
+                                color_continuous_scale=[[0, light_color], [0.5, antenna_color], [1, dark_color]],
                                 title=f"{title_suffix} - {antenna}",
                                 text=value_col)
                 fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig_bar.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color), coloraxis_showscale=False)
+                fig_bar.update_layout(height=max(350, len(antenna_data)*30), paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
+                                     font=dict(color=text_color), coloraxis_showscale=False, margin=dict(l=200))
                 st.plotly_chart(fig_bar, use_container_width=True, key=f"cat_antenna_bar_{antenna}_{tab_key}")
             
             with col2:
@@ -3379,6 +3408,158 @@ with tab4:
                         st.plotly_chart(fig, use_container_width=True, key=f"var_chart_{indicator_label}")
                     
                     st.markdown("---")
+
+# TAB EVOLUTIONS: Multi-indicator evolution curves
+with tab_evo:
+    st.markdown(f"### {t('evolution_title')}")
+    
+    # Check if we have multiple years
+    evo_years = sorted(df_combined["Année"].unique())
+    
+    if len(evo_years) < 2:
+        st.warning(t('need_multiple_years'))
+    else:
+        # Filters section
+        st.markdown("**Filtres**")
+        filter_cols = st.columns(4)
+        
+        with filter_cols[0]:
+            evo_sectors = [t("all")] + sorted(df_combined["Secteur"].dropna().unique().tolist())
+            evo_selected_sector = st.selectbox(t("filter_by_sector"), evo_sectors, key="evo_sector_filter")
+        
+        with filter_cols[1]:
+            if evo_selected_sector != t("all"):
+                evo_ss_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Sous-secteur"].dropna().unique().tolist())
+            else:
+                evo_ss_options = [t("all")] + sorted(df_combined["Sous-secteur"].dropna().unique().tolist())
+            evo_selected_ss = st.selectbox(t("filter_by_sous_secteur") if lang == "fr" else "Filtra per sotto-settore", evo_ss_options, key="evo_ss_filter")
+        
+        with filter_cols[2]:
+            if evo_selected_ss != t("all"):
+                evo_mc_options = [t("all")] + sorted(df_combined[df_combined["Sous-secteur"] == evo_selected_ss]["Macro-catégorie"].dropna().unique().tolist())
+            elif evo_selected_sector != t("all"):
+                evo_mc_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Macro-catégorie"].dropna().unique().tolist())
+            else:
+                evo_mc_options = [t("all")] + sorted(df_combined["Macro-catégorie"].dropna().unique().tolist())
+            evo_selected_mc = st.selectbox(t("filter_by_macro_cat") if lang == "fr" else "Filtra per macro-categoria", evo_mc_options, key="evo_mc_filter")
+        
+        with filter_cols[3]:
+            if evo_selected_mc != t("all"):
+                evo_cat_options = [t("all")] + sorted(df_combined[df_combined["Macro-catégorie"] == evo_selected_mc]["Catégorie de cours"].dropna().unique().tolist())
+            elif evo_selected_ss != t("all"):
+                evo_cat_options = [t("all")] + sorted(df_combined[df_combined["Sous-secteur"] == evo_selected_ss]["Catégorie de cours"].dropna().unique().tolist())
+            elif evo_selected_sector != t("all"):
+                evo_cat_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Catégorie de cours"].dropna().unique().tolist())
+            else:
+                evo_cat_options = [t("all")] + sorted(df_combined["Catégorie de cours"].dropna().unique().tolist())
+            evo_selected_cat = st.selectbox(t("filter_by_category") if lang == "fr" else "Filtra per categoria", evo_cat_options, key="evo_cat_filter")
+        
+        # Apply filters
+        df_evo = df_combined.copy()
+        if evo_selected_sector != t("all"):
+            df_evo = df_evo[df_evo["Secteur"] == evo_selected_sector]
+        if evo_selected_ss != t("all"):
+            df_evo = df_evo[df_evo["Sous-secteur"] == evo_selected_ss]
+        if evo_selected_mc != t("all"):
+            df_evo = df_evo[df_evo["Macro-catégorie"] == evo_selected_mc]
+        if evo_selected_cat != t("all"):
+            df_evo = df_evo[df_evo["Catégorie de cours"] == evo_selected_cat]
+        
+        # Show active filters
+        active_filters = []
+        if evo_selected_sector != t("all"):
+            active_filters.append(f"Secteur: {evo_selected_sector}")
+        if evo_selected_ss != t("all"):
+            active_filters.append(f"Sous-secteur: {evo_selected_ss}")
+        if evo_selected_mc != t("all"):
+            active_filters.append(f"Macro-cat: {evo_selected_mc}")
+        if evo_selected_cat != t("all"):
+            active_filters.append(f"Catégorie: {evo_selected_cat}")
+        if active_filters:
+            st.info(f"🔍 Filtres actifs: {' | '.join(active_filters)}")
+        
+        # Define colors for indicators
+        EVO_COLORS = {
+            "Inscriptions": "#6366f1",  # Indigo
+            "Heures-élèves": "#10b981",  # Green
+            "Recettes": "#f59e0b"  # Orange
+        }
+        
+        # Function to create evolution chart
+        def create_evolution_chart(df_data, title, chart_key):
+            # Group by year
+            yearly_data = df_data.groupby("Année").agg({
+                inscr_col: "sum",
+                "Nombre total d'heures vendues (heures-étudiants)": "sum",
+                "Recettes": "sum"
+            }).reset_index()
+            yearly_data.columns = ["Année", "Inscriptions", "Heures-élèves", "Recettes"]
+            yearly_data = yearly_data.sort_values("Année")
+            
+            # Create figure with secondary y-axis
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+            
+            # Add traces
+            fig.add_trace(
+                go.Scatter(x=yearly_data["Année"].astype(str), y=yearly_data["Inscriptions"], 
+                          name="Inscriptions", mode="lines+markers+text",
+                          line=dict(color=EVO_COLORS["Inscriptions"], width=3),
+                          marker=dict(size=10),
+                          text=yearly_data["Inscriptions"].apply(lambda x: f"{x:,.0f}"),
+                          textposition="top center"),
+                secondary_y=False
+            )
+            
+            fig.add_trace(
+                go.Scatter(x=yearly_data["Année"].astype(str), y=yearly_data["Heures-élèves"], 
+                          name="Heures-élèves", mode="lines+markers+text",
+                          line=dict(color=EVO_COLORS["Heures-élèves"], width=3),
+                          marker=dict(size=10),
+                          text=yearly_data["Heures-élèves"].apply(lambda x: f"{x:,.0f}"),
+                          textposition="top center"),
+                secondary_y=False
+            )
+            
+            fig.add_trace(
+                go.Scatter(x=yearly_data["Année"].astype(str), y=yearly_data["Recettes"], 
+                          name="Recettes (€)", mode="lines+markers+text",
+                          line=dict(color=EVO_COLORS["Recettes"], width=3, dash="dash"),
+                          marker=dict(size=10),
+                          text=yearly_data["Recettes"].apply(lambda x: f"€{x:,.0f}"),
+                          textposition="top center"),
+                secondary_y=True
+            )
+            
+            # Update layout
+            fig.update_layout(
+                title=dict(text=title, font=dict(size=16)),
+                height=400,
+                paper_bgcolor=bg_color,
+                plot_bgcolor=bg_color,
+                font=dict(color=text_color),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
+                margin=dict(t=80, b=40, l=60, r=60),
+                hovermode="x unified"
+            )
+            
+            fig.update_xaxes(title_text="Année", tickmode="linear")
+            fig.update_yaxes(title_text="Inscriptions / Heures-élèves", secondary_y=False)
+            fig.update_yaxes(title_text="Recettes (€)", secondary_y=True)
+            
+            st.plotly_chart(fig, use_container_width=True, key=chart_key)
+        
+        # LEVEL 1: IFI Total
+        with st.expander(f"📊 {t('evolution_ifi')}", expanded=True):
+            create_evolution_chart(df_evo, t('evolution_ifi'), "evo_ifi_chart")
+        
+        # LEVEL 2: By Antenna
+        with st.expander(f"🏛️ {t('evolution_by_antenna')}", expanded=True):
+            antenna_cols = st.columns(2)
+            for idx, antenna in enumerate(ANTENNA_ORDER):
+                df_antenna = df_evo[df_evo["Sede"] == antenna]
+                if len(df_antenna) > 0:
+                    with antenna_cols[idx % 2]:
+                        create_evolution_chart(df_antenna, f"{antenna}", f"evo_{antenna}_chart")
 
 # TAB 5: PROFITABILITY (NEW!)
 with tab5:
