@@ -3432,7 +3432,7 @@ with tab_evo:
                 evo_ss_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Sous-secteur"].dropna().unique().tolist())
             else:
                 evo_ss_options = [t("all")] + sorted(df_combined["Sous-secteur"].dropna().unique().tolist())
-            evo_selected_ss = st.selectbox(t("filter_by_sous_secteur") if lang == "fr" else "Filtra per sotto-settore", evo_ss_options, key="evo_ss_filter")
+            evo_selected_ss = st.selectbox(t("filter_by_sous_secteur"), evo_ss_options, key="evo_ss_filter")
         
         with filter_cols[2]:
             if evo_selected_ss != t("all"):
@@ -3441,7 +3441,7 @@ with tab_evo:
                 evo_mc_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Macro-catégorie"].dropna().unique().tolist())
             else:
                 evo_mc_options = [t("all")] + sorted(df_combined["Macro-catégorie"].dropna().unique().tolist())
-            evo_selected_mc = st.selectbox(t("filter_by_macro_cat") if lang == "fr" else "Filtra per macro-categoria", evo_mc_options, key="evo_mc_filter")
+            evo_selected_mc = st.selectbox(t("filter_by_macro_category"), evo_mc_options, key="evo_mc_filter")
         
         with filter_cols[3]:
             if evo_selected_mc != t("all"):
@@ -3452,7 +3452,7 @@ with tab_evo:
                 evo_cat_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Catégorie de cours"].dropna().unique().tolist())
             else:
                 evo_cat_options = [t("all")] + sorted(df_combined["Catégorie de cours"].dropna().unique().tolist())
-            evo_selected_cat = st.selectbox(t("filter_by_category") if lang == "fr" else "Filtra per categoria", evo_cat_options, key="evo_cat_filter")
+            evo_selected_cat = st.selectbox(t("filter_by_category"), evo_cat_options, key="evo_cat_filter")
         
         # Apply filters
         df_evo = df_combined.copy()
