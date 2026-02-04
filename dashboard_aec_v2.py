@@ -3481,7 +3481,7 @@ with tab_evo:
         # Define colors for indicators
         EVO_COLORS = {
             "Inscriptions": "#6366f1",  # Indigo
-            "Heures-élèves": "#10b981",  # Green
+            "Heures": "#10b981",  # Green
             "Recettes": "#f59e0b"  # Orange
         }
         
@@ -3490,10 +3490,10 @@ with tab_evo:
             # Group by year
             yearly_data = df_data.groupby("Année").agg({
                 inscr_col: "sum",
-                "Nombre total d'heures vendues (heures-étudiants)": "sum",
+                "Nombre d'heures prévues": "sum",
                 "Recettes": "sum"
             }).reset_index()
-            yearly_data.columns = ["Année", "Inscriptions", "Heures-élèves", "Recettes"]
+            yearly_data.columns = ["Année", "Inscriptions", "Heures", "Recettes"]
             yearly_data = yearly_data.sort_values("Année")
             
             # Create figure with secondary y-axis
@@ -3511,11 +3511,11 @@ with tab_evo:
             )
             
             fig.add_trace(
-                go.Scatter(x=yearly_data["Année"].astype(str), y=yearly_data["Heures-élèves"], 
-                          name="Heures-élèves", mode="lines+markers+text",
-                          line=dict(color=EVO_COLORS["Heures-élèves"], width=3),
+                go.Scatter(x=yearly_data["Année"].astype(str), y=yearly_data["Heures"], 
+                          name="Heures", mode="lines+markers+text",
+                          line=dict(color=EVO_COLORS["Heures"], width=3),
                           marker=dict(size=10),
-                          text=yearly_data["Heures-élèves"].apply(lambda x: f"{x:,.0f}"),
+                          text=yearly_data["Heures"].apply(lambda x: f"{x:,.0f}"),
                           textposition="top center"),
                 secondary_y=False
             )
@@ -3543,7 +3543,7 @@ with tab_evo:
             )
             
             fig.update_xaxes(title_text="Année", tickmode="linear")
-            fig.update_yaxes(title_text="Inscriptions / Heures-élèves", secondary_y=False)
+            fig.update_yaxes(title_text="Inscriptions / Heures", secondary_y=False)
             fig.update_yaxes(title_text="Recettes (€)", secondary_y=True)
             
             st.plotly_chart(fig, use_container_width=True, key=chart_key)
