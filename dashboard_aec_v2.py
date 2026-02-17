@@ -491,18 +491,44 @@ import hashlib
 def _hash_pw(pw: str) -> str:
     return hashlib.sha256(pw.encode()).hexdigest()
 
-# Comptes utilisateurs — ajouter/modifier ici
-# Format: "identifiant": {"name": "Prénom Nom", "password_hash": sha256(mot_de_passe)}
-USERS = {
-    "adrien": {
-        "name": "Adrien",
-        "password_hash": _hash_pw("oscar2026"),
-    },
-    "stephanie": {
-        "name": "Stéphanie Sauvignon",
-        "password_hash": _hash_pw("ifi2026"),
-    },
-}
+def _load_users() -> dict:
+    """Charge les comptes depuis st.secrets (Streamlit Cloud) ou fallback local."""
+    users = {}
+    try:
+        # Lecture depuis st.secrets (TOML dans Streamlit Cloud > Settings > Secrets)
+        # Format attendu dans le TOML:
+        #   [users.adrien]
+        #   name = "Adrien"
+        #   password = "oscar2026"
+        #
+        #   [users.stephanie]
+        #   name = "Stéphanie Sauvignon"
+        #   password = "ifi2026"
+        secrets_users = st.secrets.get("users", {})
+        for uid, udata in secrets_users.items():
+            users[uid] = {
+                "name": udata["name"],
+                "password_hash": _hash_pw(udata["password"]),
+            }
+        if users:
+            return users
+    except Exception:
+        pass
+
+    # Fallback local (dev uniquement — ne PAS déployer avec des vrais mots de passe ici)
+    users = {
+        "adrien": {
+            "name": "Adrien",
+            "password_hash": _hash_pw("oscar2026"),
+        },
+        "stephanie": {
+            "name": "Stéphanie Sauvignon",
+            "password_hash": _hash_pw("ifi2026"),
+        },
+    }
+    return users
+
+USERS = _load_users()
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
