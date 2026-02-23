@@ -902,6 +902,12 @@ def get_css():
         .block-container {
             padding-top: 1.5rem !important;
         }
+        /* Force sidebar visible — counteracts the login page's display:none that
+           can persist in Streamlit's virtual DOM after st.rerun() */
+        [data-testid="stSidebar"] {
+            display: flex !important;
+            visibility: visible !important;
+        }
 
         /* ── Print / PDF export styles ── */
         @media print {
