@@ -26,6 +26,126 @@ from plotly.subplots import make_subplots
 from io import BytesIO
 import zipfile
 import re
+import json
+import sys
+import shutil
+from datetime import datetime
+from pathlib import Path
+
+# =====================================================
+
+# RECENT FILES — persist uploads across app restarts
+# =====================================================
+
+def _oscar_data_dir() -> Path:
+    """Return (and create) the OS-appropriate OSCAR data directory."""
+    if getattr(sys, "frozen", False):
+        # Running as packaged app — use OS config dir
+        if sys.platform == "darwin":
+            base = Path.home() / "Library" / "Application Support" / "OSCAR"
+        elif sys.platform == "win32":
+            base = Path(os.environ.get("APPDATA", Path.home())) / "OSCAR"
+        else:
+            base = Path.home() / ".config" / "oscar"
+    else:
+        # Dev mode — store next to the script
+        base = Path(__file__).parent / ".oscar_data"
+    data_dir = base / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return data_dir
+
+
+def _recent_index_path() -> Path:
+    return _oscar_data_dir().parent / "recent_sessions.json"
+
+
+def load_recent_sessions() -> list:
+    """Return list of recent session dicts (newest first), max 10."""
+    idx = _recent_index_path()
+    if not idx.exists():
+        return []
+    try:
+        with open(idx, "r", encoding="utf-8") as f:
+            sessions = json.load(f)
+        # Remove sessions whose files have been deleted
+        sessions = [s for s in sessions if Path(s["zip_path"]).exists()]
+        return sessions[:10]
+    except Exception:
+        return []
+
+
+def save_recent_session(stored_files: list) -> None:
+    """
+    Save current stored_files list to a ZIP on disk and update the index.
+    stored_files: list of {'name': str, 'data': bytes}
+    """
+    if not stored_files:
+        return
+    try:
+        data_dir = _oscar_data_dir()
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Build a human label from detected years in filenames
+        years = set()
+        for sf in stored_files:
+            import re as _re
+            m = _re.search(r"20\d{2}", sf["name"])
+            if m:
+                years.add(m.group())
+        years_str = "-".join(sorted(years)) if years else ts[:8]
+        label = f"Session {years_str}  ({len(stored_files)} fichiers)"
+        zip_name = f"session_{ts}.zip"
+        zip_path = data_dir / zip_name
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for sf in stored_files:
+                zf.writestr(sf["name"], sf["data"])
+
+        idx_path = _recent_index_path()
+        sessions = load_recent_sessions()
+        # Remove duplicate (same set of filenames)
+        file_set = {sf["name"] for sf in stored_files}
+        sessions = [s for s in sessions if set(s.get("files", [])) != file_set]
+        sessions.insert(0, {
+            "label": label,
+            "zip_path": str(zip_path),
+            "date": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            "files": [sf["name"] for sf in stored_files],
+            "count": len(stored_files),
+        })
+        sessions = sessions[:10]
+        with open(idx_path, "w", encoding="utf-8") as f:
+            json.dump(sessions, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass  # Never crash the app over recent-files bookkeeping
+
+
+def restore_recent_session(session: dict) -> list:
+    """Load stored_files list from a saved session ZIP."""
+    result = []
+    try:
+        with zipfile.ZipFile(session["zip_path"], "r") as zf:
+            for name in zf.namelist():
+                result.append({"name": name, "data": zf.read(name)})
+    except Exception:
+        pass
+    return result
+
+
+def delete_recent_session(zip_path: str) -> None:
+    """Remove a session from disk and from the index."""
+    try:
+        Path(zip_path).unlink(missing_ok=True)
+    except Exception:
+        pass
+    idx_path = _recent_index_path()
+    sessions = load_recent_sessions()
+    sessions = [s for s in sessions if s["zip_path"] != zip_path]
+    try:
+        with open(idx_path, "w", encoding="utf-8") as f:
+            json.dump(sessions, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
 
 # =====================================================
 # CONFIGURATION & MAPPING - 4-level structure
@@ -763,6 +883,21 @@ def get_css():
             overflow-y: auto !important;
         }
         
+        /* ── Hide Streamlit chrome (toolbar, deploy, rerun, hamburger menu) ── */
+        [data-testid="stToolbar"],
+        [data-testid="stDecoration"],
+        [data-testid="stStatusWidget"],
+        .stDeployButton,
+        #MainMenu,
+        footer {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        /* Remove the top padding left by the hidden header */
+        .block-container {
+            padding-top: 1.5rem !important;
+        }
+
         /* ── Print / PDF export styles ── */
         @media print {
             /* Hide Streamlit chrome & interactive controls */
@@ -3411,7 +3546,37 @@ with st.sidebar:
             st.caption(t('or_upload_files'))
         else:
             st.caption(t('sedi_semesters'))
-        
+
+        # ── Fichiers récents ──────────────────────────────────────────────────
+        recent_sessions = load_recent_sessions()
+        if recent_sessions:
+            st.markdown("**📂 Fichiers récents**")
+            for i, session in enumerate(recent_sessions):
+                col_btn, col_del = st.columns([5, 1])
+                with col_btn:
+                    btn_label = f"**{session['label']}**\n\n_{session['date']}_"
+                    if st.button(
+                        f"📂  {session['label']}  ·  {session['date']}",
+                        key=f"recent_{i}",
+                        use_container_width=True,
+                        help="\n".join(session.get("files", []))
+                    ):
+                        restored = restore_recent_session(session)
+                        if restored:
+                            st.session_state.stored_files = restored
+                            if 'processed_data' in st.session_state:
+                                del st.session_state.processed_data
+                            if 'file_info' in st.session_state:
+                                del st.session_state.file_info
+                            st.rerun()
+                        else:
+                            st.error("Impossible de charger cette session.")
+                with col_del:
+                    if st.button("🗑", key=f"del_recent_{i}", help="Supprimer de l'historique"):
+                        delete_recent_session(session["zip_path"])
+                        st.rerun()
+            st.markdown("---")
+
         raw_uploaded_files = st.file_uploader(
             t('drag_files'), type=['xlsx', 'xls', 'zip', 'csv'], accept_multiple_files=True,
             help="export AEC semestre X YYYY SEDE.xlsx ou exports_AEC.zip",
@@ -3464,6 +3629,8 @@ with st.sidebar:
                             'name': f.name,
                             'data': f.read()
                         })
+                # ── Save to recent files (persists across app restarts) ──
+                save_recent_session(st.session_state.stored_files)
         
         # If no new upload, try to use stored files from session state
         if not uploaded_files and 'stored_files' in st.session_state and st.session_state.stored_files:

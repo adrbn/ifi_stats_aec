@@ -1,0 +1,14 @@
+[global]
+developmentMode = false
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+enableStaticServing = false
+
+[browser]
+gatherUsageStats = false
+
+[logger]
+level = "error"

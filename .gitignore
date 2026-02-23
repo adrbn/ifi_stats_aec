@@ -21,9 +21,18 @@ ENV/
 exports/
 AEC_exports/
 
-# Exception: Le fichier de mapping des catégories DOIT être versionné
-# car il contient la configuration métier, pas des données sensibles
-# AUCUN fichier de données personnelles (ZIP, Excel) ne doit être poussé
-!data/
-data/*
-!data/category_mapping.csv
+# ── OSCAR build outputs ───────────────────────────────────────────────────────
+dist/
+build/OSCAR/
+build/OSCAR.app/
+build/icons/
+*.spec.bak
+AppDir/
+
+# ── OSCAR licensing — NEVER commit the private key ───────────────────────────
+oscar_private_key.pem
+*.lic
+
+# ── PyInstaller ───────────────────────────────────────────────────────────────
+*.manifest
+*.spec.log
