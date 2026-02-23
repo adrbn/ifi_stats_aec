@@ -1,20 +1,8 @@
-# Dashboard AEC - Dépendances
-# ─── Core dashboard ───────────────────────────────────────────
+# Dashboard AEC - Dépendances Streamlit Cloud
+# (utilisé par Streamlit Cloud — ne PAS ajouter de paquets desktop ici)
 streamlit>=1.28.0
 pandas>=2.0.0
 openpyxl>=3.1.0
 plotly>=5.17.0
 numpy>=1.24.0
-
-# ─── Desktop packaging ────────────────────────────────────────
-pywebview>=4.4.1          # Native window wrapper (replaces browser tab)
-cryptography>=41.0.0      # RSA license validation
-
-# ─── Build tools (install separately before building) ─────────
-# pyinstaller>=6.0.0      # pip install pyinstaller
-# pillow>=10.0.0          # pip install pillow  (icon conversion)
-
-# ─── Previously listed (kept for compatibility) ───────────────
-playwright>=1.40.0
 requests>=2.28.0
-customtkinter>=5.2.0
