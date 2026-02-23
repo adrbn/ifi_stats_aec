@@ -163,6 +163,11 @@ def main():
     # ── 4. Start Streamlit server ────────────────────────────────────────────
     script_path = resource_path("dashboard_aec_v2.py")
 
+    # Signal to the dashboard that it runs inside the desktop app:
+    # the license check above already validated the user, so the login page is skipped.
+    os.environ["OSCAR_DESKTOP_MODE"] = "1"
+    os.environ["OSCAR_LICENSE_CUSTOMER"] = license_info.customer or "OSCAR"
+
     server = multiprocessing.Process(
         target=_streamlit_worker,
         args=(script_path, port),

@@ -651,7 +651,12 @@ def _load_users() -> dict:
 USERS = _load_users()
 
 if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+    # Desktop mode: la licence a déjà validé l'accès — on bypass le login
+    if os.environ.get("OSCAR_DESKTOP_MODE") == "1":
+        st.session_state.authenticated = True
+        st.session_state.user_name = os.environ.get("OSCAR_LICENSE_CUSTOMER", "OSCAR")
+    else:
+        st.session_state.authenticated = False
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 
@@ -3488,17 +3493,18 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # User info + logout
+    # User info (+ logout uniquement sur Streamlit Cloud)
     st.markdown(f"""
     <div style="background:#f1f5f9; border-radius:8px; padding:6px 10px; margin-top:8px;
                 display:flex; align-items:center; justify-content:space-between;">
         <span style="font-size:0.75rem; color:#475569;">👤 {st.session_state.user_name}</span>
     </div>
     """, unsafe_allow_html=True)
-    if st.button("Déconnexion", key="logout_btn", type="secondary", use_container_width=True):
-        st.session_state.authenticated = False
-        st.session_state.user_name = ""
-        st.rerun()
+    if os.environ.get("OSCAR_DESKTOP_MODE") != "1":
+        if st.button("Déconnexion", key="logout_btn", type="secondary", use_container_width=True):
+            st.session_state.authenticated = False
+            st.session_state.user_name = ""
+            st.rerun()
     
     st.markdown("---")
     
