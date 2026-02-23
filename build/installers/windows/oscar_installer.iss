@@ -37,9 +37,6 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ; Icon
 SetupIconFile=..\..\..\build\icons\oscar.ico
 UninstallDisplayIcon={app}\OSCAR.exe
-; Installer branding
-WizardImageFile=..\..\..\build\installer_banner.bmp
-WizardSmallImageFile=..\..\..\build\installer_small.bmp
 ; Don't require admin rights for per-user install
 CreateUninstallRegKey=yes
 
