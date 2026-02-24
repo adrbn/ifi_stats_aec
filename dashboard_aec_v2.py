@@ -664,7 +664,6 @@ def _login_page():
     """Affiche la page de connexion."""
     st.markdown("""
     <style>
-        [data-testid="stSidebar"] { display: none !important; }
         .login-box {
             max-width: 400px; margin: 8vh auto; padding: 2.5rem;
             background: white; border-radius: 16px;
@@ -901,12 +900,6 @@ def get_css():
         /* Remove the top padding left by the hidden header */
         .block-container {
             padding-top: 1.5rem !important;
-        }
-        /* Force sidebar visible — counteracts the login page's display:none that
-           can persist in Streamlit's virtual DOM after st.rerun() */
-        [data-testid="stSidebar"] {
-            display: flex !important;
-            visibility: visible !important;
         }
 
         /* ── Print / PDF export styles ── */
