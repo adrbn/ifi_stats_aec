@@ -603,6 +603,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Sidebar placeholder — must exist on every render (incl. login page) so the
+# sidebar container is never destroyed between reruns.
+_sidebar_placeholder = st.sidebar.empty()
+
 # =====================================================
 # AUTHENTICATION
 # =====================================================
