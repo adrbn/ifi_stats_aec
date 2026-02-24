@@ -665,6 +665,7 @@ def _login_page():
     """Affiche la page de connexion."""
     st.markdown("""
     <style>
+        [data-testid="stSidebar"] { display: none !important; }
         .login-box {
             max-width: 400px; margin: 8vh auto; padding: 2.5rem;
             background: white; border-radius: 16px;
