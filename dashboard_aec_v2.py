@@ -927,6 +927,28 @@ def get_css():
             padding-top: 1.5rem !important;
         }
 
+        /* ── Sidebar collapse/expand button — ALWAYS visible ── */
+        [data-testid="stSidebarCollapsedControl"] {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 999999 !important;
+            pointer-events: auto !important;
+        }
+        /* Also ensure the button inside is clickable */
+        [data-testid="stSidebarCollapsedControl"] button {
+            display: inline-flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        /* Ensure sidebar nav button (collapse arrow inside sidebar) stays visible */
+        [data-testid="stSidebarNavLink"],
+        [data-testid="stSidebarNav"],
+        button[kind="headerNoPadding"] {
+            visibility: visible !important;
+        }
+
         /* ── Print / PDF export styles ── */
         @media print {
             /* Hide Streamlit chrome & interactive controls */
