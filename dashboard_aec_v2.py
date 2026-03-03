@@ -693,29 +693,13 @@ if "user_name" not in st.session_state:
 
 def _login_page():
     """Affiche la page de connexion."""
-    # Hide sidebar via CSS — use visibility:hidden + width:0 instead of display:none
-    # so Streamlit still registers sidebar content and will show it properly after rerun
+    # Hide sidebar completely during login.
+    # This CSS only exists in the login render; after st.rerun() on successful
+    # login, _login_page() is never called so this CSS simply doesn't exist.
     st.markdown("""
     <style>
-        [data-testid="stSidebar"] {
-            visibility: hidden !important;
-            width: 0px !important;
-            min-width: 0px !important;
-        }
+        [data-testid="stSidebar"] { display: none !important; }
         [data-testid="stSidebarCollapsedControl"] { display: none !important; }
-        .login-box {
-            max-width: 400px; margin: 8vh auto; padding: 2.5rem;
-            background: white; border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-            text-align: center;
-        }
-        .login-title {
-            font-size: 2rem; font-weight: 800; letter-spacing: 0.15em;
-            color: #1a1a1a; margin-bottom: 0.2rem; text-align: center;
-        }
-        .login-sub {
-            font-size: 0.75rem; color: #64748b; margin-bottom: 2rem; text-align: center;
-        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -728,8 +712,8 @@ def _login_page():
             _lb = _b64_login.b64encode(_fl.read()).decode()
         st.markdown(f'<div style="text-align:center;margin-top:6vh;"><img src="data:image/png;base64,{_lb}" style="width:120px;"></div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="login-title">OSCAR</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-sub">Outil de Suivi des Cours et d\'Analyse du Réseau</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:2rem;font-weight:800;letter-spacing:0.15em;color:#1a1a1a;text-align:center;">OSCAR</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:0.75rem;color:#64748b;text-align:center;margin-bottom:2rem;">Outil de Suivi des Cours et d\'Analyse du Réseau</div>', unsafe_allow_html=True)
 
     col_l, col_form, col_r = st.columns([1, 2, 1])
     with col_form:
@@ -754,31 +738,6 @@ def _login_page():
 if not st.session_state.authenticated:
     _login_page()
     st.stop()
-
-# --- Ensure sidebar is visible after authentication ---
-# Streamlit may remember a collapsed sidebar from a previous render where CSS hid it.
-# Force it open via an early sidebar element + JS to click expand if collapsed.
-st.sidebar.markdown("")  # create sidebar container early
-
-# Use JS to programmatically expand sidebar if it's collapsed
-import streamlit.components.v1 as _stc_sidebar
-_stc_sidebar.html("""
-<script>
-(function() {
-    function expandSidebar() {
-        var doc = window.parent.document;
-        var sb = doc.querySelector('[data-testid="stSidebar"]');
-        if (sb && sb.getAttribute('aria-expanded') === 'false') {
-            var btn = doc.querySelector('[data-testid="stSidebarCollapsedControl"] button');
-            if (btn) { btn.click(); return; }
-        }
-        // If sidebar not found yet, retry after a short delay
-        if (!sb) { setTimeout(expandSidebar, 200); }
-    }
-    expandSidebar();
-})();
-</script>
-""", height=0)
 
 # =====================================================
 # SESSION STATE INITIALIZATION
@@ -3552,38 +3511,37 @@ if os.path.exists(DATA_DIR):
 HAS_PRELOADED_DATA = bool(PRELOADED_FILES) or bool(PRELOADED_CLIENTS) or bool(PRELOADED_PRODUITS)
 
 with st.sidebar:
-    # IFI Logo + O.S.C.A.R. header (fixed top-left)
+    # ── Branding ──
     import base64 as _b64
     _logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "IFI_noir_logo.png")
     _logo_html = ""
     if os.path.exists(_logo_path):
         with open(_logo_path, "rb") as _f:
             _logo_b64 = _b64.b64encode(_f.read()).decode()
-        _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="width:90px; display:block; margin-bottom:16px;">'
+        _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="width:70px; display:block; margin-bottom:8px;">'
     st.markdown(f"""
-    <div style="padding: 0; text-align:left;">
+    <div style="padding:0; text-align:left;">
     {_logo_html}
-    <div style="font-size:1.5rem; font-weight:800; letter-spacing:0.15em; color:#1a1a1a; line-height:1.2;">O.S.C.A.R.</div>
-    <div style="font-size:0.6rem; color:#64748b; margin-top:1px;">Outil de suivi des cours et d'analyse du réseau</div>
+    <div style="font-size:1.3rem; font-weight:800; letter-spacing:0.12em; color:#1a1a1a; line-height:1.2;">O.S.C.A.R.</div>
+    <div style="font-size:0.55rem; color:#94a3b8; margin-top:2px;">Outil de Suivi des Cours et d'Analyse du Réseau</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # User info (+ logout uniquement sur Streamlit Cloud)
-    st.markdown(f"""
-    <div style="background:#f1f5f9; border-radius:8px; padding:6px 10px; margin-top:8px;
-                display:flex; align-items:center; justify-content:space-between;">
-        <span style="font-size:0.75rem; color:#475569;">👤 {st.session_state.user_name}</span>
-    </div>
-    """, unsafe_allow_html=True)
-    if os.environ.get("OSCAR_DESKTOP_MODE") != "1":
-        if st.button("Déconnexion", key="logout_btn", type="secondary", use_container_width=True):
-            st.session_state.authenticated = False
-            st.session_state.user_name = ""
-            _clear_persistent_login()
-            st.rerun()
-    
+    # ── Utilisateur + déconnexion ──
+    _user_col, _logout_col = st.columns([3, 2])
+    with _user_col:
+        st.markdown(f"<span style='font-size:0.8rem;color:#475569;'>👤 {st.session_state.user_name}</span>", unsafe_allow_html=True)
+    with _logout_col:
+        if os.environ.get("OSCAR_DESKTOP_MODE") != "1":
+            if st.button("Déconnexion", key="logout_btn", type="secondary", use_container_width=True):
+                st.session_state.authenticated = False
+                st.session_state.user_name = ""
+                _clear_persistent_login()
+                st.rerun()
+
     st.markdown("---")
-    
+
+    # ── Chargement des données ──
     with st.expander(t('load_files'), expanded=True):
         # Show preloaded files section if available
         if HAS_PRELOADED_DATA:
@@ -3780,16 +3738,17 @@ with st.sidebar:
                 st.rerun()
     
     if uploaded_files:
-        with st.expander(t('files_detected'), expanded=True):
-            # Show count badge
-            st.success(f"{len(uploaded_files)} {t('files')}")
-            
+        with st.expander(f"📂 {len(uploaded_files)} fichiers chargés", expanded=False):
             # Build tree structure: Year > Semester > Sede
             file_tree = {}
             csv_files = []
+            produits_files = []
             for f in uploaded_files:
                 if f.name.lower().endswith('.csv'):
                     csv_files.append(f.name)
+                    continue
+                if 'produit' in f.name.lower():
+                    produits_files.append(f.name)
                     continue
                 sede, sem, year = detect_from_filename(f.name)
                 if sede and year:
@@ -3798,43 +3757,29 @@ with st.sidebar:
                     sem_key = sem if sem else "annuel"
                     file_tree[year][sem_key].append(sede)
             
-            # Display category report files as tree
-            for year in sorted(file_tree.keys(), reverse=True):
-                st.markdown(f"**{year}**")
-                sem_labels = {"sem1": t('semester1'), "sem2": t('semester2'), "annuel": "Année complète"}
-                for sem_key in ["sem1", "sem2", "annuel"]:
-                    sedi_list = file_tree[year].get(sem_key, [])
-                    if sedi_list:
-                        sedi_str = " • ".join([f"{s}" for s in sorted(sedi_list)])
-                        st.caption(f"{sem_labels[sem_key]}: {sedi_str}")
-                    elif sem_key != "annuel":
-                        st.caption(f"{sem_labels[sem_key]}: - (aucun fichier)")
-            
-            # Show CSV fiches/profils files
+            # Category reports
+            if file_tree:
+                st.markdown("**Catégories**")
+                for year in sorted(file_tree.keys(), reverse=True):
+                    sem_labels = {"sem1": "S1", "sem2": "S2", "annuel": "Annuel"}
+                    parts = []
+                    for sem_key in ["sem1", "sem2", "annuel"]:
+                        sedi_list = file_tree[year].get(sem_key, [])
+                        if sedi_list:
+                            parts.append(f"{sem_labels[sem_key]}: {', '.join(sorted(sedi_list))}")
+                    st.caption(f"**{year}** — {' | '.join(parts)}")
             if csv_files:
-                st.markdown(f"**Fichiers CSV:**")
-                for fname in csv_files:
-                    st.caption(f"{fname}")
-            
-            # Show produits/other Excel files (detected by name pattern)
-            produits_files = [f.name for f in uploaded_files
-                             if not f.name.lower().endswith('.csv')
-                             and 'produit' in f.name.lower()]
-            other_excel = [f.name for f in uploaded_files
-                          if not f.name.lower().endswith('.csv')
-                          and 'produit' not in f.name.lower()
-                          and (not detect_from_filename(f.name)[0] or not detect_from_filename(f.name)[2])]
-            
+                st.markdown("**Clients**")
+                for fn in csv_files:
+                    st.caption(fn)
             if produits_files:
-                st.markdown(f"**Fichiers produits:**")
-                for fname in produits_files:
-                    st.caption(f"{fname}")
-            
-            # Show truly undetected files
-            if other_excel:
-                st.markdown("**Fichiers non reconnus:**")
-                for fname in other_excel:
-                    st.caption(f"{fname}")
+                st.markdown("**Produits**")
+                for fn in produits_files:
+                    st.caption(fn)
+
+    # ── Infos ──
+    st.markdown("---")
+    st.caption("O.S.C.A.R. v3.0 · Institut français Italia")
 
 # Default year fallback (when not detected from filename)
 default_year = 2025
