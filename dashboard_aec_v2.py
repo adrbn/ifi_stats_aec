@@ -510,6 +510,7 @@ TRANSLATIONS = {
         "profils_nb_antennes": "Nb antennes",
         "profils_pct_f": "% Femmes",
         "profils_pct_m": "% Hommes",
+        "profils_pct_ns": "% Non spécifié",
         "profils_avg_age": "Âge moyen",
         "profils_median_age": "Âge médian",
         "profils_min_age": "Âge min",
@@ -2361,6 +2362,11 @@ def process_profils_clients(df):
             df["Année_Creation"] = df["Date_Inscription_parsed"].dt.year
             df["Mois_Creation"] = df["Date_Inscription_parsed"].dt.month
     
+    # Clean Genre: map 'O' and NaN to 'Non spécifié'
+    if "Genre" in df.columns:
+        df["Genre"] = df["Genre"].fillna("Non spécifié")
+        df["Genre"] = df["Genre"].replace({"O": "Non spécifié"})
+
     # Compute semester from month
     if "Mois_Creation" in df.columns:
         df["Semestre"] = df["Mois_Creation"].apply(lambda m: 1 if pd.notna(m) and 1 <= m <= 8 else (2 if pd.notna(m) else None))
@@ -2548,16 +2554,18 @@ def render_profils_tabs(df_profils):
         genre_counts = df_p["Genre"].value_counts() if "Genre" in df_p.columns else pd.Series(dtype=int)
         nb_f = int(genre_counts.get("F", 0))
         nb_m = int(genre_counts.get("M", 0))
+        nb_ns = int(genre_counts.get("Non spécifié", 0))
         
         # Age stats
         age_mean = df_p["Age_Clean"].mean() if "Age_Clean" in df_p.columns else 0
         
-        c1, c2, c3, c4, c5 = st.columns(5)
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
         c1.metric(t('profils_nb_clients'), f"{nb_clients:,}")
         c2.metric(t('profils_nb_antennes'), f"{nb_antennes}")
         c3.metric(t('profils_pct_f'), f"{nb_f / nb_clients * 100:.1f}%" if nb_clients > 0 else "0%")
         c4.metric(t('profils_pct_m'), f"{nb_m / nb_clients * 100:.1f}%" if nb_clients > 0 else "0%")
-        c5.metric(t('profils_avg_age'), f"{age_mean:.1f}" if pd.notna(age_mean) else "N/A")
+        c5.metric(t('profils_pct_ns'), f"{nb_ns / nb_clients * 100:.1f}%" if nb_clients > 0 else "0%")
+        c6.metric(t('profils_avg_age'), f"{age_mean:.1f}" if pd.notna(age_mean) else "N/A")
         
         st.markdown("---")
         
@@ -2769,7 +2777,7 @@ def render_profils_tabs(df_profils):
             fig_gender = px.bar(
                 gender_sede_data, x="Sede", y="Nb", color="Genre",
                 barmode="group", title=t('profils_gender_by_sede'),
-                color_discrete_map={"F": "#ec4899", "M": "#3b82f6", "O": "#a855f7"}
+                color_discrete_map={"F": "#ec4899", "M": "#3b82f6", "Non spécifié": "#a855f7"}
             )
             fig_gender.update_layout(margin=dict(l=20, r=20, t=40, b=20))
             st.plotly_chart(fig_gender, use_container_width=True)
