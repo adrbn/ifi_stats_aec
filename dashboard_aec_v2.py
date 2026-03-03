@@ -651,21 +651,58 @@ def _load_users() -> dict:
 
 USERS = _load_users()
 
+# --- Persistent login via query params (survives page refresh) ---
+import hmac as _hmac_mod
+_PERSIST_SECRET = b"oscar_aec_persist_2026"
+
+def _make_login_token(username):
+    return _hmac_mod.new(_PERSIST_SECRET, username.encode(), hashlib.sha256).hexdigest()[:20]
+
+def _check_persistent_login():
+    """Restore session from URL query params if valid token present."""
+    params = st.query_params
+    u = params.get("u", "")
+    tk = params.get("t", "")
+    if u and tk and _hmac_mod.compare_digest(_make_login_token(u), tk):
+        # Find the user's display name
+        user = USERS.get(u)
+        display_name = user["name"] if user else u
+        st.session_state.authenticated = True
+        st.session_state.user_name = display_name
+        return True
+    return False
+
+def _set_persistent_login(username):
+    st.query_params["u"] = username
+    st.query_params["t"] = _make_login_token(username)
+
+def _clear_persistent_login():
+    st.query_params.clear()
+
 if "authenticated" not in st.session_state:
     # Desktop mode: la licence a déjà validé l'accès — on bypass le login
     if os.environ.get("OSCAR_DESKTOP_MODE") == "1":
         st.session_state.authenticated = True
         st.session_state.user_name = os.environ.get("OSCAR_LICENSE_CUSTOMER", "OSCAR")
     else:
-        st.session_state.authenticated = False
+        # Try restoring from persistent login (query params)
+        if not _check_persistent_login():
+            st.session_state.authenticated = False
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 
 def _login_page():
     """Affiche la page de connexion."""
+    # Hide sidebar via CSS — use visibility:hidden + width:0 instead of display:none
+    # so Streamlit still registers sidebar content and will show it properly after rerun
     st.markdown("""
     <style>
-        [data-testid="stSidebar"] { display: none !important; }
+        [data-testid="stSidebar"] {
+            visibility: hidden !important;
+            width: 0px !important;
+            min-width: 0px !important;
+        }
+        [data-testid="stSidebarCollapsedControl"] { display: none !important; }
         .login-box {
             max-width: 400px; margin: 8vh auto; padding: 2.5rem;
             background: white; border-radius: 16px;
@@ -706,6 +743,7 @@ def _login_page():
                 if user and user["password_hash"] == _hash_pw(password):
                     st.session_state.authenticated = True
                     st.session_state.user_name = user["name"]
+                    _set_persistent_login(username.strip().lower())
                     st.rerun()
                 else:
                     st.error("Identifiant ou mot de passe incorrect.")
@@ -734,6 +772,19 @@ if not st.session_state.authenticated:
 if not st.session_state.authenticated:
     _login_page()
     st.stop()
+
+# --- Force sidebar visible after authentication ---
+st.markdown("""
+<style>
+    [data-testid="stSidebar"] {
+        visibility: visible !important;
+        display: flex !important;
+        width: auto !important;
+        min-width: 245px !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] { display: flex !important; }
+</style>
+""", unsafe_allow_html=True)
 
 # =====================================================
 # SESSION STATE INITIALIZATION
@@ -3534,6 +3585,7 @@ with st.sidebar:
         if st.button("Déconnexion", key="logout_btn", type="secondary", use_container_width=True):
             st.session_state.authenticated = False
             st.session_state.user_name = ""
+            _clear_persistent_login()
             st.rerun()
     
     st.markdown("---")
