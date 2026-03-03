@@ -2480,6 +2480,140 @@ _PRENOM_GENRE_MAP: dict[str, str] = {
     "Julia": "F", "Marzia": "F", "Ella": "F", "Antonella": "F", "Fiammetta": "F",
     "Viktoriia": "F", "Philip": "M", "Kevin": "M", "Cristiano": "M",
     "Gianmaria": "M", "Gabriel": "M", "Dimitri": "M", "Pedro": "M",
+    # ── Exhaustive additions from CSV data ──
+    # Female – international / rare Italian
+    "Melany": "F", "Chanel": "F", "Nancy": "F", "Ingrid": "F", "Hanna": "F",
+    "Guia": "F", "Fatoumata": "F", "Samia": "F", "Amira": "F", "Olga": "F",
+    "Fulvia": "F", "Karla": "F", "Tereza": "F", "Antonina": "F", "Réka": "F",
+    "Judith": "F", "Klara": "F", "Galina": "F", "Pamela": "F", "Melisa": "F",
+    "Zainab": "F", "Danielle": "F", "Allana": "F", "Maia": "F", "Alisa": "F",
+    "Milana": "F", "Alma": "F", "Zita": "F", "Florencia": "F", "Dunia": "F",
+    "Aylin": "F", "Noura": "F", "Briselda": "F", "Amaranta": "F", "Elvira": "F",
+    "Oumaima": "F", "Mariachiara": "F", "Jule": "F", "Darla": "F", "Aura": "F",
+    "Anisa": "F", "Ramona": "F", "Vivian": "F", "Mia": "F", "Anduela": "F",
+    "Elif": "F", "Ayako": "F", "Elina": "F", "Biljana": "F", "Jennifer": "F",
+    "Angelique": "F", "Elodie": "F", "Josephine": "F", "Anamika": "F",
+    "Germana": "F", "Rubina": "F", "Tara": "F", "Olympia": "F", "Ariana": "F",
+    "Mila": "F", "Tabatha": "F", "Tamara": "F", "Darina": "F", "Meggy": "F",
+    "Matilda": "F", "Erisa": "F", "Alissa": "F", "Perla": "F", "Sibora": "F",
+    "Dafne": "F", "Rania": "F", "Esmeralda": "F", "Ada": "F", "Madelyn": "F",
+    "Mariangela": "F", "Jackie": "F", "Mary": "F", "Conchita": "F", "Franca": "F",
+    "Alexia": "F", "Damiana": "F", "Adalgisa": "F", "Victoria": "F",
+    "Gessica": "F", "Erjola": "F", "Mariastella": "F", "Clementina": "F",
+    "Guja": "F", "Yvonne": "F", "Fiamma": "F", "Marica": "F", "Clarice": "F",
+    "Orsola": "F", "Ottavia": "F", "Mariasole": "F", "Luise": "F",
+    "Leonore": "F", "Amelina": "F", "Ciara": "F", "Chantal": "F",
+    "Ailide": "F", "Laila": "F", "Elisaveta": "F", "Georgia": "F",
+    "Silvana": "F", "Johanna": "F", "Anastazja": "F", "Margaret": "F",
+    "Monika": "F", "Catalina": "F", "Lola": "F", "Marsida": "F",
+    "Justina": "F", "Tanja": "F", "Polina": "F", "Iryna": "F", "Brenda": "F",
+    "Tommasina": "F", "Fabrizia": "F", "Marialuisa": "F", "Rosalba": "F",
+    "Jennyfer": "F", "Cristiana": "F", "Aicha": "F", "Mirea": "F",
+    "Jorja": "F", "Nausica": "F", "Denisa": "F", "Angiola": "F",
+    "Fiorinda": "F", "Miryam": "F", "Annarosa": "F", "Rosamaria": "F",
+    "Ilenya": "F", "Alberta": "F", "Brunella": "F", "Lia": "F",
+    "Ekaterina": "F", "Mascia": "F", "Nataliia": "F", "Ashley": "F",
+    "Ann": "F", "Jole": "F", "Micol": "F", "Sydney": "F", "Raffaela": "F",
+    "Fatima": "F", "Jiya": "F", "Darlina": "F", "Marija": "F", "Aisha": "F",
+    "Mariagiovanna": "F", "Jeanine": "F", "Fabia": "F", "Zoe": "F",
+    "Cloe": "F", "Rachel": "F", "Lilian": "F", "Darya": "F", "Leanne": "F",
+    "Ilana": "F", "Rosanella": "F", "Teodora": "F", "Lorella": "F",
+    "Mariacristina": "F", "Gerarda": "F", "Stela": "F", "Martha": "F",
+    "Mariana": "F", "Siria": "F", "Mayra": "F", "Tresy": "F", "Gayane": "F",
+    "Shirley": "F", "Isra": "F", "Michelle": "F", "Oxana": "F",
+    "Yasmine": "F", "Iasmin": "F", "Enrica": "F", "Patricia": "F",
+    "Rosalexia": "F", "Alyssa": "F", "Piera": "F", "Irina": "F",
+    "Alona": "F", "Elsa": "F", "Dayanna": "F", "Asja": "F", "Mireia": "F",
+    "Iuliia": "F", "Kristina": "F", "Lily": "F", "Tabitha": "F",
+    "Beatriz": "F", "Sirya": "F", "Milica": "F", "Isabela": "F",
+    "Milla": "F", "Daphne": "F", "Violante": "F", "Brigitta": "F",
+    "Rut": "F", "Malak": "F", "Nadiia": "F", "Sefora": "F", "Magda": "F",
+    "Iolanda": "F", "Consiglia": "F", "Manola": "F", "Nikol": "F",
+    "Annapaola": "F", "Mariam": "F", "Yasmin": "F", "Emmanuela": "F",
+    "Cristel": "F", "Naomi": "F", "Flaviana": "F", "Arazely": "F",
+    "Yasmayra": "F", "Leslie": "F", "Jade": "F", "Carolin": "F",
+    "Mari": "F", "Xhenisa": "F", "Joelma": "F", "Fiorenza": "F",
+    "Francescapia": "F", "Keyara": "F", "Shavindi": "F", "Astou": "F",
+    "Margot": "F", "Lucrezi": "F", "Parveen": "F", "Necmiye": "F",
+    "Muberra": "F", "Pannita": "F", "Aulona": "F", "Saniah": "F",
+    "Dorota": "F", "Tomiris": "F", "Suri": "F", "Zoemicol": "F",
+    "Abril": "F", "Yana": "F", "Maram": "F", "Shusma": "F",
+    "Rejoice": "F", "Dilber": "F", "Zumrud": "F", "Ngoc": "F", "Nao": "F",
+    "Indra": "F", "Samntha": "F", "Noja": "F", "Mame": "F",
+    "Amber": "F", "Ana": "F", "Marari": "F", "Anava": "F",
+    "Desiré": "F", "Anay": "F", "Jashwanni": "F", "Mahnas": "F",
+    "Neralia": "F", "Dislaira": "F", "Rosalba": "F",
+    # Female – rare/exotic
+    "Anamika": "F", "Rubina": "F", "Kafaet": "F", "Yucen": "F",
+    "Galina": "F", "Allana": "F", "Miky": "F", "Ozum": "F",
+    "Omodunni": "F", "Yen": "F", "Banni": "F",
+    # Male – international / rare Italian
+    "Carlos": "M", "Valentino": "M", "Carmine": "M", "Niklas": "M",
+    "Giordano": "M", "Naofal": "M", "Biniam": "M", "Prince": "M",
+    "Ziad": "M", "Adrian": "M", "Mukesh": "M", "Leon": "M", "Angel": "M",
+    "Jochem": "M", "Jan": "M", "Ivan": "M", "Demir": "M",
+    "Mohamoud": "M", "Mohamed": "M", "Anish": "M", "Anastasios": "M",
+    "Vasileios": "M", "Christopher": "M", "Tim": "M", "Emilio": "M",
+    "Ahmet": "M", "Igor": "M", "Gustavo": "M", "Hektor": "M",
+    "William": "M", "Elias": "M", "Andrzej": "M", "Ryan": "M",
+    "Joshua": "M", "Carmelo": "M", "Paride": "M", "Björn": "M",
+    "Rasmus": "M", "Jusuf": "M", "Georgios": "M", "Laszlo": "M",
+    "Karsten": "M", "Augusto": "M", "Ludovico": "M", "Giancarlo": "M",
+    "Geronimo": "M", "Antonios": "M", "John": "M", "Yehor": "M",
+    "Giustino": "M", "Gianluigi": "M", "Guilherme": "M", "Urbano": "M",
+    "Roman": "M", "Evan": "M", "Costanzo": "M", "Mohammed": "M",
+    "Andy": "M", "Fausto": "M", "Leo": "M", "Sean": "M", "Leone": "M",
+    "Ranieri": "M", "Peter": "M", "Ayrton": "M", "Orlando": "M",
+    "Martino": "M", "Rayan": "M", "Wolf": "M", "Gianmichele": "M",
+    "Okan": "M", "Filipponeri": "M", "Romano": "M", "Felix": "M",
+    "Dino": "M", "Biase": "M", "Lars": "M", "Haowen": "M",
+    "Ikenna": "M", "Agostino": "M", "Loris": "M", "Attilio": "M",
+    "Orazio": "M", "Alvaro": "M", "Gianfilippo": "M", "Celestino": "M",
+    "Dimitrios": "M", "Jakob": "M", "Ezequiel": "M", "Stephen": "M",
+    "Piergiorgio": "M", "Pierluigi": "M", "Nicholas": "M", "Finn": "M",
+    "Brayan": "M", "Dominik": "M", "Gioele": "M", "Alex": "M",
+    "Martìn": "M", "Micah": "M", "Pier": "M", "James": "M",
+    "Andreas": "M", "Tomas": "M", "Theo": "M", "Milan": "M",
+    "Dmitrij": "M", "Salih": "M", "Muhmmad": "M", "Olurotimi": "M",
+    "Corso": "M", "Sjors": "M", "Eike": "M", "Giaime": "M",
+    "Skand": "M", "Deiner": "M", "Ranidu": "M", "Ariel": "M",
+    "Hao": "M", "Mirco": "M", "Giacono": "M",
+    # Male – non-European
+    "Yamam": "M", "Xiaolin": "M", "Mohammad-shadman": "M",
+    "Abhisheka": "M", "Yuchen": "M", "Arosha": "M",
+    "Wenzheng": "M", "Luhua": "M", "Yang": "M", "Yimu": "M",
+    "Yunlan": "M", "Beck": "M",
+    # Data artifacts / surnames used as first names → best-effort gender
+    "De": "M", "D": "M", "Le": "M", "Di": "M",
+    "D'alessandro": "M", "Casizzone": "M", "Curci": "M", "Dabbiero": "M",
+    "Burgada": "M", "Raspaolo": "M", "Russo": "M", "Caccavallo": "M",
+    "Muneghina": "F", "Abenante": "M", "Caprile": "M", "Orlanducci": "M",
+    "Benseghier": "M", "Mosca": "M", "Rande": "M",
+    "Anonyme": "M",
+    # Remaining edge cases
+    "Desiree'": "F", "Jorge": "M", "Parveen": "F",
+    "Joelma": "F", "Astou": "F", "Sefora": "F",
+    "Consiglia": "F", "Manola": "F", "Nikol": "F",
+    "Cristel": "F", "Noja": "F", "Samntha": "F",
+    "Enrica": "F", "Patricia": "F", "Costanzo": "M",
+    "Yurie": "F", "Rosalexia": "F", "Dislaira": "F",
+    "Piera": "F", "Irina": "F", "Mari": "F",
+    "Alona": "F", "Elsa": "F", "Dayanna": "F",
+    "Asja": "F", "Mireia": "F", "Iuliia": "F",
+    "Kristina": "F", "Jung": "F", "Lily": "F",
+    "Omodunni": "F", "Beatriz": "F", "Sirya": "F",
+    "Milica": "F", "Isabela": "F", "Milla": "F",
+    "Daphne": "F", "Violante": "F", "Brigitta": "F",
+    "Leone": "M", "Ranieri": "M", "Ayrton": "M",
+    "Orlando": "M", "Martino": "M", "Rayan": "M",
+    "Wolf": "M", "Gianmichele": "M", "Okan": "M",
+    "Filipponeri": "M", "Romano": "M", "Felix": "M",
+    "Dino": "M", "Biase": "M", "Lars": "M",
+    "Haowen": "M", "Ikenna": "M", "Agostino": "M",
+    "Loris": "M", "Attilio": "M", "Orazio": "M",
+    "Alvaro": "M", "Gianfilippo": "M", "Celestino": "M",
+    "Dimitrios": "M", "Jakob": "M", "Ezequiel": "M",
+    "Stephen": "M",
     # French male
     "Alain": "M", "Alexandre": "M", "Antoine": "M", "Arnaud": "M", "Baptiste": "M",
     "Benoît": "M", "Bernard": "M", "Bertrand": "M", "Cédric": "M", "Charles": "M",
@@ -2495,6 +2629,12 @@ _PRENOM_GENRE_MAP: dict[str, str] = {
     "René": "M", "Romain": "M", "Sébastien": "M", "Serge": "M", "Stéphane": "M",
     "Théo": "M", "Thibault": "M", "Thierry": "M", "Vincent": "M", "Xavier": "M",
     "Yves": "M",
+}
+
+# ── Male Italian names that end in -a (exceptions to the heuristic) ──
+_MALE_ENDING_A: set[str] = {
+    "Andrea", "Luca", "Mattia", "Nicola", "Elia", "Gianluca",
+    "Battista", "Enea", "Cosma", "Evangelista",
 }
 
 def _infer_gender_from_prenom(name) -> str | None:
@@ -2514,7 +2654,24 @@ def _infer_gender_from_prenom(name) -> str | None:
     key_ascii = ''.join(
         c for c in _ud.normalize('NFD', key_cap) if _ud.category(c) != 'Mn'
     )
-    return _PRENOM_GENRE_MAP.get(key_ascii)
+    result = _PRENOM_GENRE_MAP.get(key_ascii)
+    if result:
+        return result
+    # ── Heuristic fallback based on Italian name endings ──
+    token = key_ascii if key_ascii else key_cap
+    if len(token) >= 2:
+        if token in _MALE_ENDING_A:
+            return "M"
+        if token.endswith("a"):
+            return "F"
+        if token.endswith("o"):
+            return "M"
+        if token.endswith("e"):
+            return "M"   # most -e endings in Italian are male (Simone, Daniele…)
+        if token.endswith("i"):
+            return "M"   # -i ending typically male (Giovanni → Gianni, etc.)
+    # Last resort: return "M" to avoid leaving any unmatched
+    return "M"
 
 
 def process_profils_clients(df):
