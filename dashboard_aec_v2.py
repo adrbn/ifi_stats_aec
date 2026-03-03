@@ -3484,16 +3484,25 @@ class DataAssistant:
 import os
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
-PRELOADED_FILES = {}
+PRELOADED_FILES = {}       # year -> zip path (category reports)
+PRELOADED_CLIENTS = []     # list of csv paths
+PRELOADED_PRODUITS = []    # list of xlsx paths
 
 if os.path.exists(DATA_DIR):
     for filename in os.listdir(DATA_DIR):
+        filepath = os.path.join(DATA_DIR, filename)
         if filename.endswith('.zip') and 'exports_AEC_' in filename:
             # Extract year from filename: exports_AEC_2024_annuel.zip -> 2024
             match = re.search(r'exports_AEC_(\d{4})_annuel\.zip', filename)
             if match:
                 year = match.group(1)
-                PRELOADED_FILES[year] = os.path.join(DATA_DIR, filename)
+                PRELOADED_FILES[year] = filepath
+        elif filename.endswith('.csv') and 'clients' in filename.lower():
+            PRELOADED_CLIENTS.append(filepath)
+        elif filename.endswith('.xlsx') and 'produits' in filename.lower():
+            PRELOADED_PRODUITS.append(filepath)
+
+HAS_PRELOADED_DATA = bool(PRELOADED_FILES) or bool(PRELOADED_CLIENTS) or bool(PRELOADED_PRODUITS)
 
 with st.sidebar:
     # IFI Logo + O.S.C.A.R. header (fixed top-left)
@@ -3529,38 +3538,76 @@ with st.sidebar:
     
     with st.expander(t('load_files'), expanded=True):
         # Show preloaded files section if available
-        if PRELOADED_FILES:
-            st.markdown(f"**{t('preloaded_files')}**")
-            available_years = sorted(PRELOADED_FILES.keys(), reverse=True)
-            
-            # Multi-select checkboxes for years
-            selected_years = []
-            cols = st.columns(len(available_years))
-            for idx, year in enumerate(available_years):
-                with cols[idx]:
-                    if st.checkbox(f"{year}", key=f"check_year_{year}", value=False):
-                        selected_years.append(year)
-            
-            # Load button - only show if at least one year selected
-            if selected_years:
-                if st.button(f"Charger {', '.join(sorted(selected_years))}", key="load_selected_years", use_container_width=True):
-                    # Load all selected years' ZIP files
+        if HAS_PRELOADED_DATA:
+            st.markdown(f"**📦 {t('preloaded_files')}**")
+
+            # --- Catégories (ZIP par année) ---
+            if PRELOADED_FILES:
+                st.markdown("**Catégories** (rapports par année)")
+                available_years = sorted(PRELOADED_FILES.keys(), reverse=True)
+                selected_years = []
+                cols = st.columns(len(available_years))
+                for idx, year in enumerate(available_years):
+                    with cols[idx]:
+                        if st.checkbox(f"{year}", key=f"check_year_{year}", value=True):
+                            selected_years.append(year)
+
+            # --- Clients ---
+            load_clients = False
+            if PRELOADED_CLIENTS:
+                load_clients = st.checkbox("Profils clients", key="check_clients", value=True,
+                                           help=f"{len(PRELOADED_CLIENTS)} fichier(s) disponible(s)")
+
+            # --- Produits ---
+            load_produits = False
+            if PRELOADED_PRODUITS:
+                load_produits = st.checkbox("Catalogue produits", key="check_produits", value=True,
+                                            help=f"{len(PRELOADED_PRODUITS)} fichier(s) — IFM, IFF, IFN, IFP")
+
+            # Single load button
+            anything_selected = (PRELOADED_FILES and selected_years) or (PRELOADED_CLIENTS and load_clients) or (PRELOADED_PRODUITS and load_produits)
+            if anything_selected:
+                if st.button("🚀 Charger les données sélectionnées", key="load_all_preloaded", use_container_width=True, type="primary"):
                     st.session_state.stored_files = []
-                    for year in selected_years:
-                        zip_path = PRELOADED_FILES[year]
-                        try:
-                            with open(zip_path, 'rb') as f:
-                                zip_data = f.read()
-                            with zipfile.ZipFile(BytesIO(zip_data), 'r') as zf:
-                                for name in zf.namelist():
-                                    if name.lower().endswith(('.xlsx', '.xls')) and not name.startswith('__MACOSX'):
-                                        file_data = zf.read(name)
-                                        st.session_state.stored_files.append({
-                                            'name': name.split('/')[-1],
-                                            'data': file_data
-                                        })
-                        except Exception as e:
-                            st.error(f"Erreur {year}: {e}")
+                    # Load category ZIPs
+                    if PRELOADED_FILES and selected_years:
+                        for year in selected_years:
+                            zip_path = PRELOADED_FILES[year]
+                            try:
+                                with open(zip_path, 'rb') as f:
+                                    zip_data = f.read()
+                                with zipfile.ZipFile(BytesIO(zip_data), 'r') as zf:
+                                    for name in zf.namelist():
+                                        if name.lower().endswith(('.xlsx', '.xls')) and not name.startswith('__MACOSX'):
+                                            file_data = zf.read(name)
+                                            st.session_state.stored_files.append({
+                                                'name': name.split('/')[-1],
+                                                'data': file_data
+                                            })
+                            except Exception as e:
+                                st.error(f"Erreur catégories {year}: {e}")
+                    # Load clients CSVs
+                    if PRELOADED_CLIENTS and load_clients:
+                        for csv_path in PRELOADED_CLIENTS:
+                            try:
+                                with open(csv_path, 'rb') as f:
+                                    st.session_state.stored_files.append({
+                                        'name': os.path.basename(csv_path),
+                                        'data': f.read()
+                                    })
+                            except Exception as e:
+                                st.error(f"Erreur clients: {e}")
+                    # Load produits XLSX
+                    if PRELOADED_PRODUITS and load_produits:
+                        for xlsx_path in PRELOADED_PRODUITS:
+                            try:
+                                with open(xlsx_path, 'rb') as f:
+                                    st.session_state.stored_files.append({
+                                        'name': os.path.basename(xlsx_path),
+                                        'data': f.read()
+                                    })
+                            except Exception as e:
+                                st.error(f"Erreur produits: {e}")
                     # Clear processed data to force reprocessing
                     if 'processed_data' in st.session_state:
                         del st.session_state.processed_data

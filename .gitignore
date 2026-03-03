@@ -14,14 +14,14 @@ ENV/
 # macOS
 .DS_Store
 
-# Data files (AUCUNE donnée sensible ne doit être poussée!)
+# Data files
 *.xlsx
 *.xls
 *.zip
 exports/
 AEC_exports/
 
-# ── OSCAR build outputs ───────────────────────────────────────────────────────
+# OSCAR build outputs
 dist/
 build/OSCAR/
 build/OSCAR.app/
@@ -29,10 +29,14 @@ build/icons/
 *.spec.bak
 AppDir/
 
-# ── OSCAR licensing — NEVER commit the private key ───────────────────────────
+# OSCAR licensing
 oscar_private_key.pem
 *.lic
 
-# ── PyInstaller ───────────────────────────────────────────────────────────────
+# PyInstaller
 *.manifest
 *.spec.log
+
+# Exception: data/ folder contains required dashboard data
+!data/
+!data/**
