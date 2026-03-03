@@ -599,7 +599,7 @@ def t(key):
 # =====================================================
 st.set_page_config(
     page_title="O.S.C.A.R.",
-    page_icon=None,
+    page_icon=os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon_curves.png"),
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -734,10 +734,6 @@ def _login_page():
                     st.error("Identifiant ou mot de passe incorrect.")
 
     st.markdown('<div style="text-align:center;color:#94a3b8;font-size:0.7rem;margin-top:2rem;">Accès réservé au personnel autorisé</div>', unsafe_allow_html=True)
-
-    # IFI logo en bas de la page de login
-    if _os_login.path.exists(_lp):
-        st.markdown(f'<div style="text-align:center;margin-top:4rem;"><img src="data:image/png;base64,{_lb}" style="width:60px;opacity:0.5;"></div>', unsafe_allow_html=True)
 
 # Afficher la page login si non authentifié
 if not st.session_state.authenticated:
