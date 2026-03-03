@@ -4147,16 +4147,15 @@ with st.sidebar:
         if HAS_PRELOADED_DATA:
             st.markdown(f"**📦 {t('preloaded_files')}**")
 
-            # --- Catégories (ZIP par année) ---
+            # --- Catégories / Cours (ZIP par année) ---
+            load_categories = False
             if PRELOADED_FILES:
-                st.markdown("**Catégories** (rapports par année)")
                 available_years = sorted(PRELOADED_FILES.keys(), reverse=True)
-                selected_years = []
-                cols = st.columns(len(available_years))
-                for idx, year in enumerate(available_years):
-                    with cols[idx]:
-                        if st.checkbox(f"{year}", key=f"check_year_{year}", value=True):
-                            selected_years.append(year)
+                years_label = ", ".join(str(y) for y in available_years)
+                load_categories = st.checkbox(
+                    f"Cours ({years_label})", key="check_categories", value=True,
+                    help=f"{len(available_years)} année(s) disponible(s)")
+                selected_years = available_years if load_categories else []
 
             # --- Clients ---
             load_clients = False
@@ -4171,7 +4170,7 @@ with st.sidebar:
                                             help=f"{len(PRELOADED_PRODUITS)} fichier(s) — IFM, IFF, IFN, IFP")
 
             # Single load button
-            anything_selected = (PRELOADED_FILES and selected_years) or (PRELOADED_CLIENTS and load_clients) or (PRELOADED_PRODUITS and load_produits)
+            anything_selected = (PRELOADED_FILES and load_categories) or (PRELOADED_CLIENTS and load_clients) or (PRELOADED_PRODUITS and load_produits)
             if anything_selected:
                 if st.button("🚀 Charger les données sélectionnées", key="load_all_preloaded", use_container_width=True, type="primary"):
                     st.session_state.stored_files = []
