@@ -1,0 +1,641 @@
+% =============================================================================
+%  O.S.C.A.R. — Documentation technique et guide utilisateur
+%  Outil de Suivi des Cours et d'Analyse du Réseau
+%  Institut français Italia
+% =============================================================================
+\documentclass[12pt,a4paper,twoside]{article}
+
+% ── Encodage et langue ──
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% ── Mise en page ──
+\usepackage[margin=2.5cm, headheight=15pt]{geometry}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+% ── Couleurs et graphiques ──
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+
+% ── Tableaux ──
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+
+% ── Code ──
+\usepackage{listings}
+\usepackage{verbatim}
+
+% ── Liens ──
+\usepackage[colorlinks=true, linkcolor=MidnightBlue, urlcolor=RoyalBlue, citecolor=ForestGreen]{hyperref}
+
+% ── Divers ──
+\usepackage{microtype}
+\usepackage{csquotes}
+
+% ── Couleurs IFI ──
+\definecolor{ifiBlue}{HTML}{1E3A5F}
+\definecolor{ifiRed}{HTML}{E63946}
+\definecolor{ifiGray}{HTML}{6B7280}
+\definecolor{ifiLight}{HTML}{F3F4F6}
+\definecolor{codeBg}{HTML}{F8F9FA}
+
+% ── Styles titres ──
+\titleformat{\section}
+  {\Large\bfseries\color{ifiBlue}}{\thesection}{1em}{}[\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{ifiBlue!80}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{ifiBlue!60}}{\thesubsubsection}{1em}{}
+
+% ── En-tête / pied de page ──
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{ifiGray}O.S.C.A.R. --- Documentation}
+\fancyhead[R]{\small\color{ifiGray}Institut fran\c{c}ais Italia}
+\fancyfoot[C]{\small\color{ifiGray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ── Style code ──
+\lstset{
+  backgroundcolor=\color{codeBg},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{ifiGray!30},
+  numbers=left,
+  numberstyle=\tiny\color{ifiGray},
+  keywordstyle=\color{ifiBlue}\bfseries,
+  commentstyle=\color{ForestGreen}\itshape,
+  stringstyle=\color{ifiRed},
+  showstringspaces=false,
+  tabsize=4,
+}
+
+% ── Boîtes info/attention ──
+\newtcolorbox{infobox}[1][]{
+  colback=blue!5, colframe=ifiBlue, fonttitle=\bfseries,
+  title={#1}, arc=2mm, boxrule=0.5mm
+}
+\newtcolorbox{warnbox}[1][]{
+  colback=red!5, colframe=ifiRed, fonttitle=\bfseries,
+  title={#1}, arc=2mm, boxrule=0.5mm
+}
+\newtcolorbox{tipbox}[1][]{
+  colback=green!5, colframe=ForestGreen, fonttitle=\bfseries,
+  title={#1}, arc=2mm, boxrule=0.5mm
+}
+
+% =============================================================================
+\begin{document}
+
+% ── Page de titre ──
+\begin{titlepage}
+\begin{center}
+\vspace*{2cm}
+
+{\Huge\bfseries\color{ifiBlue} O.S.C.A.R.}
+
+\vspace{0.5cm}
+{\Large\color{ifiGray} Outil de Suivi des Cours et d'Analyse du R\'{e}seau}
+
+\vspace{1.5cm}
+{\large Documentation technique et guide utilisateur}
+
+\vspace{2cm}
+
+\begin{tikzpicture}
+  \draw[ifiBlue, line width=2pt] (0,0) -- (12,0);
+\end{tikzpicture}
+
+\vspace{1cm}
+{\large\bfseries Institut fran\c{c}ais Italia}
+
+\vspace{0.5cm}
+{\color{ifiGray} R\'{e}seau des Instituts fran\c{c}ais en Italie\\
+IFM (Milan) --- IFF (Florence) --- IFN (Naples) --- IFP (Palerme)}
+
+\vspace{2cm}
+{\color{ifiGray}\today}
+
+\vspace{1cm}
+{\small Version 2.8 --- Tableau de bord Streamlit}
+\end{center}
+\end{titlepage}
+
+% ── Table des matières ──
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Pr\'{e}sentation g\'{e}n\'{e}rale}
+% =============================================================================
+
+\subsection{Qu'est-ce qu'O.S.C.A.R.~?}
+
+O.S.C.A.R. (\textbf{O}util de \textbf{S}uivi des \textbf{C}ours et d'\textbf{A}nalyse du \textbf{R}\'{e}seau) est un tableau de bord interactif d\'{e}velopp\'{e} pour l'Institut fran\c{c}ais Italia. Il permet d'analyser en d\'{e}tail l'activit\'{e} p\'{e}dagogique du r\'{e}seau \`{a} partir des donn\'{e}es export\'{e}es du logiciel de gestion AEC.
+
+\subsection{Fonctionnalit\'{e}s principales}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Analyse des cours par cat\'{e}gorie} --- r\'{e}partition par secteur, sous-secteur, macro-cat\'{e}gorie et cat\'{e}gorie
+  \item \textbf{Fiches de cours} --- niveaux CECRL, inscriptions, tendances, nouveaux/r\'{e}inscrits
+  \item \textbf{Profils clients} --- d\'{e}mographie, nationalit\'{e}s, motivations d'inscription, carte choropleth
+  \item \textbf{Catalogue produits} --- types de produits, tarifs, grille horaire, analyse par antenne
+  \item \textbf{Comparaisons} --- inter-antennes, inter-semestres, inter-annuelles
+  \item \textbf{Carte d'Italie} --- inscriptions g\'{e}olocalis\'{e}es
+  \item \textbf{Rentabilit\'{e} (ARPI)} --- revenu moyen par inscription
+  \item \textbf{Export} --- Excel multi-feuilles et CSV
+  \item \textbf{Aide rapide} --- assistant int\'{e}gr\'{e} pour l'exploration des donn\'{e}es
+\end{itemize}
+
+\subsection{Architecture technique}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Composant} & \textbf{D\'{e}tails} \\
+\midrule
+Langage & Python 3.9+ \\
+Framework & Streamlit 1.30+ \\
+Visualisation & Plotly Express, Plotly Graph Objects \\
+Traitement & Pandas, NumPy \\
+H\'{e}bergement & Streamlit Community Cloud \\
+D\'{e}p\^{o}t & GitHub (\texttt{adrbn/ifi\_stats\_aec}) \\
+Fichier principal & \texttt{dashboard\_aec\_v2.py} ($\sim$6\,900 lignes) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =============================================================================
+\section{Guide de d\'{e}marrage}
+% =============================================================================
+
+\subsection{Acc\`{e}s \`{a} l'application}
+
+L'application est accessible en ligne \`{a} l'adresse :
+
+\begin{center}
+\url{https://ifi-stats-aec.streamlit.app}
+\end{center}
+
+\begin{infobox}[Connexion]
+Deux comptes sont pr\'{e}configur\'{e}s. Les identifiants sont communiqu\'{e}s s\'{e}par\'{e}ment par le service informatique de l'IFI. La connexion est persistante gr\^{a}ce \`{a} un token HMAC stock\'{e} dans les param\`{e}tres d'URL.
+\end{infobox}
+
+\subsection{Pr\'{e}paration des donn\'{e}es}
+
+Les donn\'{e}es proviennent exclusivement des exports du logiciel \textbf{AEC} (logiciel de gestion des cours des Alliances et Instituts fran\c{c}ais). Quatre types d'exports sont support\'{e}s :
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Rapports par cat\'{e}gories} (\texttt{.xlsx}) --- un fichier par antenne et par semestre
+  \item \textbf{Fiches de cours} (\texttt{.csv}) --- export global contenant les d\'{e}tails de chaque cours
+  \item \textbf{Profils clients} (\texttt{.csv/.xlsx}) --- donn\'{e}es d\'{e}mographiques des inscrits
+  \item \textbf{Catalogue produits} (\texttt{.xlsx}) --- r\'{e}f\'{e}rentiel des formations propos\'{e}es
+\end{enumerate}
+
+\begin{tipbox}[Conseil]
+Utilisez le script d'export automatis\'{e} \texttt{aec\_exporter.py} (ou sa version GUI \texttt{aec\_exporter\_gui.py}) pour g\'{e}n\'{e}rer ces fichiers directement depuis AEC.
+\end{tipbox}
+
+\subsection{Chargement des fichiers}
+
+\begin{enumerate}[leftmargin=2em]
+  \item Cliquez sur \og{}Parcourir\fg{} dans la barre lat\'{e}rale gauche
+  \item S\'{e}lectionnez un ou plusieurs fichiers (tous types confondus)
+  \item O.S.C.A.R. d\'{e}tecte automatiquement le type de chaque fichier
+  \item Les donn\'{e}es sont trait\'{e}es et les onglets d'analyse apparaissent
+\end{enumerate}
+
+\begin{infobox}[D\'{e}tection automatique]
+Le syst\`{e}me identifie le type d'export (cat\'{e}gories, fiches, profils, produits) en analysant la structure des colonnes. Aucune configuration manuelle n'est n\'{e}cessaire.
+\end{infobox}
+
+% =============================================================================
+\section{Onglets d'analyse}
+% =============================================================================
+
+\subsection{Synth\`{e}se (onglet principal)}
+
+L'onglet de synth\`{e}se pr\'{e}sente les indicateurs-cl\'{e}s :
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Inscriptions} --- nombre total d'inscriptions sur la p\'{e}riode
+  \item \textbf{Cours} --- nombre de cours programm\'{e}s (inclut \og{}Cours programm\'{e}s\fg{})
+  \item \textbf{Heures-\'{e}l\`{e}ves} --- total des heures-\'{e}l\`{e}ves (inscriptions $\times$ heures)
+  \item \textbf{Heures pr\'{e}vues} --- total des heures pr\'{e}vues de cours
+  \item \textbf{Recettes} --- chiffre d'affaires total
+  \item \textbf{\'{E}l\`{e}ves/cours} --- ratio moyen d'\'{e}l\`{e}ves par cours
+\end{itemize}
+
+\subsection{Par antenne}
+
+Analyse ventil\'{e}e par antenne (IFM, IFF, IFN, IFP) avec :
+\begin{itemize}[leftmargin=2em]
+  \item Tableau r\'{e}capitulatif multi-indicateurs
+  \item Graphiques en barres et camemberts
+  \item Comparaisons entre antennes
+\end{itemize}
+
+\subsection{Par secteurs / sous-secteurs / macro-cat\'{e}gories / cat\'{e}gories}
+
+Quatre niveaux de granularit\'{e} hierarchique :
+
+\begin{center}
+\begin{tabular}{lcl}
+Secteur & $\rightarrow$ & Sous-secteur \\
+ & $\rightarrow$ & Macro-cat\'{e}gorie \\
+ & & \quad $\rightarrow$ Cat\'{e}gorie \\
+\end{tabular}
+\end{center}
+
+Chaque niveau affiche tableau, graphiques et filtres d\'{e}di\'{e}s. Le fichier \texttt{data/category\_mapping.csv} d\'{e}finit les correspondances entre les cat\'{e}gories AEC brutes et la hi\'{e}rarchie secteur/sous-secteur/macro-cat\'{e}gorie.
+
+\subsection{Comparaisons}
+
+Trois modes de comparaison :
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Antenne vs antenne} --- comparer deux sedi sur les m\^{e}mes indicateurs
+  \item \textbf{Semestre vs semestre} --- S1 vs S2 (n\'{e}cessite les deux fichiers)
+  \item \textbf{Secteur vs secteur} --- comparer deux secteurs d'activit\'{e}
+\end{enumerate}
+
+\subsection{Graphiques}
+
+Navigation par carrousel dans une s\'{e}rie de visualisations :
+\begin{itemize}[leftmargin=2em]
+  \item Flux Sankey (antenne $\rightarrow$ secteur)
+  \item Barres group\'{e}es (inscriptions par secteur et antenne)
+  \item Treemap (r\'{e}partition hi\'{e}rarchique)
+  \item Sunburst (vue en rayons de soleil)
+\end{itemize}
+
+\subsection{Fiches de cours}
+
+Analyse des fiches de cours individuelles :
+\begin{itemize}[leftmargin=2em]
+  \item R\'{e}partition par niveau CECRL (A1, A2, B1, B2, C1, C2)
+  \item Taux de remplissage des cours
+  \item Nouveaux inscrits vs r\'{e}inscrits
+  \item Synth\`{e}se par semestre et ann\'{e}e
+\end{itemize}
+
+\subsection{Profils clients}
+
+Analyse d\'{e}mographique des inscrits :
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{D\'{e}mographie} --- r\'{e}partition par \^{a}ge, sexe (M/F/Non sp\'{e}cifi\'{e})
+  \item \textbf{Nationalit\'{e}s} --- carte choropleth mondiale, top nationalit\'{e}s
+  \item \textbf{Motivations} --- raisons d'inscription, distribution
+  \item \textbf{Cat\'{e}gories socio-professionnelles} --- CSP des inscrits
+\end{itemize}
+
+\subsection{Produits}
+
+Analyse du catalogue de formations :
+\begin{itemize}[leftmargin=2em]
+  \item Types de produits et r\'{e}partition
+  \item Grille tarifaire par type et famille
+  \item Prix moyen par heure
+  \item Comparaison entre antennes
+\end{itemize}
+
+\subsection{Export}
+
+Deux formats disponibles :
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Excel multi-feuilles} (\texttt{.xlsx}) --- une feuille par antenne + totaux
+  \item \textbf{CSV} (\texttt{.csv}) --- donn\'{e}es brutes combin\'{e}es
+\end{itemize}
+
+Des boutons \og{}T\'{e}l\'{e}charger CSV\fg{} sont \'{e}galement disponibles \`{a} la fin de chaque section (fiches, profils, produits).
+
+\subsection{Aide rapide}
+
+Module d'assistance int\'{e}gr\'{e} proposant :
+\begin{itemize}[leftmargin=2em]
+  \item Analyses automatiques (insights) sur les donn\'{e}es charg\'{e}es
+  \item Questions pr\'{e}d\'{e}finies (total inscriptions, recettes, meilleure antenne\ldots)
+  \item Champ libre pour poser des questions en langage naturel
+\end{itemize}
+
+% =============================================================================
+\section{Donn\'{e}es et traitement}
+% =============================================================================
+
+\subsection{D\'{e}tection des fichiers}
+
+Lors du chargement, O.S.C.A.R. proc\`{e}de \`{a} :
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{D\'{e}tection du format} --- CSV ou Excel, s\'{e}parateur auto-d\'{e}tect\'{e}
+  \item \textbf{D\'{e}tection du type d'export} --- analyse des noms de colonnes pour identifier fiches, profils, produits ou cat\'{e}gories
+  \item \textbf{Extraction des m\'{e}tadonn\'{e}es} --- antenne (sede), semestre et ann\'{e}e depuis le nom de fichier
+\end{enumerate}
+
+\subsection{Correspondance des cat\'{e}gories}
+
+Le fichier \texttt{data/category\_mapping.csv} contient la hi\'{e}rarchie compl\`{e}te :
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Colonne} & \textbf{Description} \\
+\midrule
+\texttt{Catégorie} & Nom de la cat\'{e}gorie AEC (exactement comme dans l'export) \\
+\texttt{Secteur} & Secteur de rattachement (Langue, Culture, etc.) \\
+\texttt{Sous-secteur} & Sous-secteur plus fin \\
+\texttt{Macro-catégorie} & Regroupement synth\'{e}tique \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{warnbox}[Attention]
+Toute cat\'{e}gorie absente de ce fichier appara\^{i}tra dans la section \og{}Cat\'{e}gories non rattach\'{e}es\fg{} de l'onglet Configuration. Il convient de mettre \`{a} jour le CSV r\'{e}guli\`{e}rement.
+\end{warnbox}
+
+\subsection{Cache de session}
+
+Pour \'{e}viter de retraiter les m\^{e}mes fichiers \`{a} chaque interaction, O.S.C.A.R. utilise un cache bas\'{e} sur un hash MD5 des noms de fichiers :
+
+\begin{lstlisting}[language=Python, caption={M\'{e}canisme de cache}]
+_file_names_hash = hashlib.md5(
+    "|".join(sorted(f.name for f in files)).encode()
+).hexdigest()[:12]
+
+if st.session_state.get('_files_hash') == _file_names_hash:
+    # Restaurer depuis le cache
+else:
+    # Traitement complet + stockage en session
+\end{lstlisting}
+
+\subsection{Nationalit\'{e}s et g\'{e}olocalisation}
+
+La correspondance nationalit\'{e} $\rightarrow$ code ISO-3 (pour la carte choropleth) utilise trois niveaux de correspondance :
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Correspondance exacte} --- la nationalit\'{e} brute correspond exactement \`{a} une entr\'{e}e du dictionnaire
+  \item \textbf{Correspondance par pr\'{e}fixe} --- les 6 premiers caract\`{e}res correspondent (seuil minimum pour \'{e}viter les faux positifs)
+  \item \textbf{Correspondance floue} --- via \texttt{difflib.get\_close\_matches} avec un seuil de similarit\'{e} de 0.8
+\end{enumerate}
+
+% =============================================================================
+\section{S\'{e}curit\'{e}}
+% =============================================================================
+
+\subsection{Authentification}
+
+\begin{itemize}[leftmargin=2em]
+  \item Les mots de passe sont stock\'{e}s sous forme de \textbf{hash SHA-256 statique} (aucun mot de passe en clair dans le code)
+  \item En production, les identifiants peuvent \^{e}tre configur\'{e}s via \texttt{st.secrets} (fichier \texttt{.streamlit/secrets.toml})
+  \item Le fallback local utilise des hashes pr\'{e}-calcul\'{e}s pour le d\'{e}veloppement
+\end{itemize}
+
+\subsection{Connexion persistante}
+
+Un token HMAC (bas\'{e} sur le nom d'utilisateur et un secret) est stock\'{e} dans les param\`{e}tres d'URL. Cela permet de maintenir la session apr\`{e}s un rafra\^{i}chissement de page.
+
+\begin{lstlisting}[language=Python, caption={G\'{e}n\'{e}ration du token HMAC}]
+def _make_login_token(username):
+    return hmac.new(
+        _PERSIST_SECRET, username.encode(), hashlib.sha256
+    ).hexdigest()[:20]
+\end{lstlisting}
+
+\begin{warnbox}[Important]
+En production, le secret HMAC doit \^{e}tre d\'{e}fini dans \texttt{st.secrets} (cl\'{e} \texttt{hmac\_secret}) et ne pas utiliser la valeur par d\'{e}faut du code source.
+\end{warnbox}
+
+% =============================================================================
+\section{D\'{e}ploiement}
+% =============================================================================
+
+\subsection{Streamlit Community Cloud}
+
+L'application est d\'{e}ploy\'{e}e sur Streamlit Community Cloud. Chaque push sur la branche \texttt{main} d\'{e}clenche un red\'{e}ploiement automatique.
+
+\subsubsection{Structure du d\'{e}p\^{o}t}
+
+\begin{lstlisting}[language=bash, caption={Arborescence du d\'{e}p\^{o}t}]
+ifi_stats_aec/
+  dashboard_aec_v2.py    # Application principale
+  requirements.txt       # Dependances Python
+  data/
+    category_mapping.csv  # Correspondances categories
+    exports_AEC_*.zip     # Donnees pre-chargees
+    export_*_produits_*.xlsx
+    export_*_clients_*.csv
+  img/
+    logo/                 # Logos IFI
+  docs/
+    oscar_documentation.tex  # Ce document
+\end{lstlisting}
+
+\subsubsection{D\'{e}pendances}
+
+\begin{lstlisting}[caption={requirements.txt}]
+streamlit>=1.30
+pandas>=2.0
+plotly>=5.0
+openpyxl
+xlsxwriter
+\end{lstlisting}
+
+\subsubsection{Configuration des secrets}
+
+Sur Streamlit Cloud, aller dans \textbf{Settings > Secrets} et ajouter :
+
+\begin{lstlisting}[caption={.streamlit/secrets.toml}]
+hmac_secret = "votre_secret_aleatoire_fort"
+
+[users.adrien]
+name = "Adrien"
+password = "mot_de_passe"
+
+[users.stephanie]
+name = "Stephanie Sauvignon"
+password = "mot_de_passe"
+\end{lstlisting}
+
+\subsection{Ex\'{e}cution locale}
+
+\begin{lstlisting}[language=bash, caption={Lancement local}]
+# Creer un environnement virtuel
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Installer les dependances
+pip install -r requirements.txt
+
+# Lancer l'application
+streamlit run dashboard_aec_v2.py
+\end{lstlisting}
+
+% =============================================================================
+\section{Param\'{e}trage avanc\'{e}}
+% =============================================================================
+
+\subsection{Codes des antennes}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Code} & \textbf{Ville} & \textbf{Institut} \\
+\midrule
+IFM & Milan & Institut fran\c{c}ais Milano \\
+IFF & Florence & Institut fran\c{c}ais Firenze \\
+IFN & Naples & Institut fran\c{c}ais Napoli \\
+IFP & Palerme & Institut fran\c{c}ais Palermo \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Conventions de nommage des fichiers}
+
+Pour la d\'{e}tection automatique, les noms de fichiers doivent contenir :
+
+\begin{itemize}[leftmargin=2em]
+  \item Le code de l'antenne (\texttt{IFM}, \texttt{IFF}, \texttt{IFN}, \texttt{IFP})
+  \item Optionnellement le semestre (\texttt{S1} ou \texttt{S2})
+  \item Optionnellement l'ann\'{e}e (\texttt{2024}, \texttt{2025}\ldots)
+\end{itemize}
+
+Exemples valides :
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{export\_IFM\_S1\_2024.xlsx}
+  \item \texttt{rapport\_IFF\_annuel\_2025.xlsx}
+  \item \texttt{fiches\_cours\_global.csv}
+\end{itemize}
+
+\subsection{Personnalisation CSS}
+
+L'apparence du tableau de bord est enti\`{e}rement personnalis\'{e}e via la fonction \texttt{get\_css()} qui injecte du CSS dans la page Streamlit. Les principales personnalisations :
+
+\begin{itemize}[leftmargin=2em]
+  \item Masquage des \'{e}l\'{e}ments Streamlit natifs (toolbar, footer, hamburger menu)
+  \item Bouton de collapse/expansion de la sidebar forc\'{e} en \texttt{position: fixed}
+  \item Bouton d'impression PDF en position fixe (bas droite)
+  \item Styles d'impression d\'{e}di\'{e}s (\texttt{@media print})
+\end{itemize}
+
+\subsection{Traductions}
+
+O.S.C.A.R. est actuellement en fran\c{c}ais uniquement. Toutes les cha\^{i}nes de caract\`{e}res sont centralis\'{e}es dans le dictionnaire \texttt{TRANSLATIONS} et accessibles via la fonction \texttt{t(key)}. L'ajout d'une langue suppl\'{e}mentaire n\'{e}cessiterait d'ajouter un second dictionnaire et un s\'{e}lecteur de langue.
+
+% =============================================================================
+\section{Maintenance et mises \`{a} jour}
+% =============================================================================
+
+\subsection{Ajout d'une cat\'{e}gorie}
+
+\begin{enumerate}[leftmargin=2em]
+  \item Ouvrir \texttt{data/category\_mapping.csv}
+  \item Ajouter une ligne avec : Cat\'{e}gorie, Secteur, Sous-secteur, Macro-cat\'{e}gorie
+  \item Commiter et pusher sur \texttt{main}
+  \item L'application se red\'{e}ploie automatiquement
+\end{enumerate}
+
+\subsection{Ajout d'une nationalit\'{e}}
+
+Dans le dictionnaire \texttt{\_NATIONALITY\_TO\_ISO\_RAW} (ligne $\sim$2190 du fichier Python), ajouter une entr\'{e}e :
+
+\begin{lstlisting}[language=Python]
+_NATIONALITY_TO_ISO_RAW = {
+    # ...
+    "nouvelle nationalite": "ISO",  # Code ISO-3 du pays
+}
+\end{lstlisting}
+
+\subsection{Modification des identifiants}
+
+\begin{enumerate}[leftmargin=2em]
+  \item Calculer le hash SHA-256 du nouveau mot de passe :
+\begin{lstlisting}[language=Python]
+import hashlib
+hashlib.sha256("nouveau_mdp".encode()).hexdigest()
+\end{lstlisting}
+  \item Remplacer le hash correspondant dans la section fallback de \texttt{\_load\_users()}
+  \item Ou mieux : configurer les identifiants dans \texttt{st.secrets} sur Streamlit Cloud
+\end{enumerate}
+
+% =============================================================================
+\section{R\'{e}solution de probl\`{e}mes}
+% =============================================================================
+
+\begin{longtable}{p{5cm}p{9cm}}
+\toprule
+\textbf{Probl\`{e}me} & \textbf{Solution} \\
+\midrule
+\endhead
+La sidebar ne se rouvre pas apr\`{e}s fermeture & V\'{e}rifier que le CSS pour \texttt{stSidebarCollapsedControl} est bien pr\'{e}sent (position fixed, z-index 999999). Rafra\^{i}chir la page. \\
+\addlinespace
+\og{}Aucune donn\'{e}e valide charg\'{e}e\fg{} & V\'{e}rifier le format des fichiers (CSV s\'{e}par\'{e} par point-virgule, Excel .xlsx). V\'{e}rifier que les colonnes attendues sont pr\'{e}sentes. \\
+\addlinespace
+Sede non d\'{e}tect\'{e}e & V\'{e}rifier que le nom du fichier contient bien IFM/IFF/IFN/IFP. \\
+\addlinespace
+Cat\'{e}gories non rattach\'{e}es & Mettre \`{a} jour \texttt{data/category\_mapping.csv} avec les nouvelles cat\'{e}gories. \\
+\addlinespace
+Nationalit\'{e}s non reconnues sur la carte & Ajouter la correspondance dans \texttt{\_NATIONALITY\_TO\_ISO\_RAW}. \\
+\addlinespace
+Erreur de d\'{e}ploiement Streamlit Cloud & V\'{e}rifier \texttt{requirements.txt} et la syntaxe Python du fichier principal. \\
+\addlinespace
+Connexion perdue apr\`{e}s rafra\^{i}chissement & V\'{e}rifier que les param\`{e}tres d'URL contiennent bien \texttt{user} et \texttt{token}. Reconfigurer le secret HMAC si n\'{e}cessaire. \\
+\bottomrule
+\end{longtable}
+
+% =============================================================================
+\section{Annexes}
+% =============================================================================
+
+\subsection{Liste des indicateurs}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Indicateur} & \textbf{Description} & \textbf{Colonne source} \\
+\midrule
+Inscriptions & Nombre total d'inscriptions & \texttt{Nb. d'inscriptions} \\
+Cours & Nombre de cours (y.c. programm\'{e}s) & \texttt{Cours programm\'{e}s} \\
+Heures-\'{e}l\`{e}ves & Inscriptions $\times$ heures & \texttt{Total des heures-\'{e}l\`{e}ves} \\
+Heures pr\'{e}vues & Heures planifi\'{e}es & \texttt{Total des heures pr\'{e}vues} \\
+Recettes & Chiffre d'affaires & \texttt{Total g\'{e}n\'{e}ral TTC} \\
+\'{E}l\`{e}ves/cours & Ratio moyen & Inscriptions / Cours \\
+ARPI & Average Revenue Per Inscription & Recettes / Inscriptions \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Technologies utilis\'{e}es}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Biblioth\`{e}que} & \textbf{Usage} \\
+\midrule
+Streamlit & Framework web interactif \\
+Pandas & Manipulation de donn\'{e}es \\
+Plotly & Visualisations interactives \\
+OpenPyXL & Lecture de fichiers Excel \\
+XlsxWriter & \'{E}criture de fichiers Excel \\
+difflib & Correspondance floue (nationalit\'{e}s) \\
+hashlib & Hachage SHA-256, MD5 \\
+hmac & Tokens d'authentification persistants \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vfill
+\begin{center}
+\color{ifiGray}\small
+Document g\'{e}n\'{e}r\'{e} le \today{} --- O.S.C.A.R. v2.8\\
+Institut fran\c{c}ais Italia
+\end{center}
+
+\end{document}

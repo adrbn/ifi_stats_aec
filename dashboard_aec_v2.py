@@ -709,6 +709,7 @@ def _login_page():
     <style>
         [data-testid="stSidebar"] { display: none !important; }
         [data-testid="stSidebarCollapsedControl"] { display: none !important; }
+        #oscar-sidebar-btn { display: none !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -937,17 +938,34 @@ def get_css():
             visibility: visible !important;
             opacity: 1 !important;
             position: fixed !important;
-            top: 0.375rem !important;
-            left: 0.375rem !important;
+            top: 0.5rem !important;
+            left: 0.5rem !important;
+            z-index: 999999 !important;
+            background: white !important;
+            border-radius: 6px !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
+        }
+        /* Also try Streamlit 1.40+ selector names */
+        [data-testid="stSidebarNavToggle"],
+        [data-testid="collapsedControl"] {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: fixed !important;
+            top: 0.5rem !important;
+            left: 0.5rem !important;
             z-index: 999999 !important;
         }
         /* Keep the header wrapper visible so the collapse control can render */
         [data-testid="stHeader"] {
             visibility: visible !important;
             pointer-events: auto !important;
+            z-index: 999998 !important;
         }
         /* Ensure the collapse button itself is styled and clickable */
-        [data-testid="stSidebarCollapsedControl"] button {
+        [data-testid="stSidebarCollapsedControl"] button,
+        [data-testid="stSidebarNavToggle"] button,
+        [data-testid="collapsedControl"] button {
             visibility: visible !important;
             opacity: 1 !important;
             pointer-events: auto !important;
@@ -955,6 +973,31 @@ def get_css():
         /* Remove the top padding left by the hidden header */
         .block-container {
             padding-top: 1.5rem !important;
+        }
+
+        /* ── Custom sidebar toggle fallback (JS-injected #oscar-sidebar-btn) ── */
+        #oscar-sidebar-btn {
+            position: fixed !important;
+            top: 0.6rem;
+            left: 0.6rem;
+            z-index: 9999999;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #334155;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+        #oscar-sidebar-btn:hover {
+            background: #f1f5f9;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.18);
         }
 
         /* ── Print / PDF export styles ── */
@@ -1103,6 +1146,83 @@ _stc.html("""
 </div>
 """, height=0)
 
+# ── Custom sidebar toggle button (JS fallback for collapsed sidebar) ──
+_stc.html("""
+<script>
+(function() {
+    var doc = window.parent.document;
+
+    // Remove any previously injected button (Streamlit re-runs can duplicate)
+    var existing = doc.getElementById('oscar-sidebar-btn');
+    if (existing) existing.remove();
+
+    // Create the floating hamburger button
+    var btn = doc.createElement('button');
+    btn.id = 'oscar-sidebar-btn';
+    btn.innerHTML = '&#9776;';  // ☰ hamburger icon
+    btn.title = 'Ouvrir / Fermer la sidebar';
+
+    // Inline styles as fallback (CSS in get_css also styles it)
+    btn.style.cssText = 'position:fixed;top:0.6rem;left:0.6rem;z-index:9999999;' +
+        'width:36px;height:36px;border-radius:8px;border:1px solid #cbd5e1;' +
+        'background:white;color:#334155;font-size:1.2rem;cursor:pointer;' +
+        'display:none;align-items:center;justify-content:center;' +
+        'box-shadow:0 2px 6px rgba(0,0,0,0.12);transition:background 0.15s;';
+
+    btn.addEventListener('click', function() {
+        // Try multiple selectors for the native Streamlit toggle across versions
+        var selectors = [
+            '[data-testid="stSidebarCollapsedControl"] button',
+            '[data-testid="stSidebarNavToggle"] button',
+            '[data-testid="collapsedControl"] button',
+            'button[aria-label="Open sidebar navigation"]',
+            'button[aria-label="Close sidebar navigation"]',
+            '[data-testid="stSidebar"] button[kind="header"]',
+        ];
+        for (var i = 0; i < selectors.length; i++) {
+            var native = doc.querySelector(selectors[i]);
+            if (native) { native.click(); return; }
+        }
+        // Last resort: toggle sidebar via attribute manipulation
+        var sidebar = doc.querySelector('[data-testid="stSidebar"]');
+        if (sidebar) {
+            var collapsed = sidebar.getAttribute('aria-expanded') === 'false' ||
+                            sidebar.classList.contains('st-emotion-cache-1cypcdb') ||
+                            sidebar.offsetWidth < 10;
+            if (collapsed) {
+                sidebar.setAttribute('aria-expanded', 'true');
+                sidebar.style.display = '';
+                sidebar.style.marginLeft = '0px';
+                sidebar.style.transform = 'none';
+            }
+        }
+    });
+
+    btn.addEventListener('mouseenter', function() { btn.style.background = '#f1f5f9'; });
+    btn.addEventListener('mouseleave', function() { btn.style.background = 'white'; });
+
+    doc.body.appendChild(btn);
+
+    // Visibility logic: show button only when sidebar is collapsed
+    function updateBtnVisibility() {
+        var sidebar = doc.querySelector('[data-testid="stSidebar"]');
+        var collapsed = !sidebar || sidebar.getAttribute('aria-expanded') === 'false' ||
+                        sidebar.offsetWidth < 10;
+        btn.style.display = collapsed ? 'flex' : 'none';
+    }
+
+    // Check periodically and also use MutationObserver
+    setInterval(updateBtnVisibility, 400);
+    updateBtnVisibility();
+
+    var sidebar = doc.querySelector('[data-testid="stSidebar"]');
+    if (sidebar) {
+        var obs = new MutationObserver(updateBtnVisibility);
+        obs.observe(sidebar, { attributes: true, attributeFilter: ['aria-expanded', 'class', 'style'] });
+    }
+})();
+</script>
+""", height=0)
 
 
 # =====================================================
