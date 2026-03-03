@@ -1159,41 +1159,89 @@ _stc.html("""
     // Create the floating hamburger button
     var btn = doc.createElement('button');
     btn.id = 'oscar-sidebar-btn';
-    btn.innerHTML = '&#9776;';  // ☰ hamburger icon
+    btn.innerHTML = '&#9776;';
     btn.title = 'Ouvrir / Fermer la sidebar';
 
-    // Inline styles as fallback (CSS in get_css also styles it)
     btn.style.cssText = 'position:fixed;top:0.6rem;left:0.6rem;z-index:9999999;' +
         'width:36px;height:36px;border-radius:8px;border:1px solid #cbd5e1;' +
         'background:white;color:#334155;font-size:1.2rem;cursor:pointer;' +
         'display:none;align-items:center;justify-content:center;' +
         'box-shadow:0 2px 6px rgba(0,0,0,0.12);transition:background 0.15s;';
 
-    btn.addEventListener('click', function() {
-        // Try multiple selectors for the native Streamlit toggle across versions
+    // Helper: simulate a real user click (mousedown+mouseup+click) for React compat
+    function realClick(el) {
+        ['mousedown', 'mouseup', 'click'].forEach(function(evtType) {
+            el.dispatchEvent(new MouseEvent(evtType, {
+                view: window.parent, bubbles: true, cancelable: true
+            }));
+        });
+    }
+
+    // Helper: walk ancestors to check if element lives within a sidebar control
+    function isInsideSidebarCtrl(el) {
+        var p = el;
+        while (p) {
+            var tid = (p.getAttribute && p.getAttribute('data-testid')) || '';
+            if (/sidebar|collapse/i.test(tid)) return true;
+            p = p.parentElement;
+        }
+        return false;
+    }
+
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // ── Strategy 1: known selectors with full event simulation ──
         var selectors = [
             '[data-testid="stSidebarCollapsedControl"] button',
-            '[data-testid="stSidebarNavToggle"] button',
             '[data-testid="collapsedControl"] button',
-            'button[aria-label="Open sidebar navigation"]',
-            'button[aria-label="Close sidebar navigation"]',
-            '[data-testid="stSidebar"] button[kind="header"]',
+            '[data-testid="stSidebarNavToggle"] button',
+            'button[aria-label*="sidebar" i]',
+            'button[aria-label*="Sidebar" i]',
+            'button[aria-label*="navigation" i]',
+            'button[aria-label*="menu" i]',
+            'button[aria-label*="expand" i]',
+            'button[aria-label*="collapse" i]',
         ];
         for (var i = 0; i < selectors.length; i++) {
-            var native = doc.querySelector(selectors[i]);
-            if (native) { native.click(); return; }
+            try {
+                var el = doc.querySelector(selectors[i]);
+                if (el) { realClick(el); return; }
+            } catch(ex) {}
         }
-        // Last resort: toggle sidebar via attribute manipulation
+
+        // ── Strategy 2: scan ALL buttons for one inside a sidebar control ──
+        var allBtns = doc.querySelectorAll('button');
+        for (var j = 0; j < allBtns.length; j++) {
+            if (isInsideSidebarCtrl(allBtns[j])) {
+                realClick(allBtns[j]); return;
+            }
+        }
+
+        // ── Strategy 3: find the close button INSIDE the expanded sidebar ──
+        // (grab the button that collapses, then look for its expand counterpart)
+        var closeBtn = doc.querySelector('[data-testid="stSidebar"] button[aria-label]');
+        if (closeBtn) {
+            realClick(closeBtn); return;
+        }
+
+        // ── Strategy 4: brute-force CSS to show the sidebar ──
         var sidebar = doc.querySelector('[data-testid="stSidebar"]');
         if (sidebar) {
-            var collapsed = sidebar.getAttribute('aria-expanded') === 'false' ||
-                            sidebar.classList.contains('st-emotion-cache-1cypcdb') ||
-                            sidebar.offsetWidth < 10;
-            if (collapsed) {
-                sidebar.setAttribute('aria-expanded', 'true');
-                sidebar.style.display = '';
-                sidebar.style.marginLeft = '0px';
-                sidebar.style.transform = 'none';
+            sidebar.setAttribute('aria-expanded', 'true');
+            // Walk up to find the section/container that clips
+            var target = sidebar;
+            for (var k = 0; k < 4; k++) {
+                target.style.setProperty('width', '21rem', 'important');
+                target.style.setProperty('min-width', '21rem', 'important');
+                target.style.setProperty('transform', 'none', 'important');
+                target.style.setProperty('margin-left', '0px', 'important');
+                target.style.setProperty('visibility', 'visible', 'important');
+                target.style.setProperty('display', 'flex', 'important');
+                target.style.setProperty('opacity', '1', 'important');
+                if (target.parentElement) target = target.parentElement;
+                else break;
             }
         }
     });
@@ -1203,22 +1251,40 @@ _stc.html("""
 
     doc.body.appendChild(btn);
 
-    // Visibility logic: show button only when sidebar is collapsed
-    function updateBtnVisibility() {
+    // ── Visibility: show the hamburger only when sidebar is collapsed ──
+    function isSidebarCollapsed() {
         var sidebar = doc.querySelector('[data-testid="stSidebar"]');
-        var collapsed = !sidebar || sidebar.getAttribute('aria-expanded') === 'false' ||
-                        sidebar.offsetWidth < 10;
-        btn.style.display = collapsed ? 'flex' : 'none';
+        if (!sidebar) return true;
+        // Check aria-expanded
+        if (sidebar.getAttribute('aria-expanded') === 'false') return true;
+        // Check computed width
+        var w = sidebar.getBoundingClientRect().width;
+        if (w < 10) return true;
+        // Check if sidebar is off-screen (transform translateX)
+        var cs = window.parent.getComputedStyle(sidebar);
+        var tf = cs.transform || cs.webkitTransform || '';
+        if (tf && tf !== 'none') {
+            var m = tf.match(/matrix.*\((.+)\)/);
+            if (m) {
+                var vals = m[1].split(',');
+                var tx = parseFloat(vals[4] || vals[12] || 0);
+                if (tx < -50) return true;
+            }
+        }
+        return false;
     }
 
-    // Check periodically and also use MutationObserver
-    setInterval(updateBtnVisibility, 400);
+    function updateBtnVisibility() {
+        btn.style.display = isSidebarCollapsed() ? 'flex' : 'none';
+    }
+
+    setInterval(updateBtnVisibility, 300);
     updateBtnVisibility();
 
     var sidebar = doc.querySelector('[data-testid="stSidebar"]');
     if (sidebar) {
         var obs = new MutationObserver(updateBtnVisibility);
-        obs.observe(sidebar, { attributes: true, attributeFilter: ['aria-expanded', 'class', 'style'] });
+        obs.observe(sidebar, { attributes: true, childList: false, subtree: false });
     }
 })();
 </script>
