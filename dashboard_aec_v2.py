@@ -2110,8 +2110,10 @@ def render_fiches_tabs(df_fiches):
 _COURSE_TYPE_RAW = {
     "catalogue": "Du catalogue",
     "du catalogue": "Du catalogue",
-    "group": "Entreprises (organismes)",
-    "group - private": "Entreprises (organismes)",
+    "group": "Cours programmés",
+    "group - private": "Cours programmés",
+    "cours programmés": "Cours programmés",
+    "cours programmes": "Cours programmés",
     "corporate": "Entreprises (organismes)",
     "corporate-group - private": "Entreprises (organismes)",
     "private": "À la carte",
