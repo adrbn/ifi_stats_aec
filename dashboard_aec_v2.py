@@ -289,7 +289,7 @@ import os
 # Configurable CSV path - can be overridden by environment variable for server deployment
 CSV_MAPPING_PATH = os.environ.get(
     "AEC_CATEGORY_MAPPING_PATH",
-    os.path.join(os.path.dirname(__file__), "2. FEUILLE DE TRAVAIL", "category_mapping.csv")
+    os.path.join(os.path.dirname(__file__), "data", "category_mapping.csv")
 )
 
 def get_csv_mapping_path():
@@ -387,7 +387,7 @@ TRANSLATIONS = {
         "student_hours": "Heures-élèves", "planned_hours": "Heures prévues", "revenue": "Recettes", "students_per_course": "Élèves/cours",
         "tab_prova_stats": "Synthèse", "tab_by_sede": "Par antenne",
         "tab_by_sector": "Par secteurs", "tab_by_sous_secteur": "Par sous-secteurs", "tab_by_macro_category": "Par macro-catégories", "tab_by_category": "Par catégories", "tab_comparisons": "Comparaisons",
-        "tab_graphs": "Graphiques", "tab_ai": "Assistant IA", "tab_export": "Export", "tab_config": "Configuration",
+        "tab_graphs": "Graphiques", "tab_ai": "Aide rapide", "tab_export": "Export", "tab_config": "Configuration",
         "filter_by_sede": "Filtrer par antenne", "filter_by_period": "Filtrer par période", "filter_by_sector": "Filtrer par secteur",
         "all": "Tous", "ifi_totals": "Totaux IFI (toutes sedi)",
         "analysis_by_sede": "Analyse par antenne", "inscriptions_by_sede": "Inscriptions par antenne",
@@ -413,7 +413,7 @@ TRANSLATIONS = {
         "load_both_semesters": "Chargez les données des deux semestres pour comparer.",
         "graphs": "Graphiques", "flow_sede_sector": "Flux : antenne → secteur",
         "inscr_by_sector_sede": "Inscriptions par secteur et antenne", "treemap_title": "Répartition hiérarchique",
-        "sunburst_title": "Vue en rayons de soleil", "ai_assistant": "Assistant IA",
+        "sunburst_title": "Vue en rayons de soleil", "ai_assistant": "Aide rapide",
         "auto_insights": "Analyses automatiques", "ask_question": "Posez une question",
         "question_placeholder": "Ex : Quelle est la meilleure antenne ? Comparer IFM et IFF...",
         "suggestions": "Suggestions", "export_data": "Exporter les données", "format": "Format",
@@ -458,7 +458,7 @@ TRANSLATIONS = {
         "feature_4": "Analyse du catalogue produits (types, tarifs, par antenne)",
         "feature_5": "Comparaisons inter-annuelles et inter-antennes",
         "feature_6": "Carte d'Italie, rentabilité (ARPI) et export Excel",
-        "feature_7": "Assistant IA intégré pour l'analyse des données",
+        "feature_7": "Aide rapide intégrée pour l'analyse des données",
         "how_to_export": "Obtenir les fichiers depuis AEC",
         "export_steps": "Utilisez le script d'export pour générer automatiquement les fichiers depuis AEC.",
         "export_script_link": "Télécharger le script d'export",
@@ -637,15 +637,15 @@ def _load_users() -> dict:
     except Exception:
         pass
 
-    # Fallback local (dev uniquement — ne PAS déployer avec des vrais mots de passe ici)
+    # Fallback local (dev uniquement — hashes statiques, pas de mots de passe en clair)
     users = {
         "adrien": {
             "name": "Adrien",
-            "password_hash": _hash_pw("oscar2026"),
+            "password_hash": "d610dd4971f71ed75688f7014046f69b7f3bdcec898ca3eb7d4d821dff9b789f",
         },
         "stephanie": {
             "name": "Stéphanie Sauvignon",
-            "password_hash": _hash_pw("ifi2026"),
+            "password_hash": "88f01b87632b0f347b5ec38d98aada648828f9159f452b513a69cf6ba758efa8",
         },
     }
     return users
@@ -654,7 +654,15 @@ USERS = _load_users()
 
 # --- Persistent login via query params (survives page refresh) ---
 import hmac as _hmac_mod
-_PERSIST_SECRET = b"oscar_aec_persist_2026"
+
+def _get_persist_secret():
+    """Load HMAC secret from Streamlit secrets, with fallback for local dev."""
+    try:
+        return st.secrets["hmac_secret"].encode()
+    except Exception:
+        return b"oscar_aec_persist_2026"
+
+_PERSIST_SECRET = _get_persist_secret()
 
 def _make_login_token(username):
     return _hmac_mod.new(_PERSIST_SECRET, username.encode(), hashlib.sha256).hexdigest()[:20]
@@ -932,6 +940,9 @@ def get_css():
             display: flex !important;
             visibility: visible !important;
             opacity: 1 !important;
+            position: fixed !important;
+            top: 0.375rem !important;
+            left: 0.375rem !important;
             z-index: 999999 !important;
             pointer-events: auto !important;
         }
@@ -940,6 +951,11 @@ def get_css():
             display: inline-flex !important;
             visibility: visible !important;
             opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        /* Keep the header wrapper visible so the collapse control can render */
+        [data-testid="stHeader"] {
+            visibility: visible !important;
             pointer-events: auto !important;
         }
         /* Ensure sidebar nav button (collapse arrow inside sidebar) stays visible */
@@ -2127,6 +2143,18 @@ def render_fiches_tabs(df_fiches):
         agg_sem["Élèves/Cours"] = (agg_sem["Participants"] / agg_sem["Nb_Cours"]).round(1)
         st.dataframe(agg_sem, use_container_width=True)
 
+    # ── Export CSV ──
+    st.divider()
+    _csv_fiches = df_fiches.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label=f"⬇️ {t('download_csv')} — Fiches de cours",
+        data=_csv_fiches,
+        file_name="export_fiches_cours.csv",
+        mime="text/csv",
+        use_container_width=True,
+        key="dl_fiches"
+    )
+
 
 # =====================================================
 # CLIENT PROFILES EXPORT SUPPORT
@@ -2318,10 +2346,16 @@ def _match_nationality_to_iso(nat_str):
     # Direct match
     if clean in NATIONALITY_TO_ISO:
         return NATIONALITY_TO_ISO[clean]
-    # Try removing accents / partial match
-    for key, code in NATIONALITY_TO_ISO.items():
-        if clean.startswith(key[:4]) or key.startswith(clean[:4]):
-            return code
+    # Prefix match — at least 6 chars to avoid false positives
+    if len(clean) >= 6:
+        for key, code in NATIONALITY_TO_ISO.items():
+            if len(key) >= 6 and (clean.startswith(key[:6]) or key.startswith(clean[:6])):
+                return code
+    # Fuzzy match via difflib (cutoff 0.8 = high confidence only)
+    import difflib
+    matches = difflib.get_close_matches(clean, NATIONALITY_TO_ISO.keys(), n=1, cutoff=0.8)
+    if matches:
+        return NATIONALITY_TO_ISO[matches[0]]
     return None
 
 def assign_custom_age_bracket(age):
@@ -3115,6 +3149,18 @@ def render_profils_tabs(df_profils):
                 fig_csp.update_layout(margin=dict(l=20, r=20, t=40, b=80), xaxis_tickangle=-45)
                 st.plotly_chart(fig_csp, use_container_width=True)
 
+    # ── Export CSV ──
+    st.divider()
+    _csv_profils = df_profils.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label=f"⬇️ {t('download_csv')} — Profils clients",
+        data=_csv_profils,
+        file_name="export_profils_clients.csv",
+        mime="text/csv",
+        use_container_width=True,
+        key="dl_profils"
+    )
+
 # =====================================================
 # PRODUCTS CATALOG EXPORT SUPPORT
 # =====================================================
@@ -3410,6 +3456,18 @@ def render_produits_tabs(df_produits):
                     )
                     fig_prix_h.update_layout(margin=dict(l=20, r=20, t=40, b=100), xaxis_tickangle=-45)
                     st.plotly_chart(fig_prix_h, use_container_width=True)
+
+    # ── Export CSV ──
+    st.divider()
+    _csv_produits = df_produits.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label=f"⬇️ {t('download_csv')} — Produits",
+        data=_csv_produits,
+        file_name="export_produits.csv",
+        mime="text/csv",
+        use_container_width=True,
+        key="dl_produits"
+    )
 
 
 # =====================================================
@@ -3862,110 +3920,131 @@ if not all_uploaded_files:
 # Process files - dual pipeline (category reports + course fiches)
 files_to_process = all_uploaded_files
 
-all_data, all_fiches, all_profils, all_produits = [], [], [], []
-file_info, fiches_info, profils_info, produits_info, errors = [], [], [], [], []
-for uploaded_file in files_to_process:
-    # Load file (auto-detect CSV vs Excel)
-    df, error = load_file_auto(uploaded_file, uploaded_file.name)
-    if error:
-        errors.append(f"Erreur: {uploaded_file.name}: {error}")
-        continue
-    
-    # Detect export type from column structure
-    export_type = detect_export_type(df)
-    
-    if export_type == "fiches_cours":
-        # Course fiches export - sede/year/semester extracted from data content
-        processed = process_course_fiches(df)
-        all_fiches.append(processed)
-        sedi_found = processed["Sede"].unique().tolist()
-        years_found = [int(y) for y in processed["Année"].dropna().unique()]
-        fiches_info.append({
-            "Fichier": uploaded_file.name, "Type": "Fiches cours",
-            "Sedi": ", ".join(sedi_found), "Années": ", ".join(map(str, years_found)),
-            "Lignes": len(processed)
-        })
-    elif export_type == "profils_clients":
-        # Client profiles export
-        processed = process_profils_clients(df)
-        all_profils.append(processed)
-        sedi_found = [s for s in processed["Sede"].unique() if s != "???"]
-        profils_info.append({
-            "Fichier": uploaded_file.name, "Type": "Profils clients",
-            "Sedi": ", ".join(sedi_found),
-            "Lignes": len(processed)
-        })
-    elif export_type == "produits":
-        # Products catalog export - sede from filename
-        sede_code = extract_sede_from_filename(uploaded_file.name)
-        processed = process_produits(df, sede_code)
-        all_produits.append(processed)
-        produits_info.append({
-            "Fichier": uploaded_file.name, "Type": "Produits",
-            "Sede": sede_code,
-            "Lignes": len(processed)
-        })
-    else:
-        # Category report export (existing flow)
-        sede, semester, year = detect_from_filename(uploaded_file.name)
-        year = year or default_year
-        if not sede:
-            errors.append(f"Sede non détectée: {uploaded_file.name}")
-            continue
-        processed = process_data(df, year, semester, sede)
-        all_data.append(processed)
-        semester_label = semester if semester else "annuel"
-        file_info.append({"Fichier": uploaded_file.name, "Sede": sede, "Semestre": semester_label, "Année": year, "Lignes": len(processed)})
+# ── Session state cache: skip re-processing if same files already processed ──
+_file_names_hash = hashlib.md5("|".join(sorted(f.name for f in files_to_process)).encode()).hexdigest()[:12]
+_cache_hit = (
+    st.session_state.get('_files_hash') == _file_names_hash
+    and st.session_state.get('processed_data') is not None
+)
 
-if errors:
-    for err in errors:
-        st.warning(err)
+if _cache_hit:
+    # Restore from cache — skip file parsing
+    df_combined = st.session_state.processed_data
+    df_fiches = st.session_state.get('course_fiches_data')
+    df_profils = st.session_state.get('profils_clients_data')
+    df_produits = st.session_state.get('produits_data')
+    file_info = st.session_state.get('file_info', [])
+    fiches_info = st.session_state.get('fiches_file_info', [])
+    profils_info = st.session_state.get('profils_file_info', [])
+    produits_info = st.session_state.get('produits_file_info', [])
+else:
+    # Full processing
+    all_data, all_fiches, all_profils, all_produits = [], [], [], []
+    file_info, fiches_info, profils_info, produits_info, errors = [], [], [], [], []
+    with st.spinner("Traitement des fichiers en cours..."):
+        for uploaded_file in files_to_process:
+            # Load file (auto-detect CSV vs Excel)
+            df, error = load_file_auto(uploaded_file, uploaded_file.name)
+            if error:
+                errors.append(f"Erreur: {uploaded_file.name}: {error}")
+                continue
 
-# Build combined DataFrames
-df_combined = None
-df_fiches = None
-df_profils = None
-df_produits = None
-if all_data:
-    df_combined = pd.concat(all_data, ignore_index=True)
-if all_fiches:
-    df_fiches = pd.concat(all_fiches, ignore_index=True)
-if all_profils:
-    df_profils = pd.concat(all_profils, ignore_index=True)
-if all_produits:
-    df_produits = pd.concat(all_produits, ignore_index=True)
+            # Detect export type from column structure
+            export_type = detect_export_type(df)
 
-has_any_data = any(x is not None for x in [df_combined, df_fiches, df_profils, df_produits])
-if not has_any_data:
-    st.error("Aucune donnée valide chargée.")
-    st.stop()
+            if export_type == "fiches_cours":
+                # Course fiches export - sede/year/semester extracted from data content
+                processed = process_course_fiches(df)
+                all_fiches.append(processed)
+                sedi_found = processed["Sede"].unique().tolist()
+                years_found = [int(y) for y in processed["Année"].dropna().unique()]
+                fiches_info.append({
+                    "Fichier": uploaded_file.name, "Type": "Fiches cours",
+                    "Sedi": ", ".join(sedi_found), "Années": ", ".join(map(str, years_found)),
+                    "Lignes": len(processed)
+                })
+            elif export_type == "profils_clients":
+                # Client profiles export
+                processed = process_profils_clients(df)
+                all_profils.append(processed)
+                sedi_found = [s for s in processed["Sede"].unique() if s != "???"]
+                profils_info.append({
+                    "Fichier": uploaded_file.name, "Type": "Profils clients",
+                    "Sedi": ", ".join(sedi_found),
+                    "Lignes": len(processed)
+                })
+            elif export_type == "produits":
+                # Products catalog export - sede from filename
+                sede_code = extract_sede_from_filename(uploaded_file.name)
+                processed = process_produits(df, sede_code)
+                all_produits.append(processed)
+                produits_info.append({
+                    "Fichier": uploaded_file.name, "Type": "Produits",
+                    "Sede": sede_code,
+                    "Lignes": len(processed)
+                })
+            else:
+                # Category report export (existing flow)
+                sede, semester, year = detect_from_filename(uploaded_file.name)
+                year = year or default_year
+                if not sede:
+                    errors.append(f"Sede non détectée: {uploaded_file.name}")
+                    continue
+                processed = process_data(df, year, semester, sede)
+                all_data.append(processed)
+                semester_label = semester if semester else "annuel"
+                file_info.append({"Fichier": uploaded_file.name, "Sede": sede, "Semestre": semester_label, "Année": year, "Lignes": len(processed)})
 
-# Store in session state
-st.session_state.processed_data = df_combined
-st.session_state.file_info = file_info
-st.session_state.course_fiches_data = df_fiches
-st.session_state.fiches_file_info = fiches_info
-st.session_state.profils_clients_data = df_profils
-st.session_state.profils_file_info = profils_info
-st.session_state.produits_data = df_produits
-st.session_state.produits_file_info = produits_info
+    if errors:
+        for err in errors:
+            st.warning(err)
 
-# Show detection toasts (bottom-right, auto-dismiss)
-_toast_msgs = []
-if df_fiches is not None:
-    nb_fiches = len(df_fiches)
-    sedi_fiches = [s for s in df_fiches["Sede"].unique() if s != "???"]
-    _toast_msgs.append(f"{t('fiches_cours_loaded')}: {nb_fiches} cours ({', '.join(sedi_fiches)})")
-if df_profils is not None:
-    nb_profils = len(df_profils)
-    sedi_profils = [s for s in df_profils["Sede"].unique() if s != "???"]
-    _toast_msgs.append(f"{t('profils_loaded')}: {nb_profils} clients ({', '.join(sedi_profils)})")
-if df_produits is not None:
-    nb_produits = len(df_produits)
-    sedi_produits = [s for s in df_produits["Sede"].unique() if s != "???"]
-    _toast_msgs.append(f"{t('produits_loaded')}: {nb_produits} produits ({', '.join(sedi_produits)})")
-for _msg in _toast_msgs:
-    st.toast(_msg, icon="\u2705")
+    # Build combined DataFrames
+    df_combined = None
+    df_fiches = None
+    df_profils = None
+    df_produits = None
+    if all_data:
+        df_combined = pd.concat(all_data, ignore_index=True)
+    if all_fiches:
+        df_fiches = pd.concat(all_fiches, ignore_index=True)
+    if all_profils:
+        df_profils = pd.concat(all_profils, ignore_index=True)
+    if all_produits:
+        df_produits = pd.concat(all_produits, ignore_index=True)
+
+    has_any_data = any(x is not None for x in [df_combined, df_fiches, df_profils, df_produits])
+    if not has_any_data:
+        st.error("Aucune donnée valide chargée.")
+        st.stop()
+
+    # Store in session state
+    st.session_state.processed_data = df_combined
+    st.session_state.file_info = file_info
+    st.session_state.course_fiches_data = df_fiches
+    st.session_state.fiches_file_info = fiches_info
+    st.session_state.profils_clients_data = df_profils
+    st.session_state.profils_file_info = profils_info
+    st.session_state.produits_data = df_produits
+    st.session_state.produits_file_info = produits_info
+    st.session_state._files_hash = _file_names_hash
+
+    # Show detection toasts (bottom-right, auto-dismiss)
+    _toast_msgs = []
+    if df_fiches is not None:
+        nb_fiches = len(df_fiches)
+        sedi_fiches = [s for s in df_fiches["Sede"].unique() if s != "???"]
+        _toast_msgs.append(f"{t('fiches_cours_loaded')}: {nb_fiches} cours ({', '.join(sedi_fiches)})")
+    if df_profils is not None:
+        nb_profils = len(df_profils)
+        sedi_profils = [s for s in df_profils["Sede"].unique() if s != "???"]
+        _toast_msgs.append(f"{t('profils_loaded')}: {nb_profils} clients ({', '.join(sedi_profils)})")
+    if df_produits is not None:
+        nb_produits = len(df_produits)
+        sedi_produits = [s for s in df_produits["Sede"].unique() if s != "???"]
+        _toast_msgs.append(f"{t('produits_loaded')}: {nb_produits} produits ({', '.join(sedi_produits)})")
+    for _msg in _toast_msgs:
+        st.toast(_msg, icon="\u2705")
 
 # If no category report data, render other export analyses with tabs and stop
 if df_combined is None:
