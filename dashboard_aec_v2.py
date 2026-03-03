@@ -1,5 +1,5 @@
 """
-O.S.C.A.R. - Outil de Suivi des Cours et d'Analyse du Réseau v3.0
+OSCAR - Outil de Suivi des Cours et d'Analyse du Réseau v3.0
 ================================================================
 Dashboard interactif pour l'analyse des données AEC
 - 8+ fichiers: 4 sedi × 2 semestres (multi-années supporté)
@@ -450,7 +450,7 @@ TRANSLATIONS = {
         "default_year_help": "Utilisé si l'année n'est pas détectable dans le nom de fichier",
         "total_all_years": "TOTAL (toutes années)", "breakdown_by_year": "Répartition par année",
         "multi_year_warning": "Plusieurs années chargées", "showing_combined": "Données combinées de",
-        "welcome": "Bienvenue sur O.S.C.A.R.", "welcome_subtitle": "Outil de suivi des cours et d'analyse du réseau — Institut français Italia",
+        "welcome": "Bienvenue sur OSCAR", "welcome_subtitle": "Outil de suivi des cours et d'analyse du réseau — Institut français Italia",
         "quick_start": "Démarrage rapide", "upload_here": "Déposez vos fichiers Excel ici",
         "features": "Fonctionnalités", "feature_1": "Analyse des cours par catégorie, secteur et macro-catégorie",
         "feature_2": "Analyse des fiches de cours (niveaux, inscriptions, tendances)",
@@ -598,7 +598,7 @@ def t(key):
 # PAGE CONFIG
 # =====================================================
 st.set_page_config(
-    page_title="O.S.C.A.R.",
+    page_title="OSCAR",
     page_icon=os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon_curves.png"),
     layout="wide",
     initial_sidebar_state="expanded"
@@ -723,7 +723,7 @@ def _login_page():
         st.markdown(f'<div style="text-align:center;margin-top:6vh;"><img src="data:image/png;base64,{_lb}" style="width:120px;"></div>', unsafe_allow_html=True)
 
     st.markdown('<div style="font-size:2rem;font-weight:800;letter-spacing:0.15em;color:#1a1a1a;text-align:center;">OSCAR</div>', unsafe_allow_html=True)
-    st.markdown('<div style="font-size:0.75rem;color:#64748b;text-align:center;margin-bottom:2rem;">Outil de Suivi des Cours et d\'Analyse du Réseau</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:0.75rem;color:#64748b;text-align:center;margin-bottom:2rem;">Outil de suivi des cours et d\'analyse du réseau</div>', unsafe_allow_html=True)
 
     col_l, col_form, col_r = st.columns([1, 2, 1])
     with col_form:
@@ -781,6 +781,12 @@ def get_css():
         /* Pin sidebar content to top */
         [data-testid="stSidebar"] > div:first-child {
             padding-top: 1rem !important;
+        }
+        /* Smaller logout button in sidebar */
+        [data-testid="stSidebar"] button[kind="secondary"] {
+            font-size: 0.7rem !important;
+            padding: 0.15rem 0.4rem !important;
+            min-height: 1.5rem !important;
         }
         /* Add more top padding to push content down */
         .block-container {
@@ -4117,8 +4123,6 @@ with st.sidebar:
     st.markdown(f"""
     <div style="padding:0; text-align:left;">
     {_logo_html}
-    <div style="font-size:1.3rem; font-weight:800; letter-spacing:0.12em; color:#1a1a1a; line-height:1.2;">O.S.C.A.R.</div>
-    <div style="font-size:0.55rem; color:#94a3b8; margin-top:2px;">Outil de Suivi des Cours et d'Analyse du Réseau</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -4137,7 +4141,8 @@ with st.sidebar:
     st.markdown("---")
 
     # ── Chargement des données ──
-    with st.expander(t('load_files'), expanded=True):
+    with st.expander("📂 Importer des données AEC", expanded=True):
+        st.caption("Glissez vos exports Excel/CSV ou utilisez les données pré-chargées ci-dessous.")
         # Show preloaded files section if available
         if HAS_PRELOADED_DATA:
             st.markdown(f"**📦 {t('preloaded_files')}**")
@@ -4374,7 +4379,7 @@ with st.sidebar:
 
     # ── Infos ──
     st.markdown("---")
-    st.caption("O.S.C.A.R. v3.0 · Institut français Italia")
+    st.caption("OSCAR v3.0 · Institut français Italia")
 
 # Default year fallback (when not detected from filename)
 default_year = 2025
@@ -4626,7 +4631,7 @@ if df_combined is None:
                 render_produits_tabs(df_produits)
             tab_idx += 1
     st.markdown("---")
-    st.caption("O.S.C.A.R. v3.0 • Institut français Italia")
+    st.caption("OSCAR v3.0 • Institut français Italia")
     st.stop()
 
 
@@ -7432,4 +7437,4 @@ if _has_other_exports:
 # FOOTER
 # =====================================================
 st.markdown("---")
-st.caption("O.S.C.A.R. v3.0 • Institut français Italia")
+st.caption("OSCAR v3.0 • Institut français Italia")
