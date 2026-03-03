@@ -500,7 +500,7 @@ TRANSLATIONS = {
         "filters": "Filtres",
         "fiches_cours_section": "Analyse des fiches de cours",
         # Profils clients
-        "profils_section": "Analyse des profils clients",
+        "profils_section": "Analyse des profils",
         "profils_loaded": "Export profils clients détecté",
         "tab_profils_synthese": "Synthèse",
         "tab_profils_demo": "Démographie",
@@ -655,10 +655,10 @@ USERS = _load_users()
 # --- Persistent login via query params (survives page refresh) ---
 import hmac as _hmac_mod
 
-def _get_persist_secret():
-    """Load HMAC secret from Streamlit secrets, with fallback for local dev."""
+def _get_persist_secret() -> bytes:
+    """Get HMAC secret from st.secrets or fallback."""
     try:
-        return st.secrets["hmac_secret"].encode()
+        return st.secrets.get("hmac_secret", "oscar_aec_persist_2026").encode()
     except Exception:
         return b"oscar_aec_persist_2026"
 
@@ -930,12 +930,8 @@ def get_css():
             display: none !important;
             visibility: hidden !important;
         }
-        /* Remove the top padding left by the hidden header */
-        .block-container {
-            padding-top: 1.5rem !important;
-        }
 
-        /* ── Sidebar collapse/expand button — ALWAYS visible ── */
+        /* ── Force sidebar collapse/expand button to ALWAYS be visible ── */
         [data-testid="stSidebarCollapsedControl"] {
             display: flex !important;
             visibility: visible !important;
@@ -944,25 +940,21 @@ def get_css():
             top: 0.375rem !important;
             left: 0.375rem !important;
             z-index: 999999 !important;
-            pointer-events: auto !important;
-        }
-        /* Also ensure the button inside is clickable */
-        [data-testid="stSidebarCollapsedControl"] button {
-            display: inline-flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
         }
         /* Keep the header wrapper visible so the collapse control can render */
         [data-testid="stHeader"] {
             visibility: visible !important;
             pointer-events: auto !important;
         }
-        /* Ensure sidebar nav button (collapse arrow inside sidebar) stays visible */
-        [data-testid="stSidebarNavLink"],
-        [data-testid="stSidebarNav"],
-        button[kind="headerNoPadding"] {
+        /* Ensure the collapse button itself is styled and clickable */
+        [data-testid="stSidebarCollapsedControl"] button {
             visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        /* Remove the top padding left by the hidden header */
+        .block-container {
+            padding-top: 1.5rem !important;
         }
 
         /* ── Print / PDF export styles ── */
@@ -1110,6 +1102,8 @@ _stc.html("""
     </button>
 </div>
 """, height=0)
+
+
 
 # =====================================================
 # FUNCTIONS
@@ -2346,12 +2340,12 @@ def _match_nationality_to_iso(nat_str):
     # Direct match
     if clean in NATIONALITY_TO_ISO:
         return NATIONALITY_TO_ISO[clean]
-    # Prefix match — at least 6 chars to avoid false positives
+    # Fuzzy match: require at least 6 common starting characters to avoid false positives
     if len(clean) >= 6:
         for key, code in NATIONALITY_TO_ISO.items():
             if len(key) >= 6 and (clean.startswith(key[:6]) or key.startswith(clean[:6])):
                 return code
-    # Fuzzy match via difflib (cutoff 0.8 = high confidence only)
+    # Fallback: try difflib for close matches
     import difflib
     matches = difflib.get_close_matches(clean, NATIONALITY_TO_ISO.keys(), n=1, cutoff=0.8)
     if matches:
@@ -2385,6 +2379,144 @@ def translate_course_type(val):
             return v
     return val_str
 
+# ── First-name → gender dictionary (Italian / French) ─────────────
+_PRENOM_GENRE_MAP: dict[str, str] = {
+    # ── Female ──
+    "Adele": "F", "Adriana": "F", "Agnese": "F", "Agostina": "F", "Aida": "F",
+    "Albina": "F", "Alessandra": "F", "Alessia": "F", "Alexandra": "F", "Alice": "F",
+    "Alina": "F", "Allegra": "F", "Amalia": "F", "Amanda": "F", "Ambra": "F",
+    "Amelia": "F", "Anastasia": "F", "Angela": "F", "Angelica": "F", "Anita": "F",
+    "Anna": "F", "Annalaura": "F", "Annalisa": "F", "Annamaria": "F", "Annarita": "F",
+    "Antonia": "F", "Antonietta": "F", "Arianna": "F", "Asia": "F", "Astrid": "F",
+    "Aurora": "F", "Barbara": "F", "Beatrice": "F", "Benedetta": "F", "Berenice": "F",
+    "Bianca": "F", "Bruna": "F", "Camilla": "F", "Carla": "F", "Carlotta": "F",
+    "Carmen": "F", "Carolina": "F", "Caterina": "F", "Cecilia": "F", "Celeste": "F",
+    "Chiara": "F", "Cinzia": "F", "Clara": "F", "Claudia": "F", "Clelia": "F",
+    "Clotilde": "F", "Concetta": "F", "Costanza": "F", "Cristina": "F",
+    "Dalila": "F", "Daniela": "F", "Daria": "F", "Debora": "F", "Denise": "F",
+    "Desiree": "F", "Diana": "F", "Diletta": "F", "Dina": "F", "Donatella": "F",
+    "Doriana": "F", "Edith": "F", "Elda": "F", "Elena": "F", "Eleonora": "F",
+    "Elettra": "F", "Eliana": "F", "Elisa": "F", "Elisabetta": "F", "Eloisa": "F",
+    "Emanuela": "F", "Emilia": "F", "Emma": "F", "Erica": "F", "Erika": "F",
+    "Ester": "F", "Eugenia": "F", "Eva": "F", "Fabiana": "F", "Fabiola": "F",
+    "Federica": "F", "Fiorella": "F", "Flavia": "F", "Flora": "F", "Francesca": "F",
+    "Frida": "F", "Gaia": "F", "Gemma": "F", "Giada": "F", "Ginevra": "F",
+    "Gioia": "F", "Giorgia": "F", "Giovanna": "F", "Giulia": "F", "Giuliana": "F",
+    "Giuseppina": "F", "Giusy": "F", "Gloria": "F", "Grazia": "F", "Greta": "F",
+    "Ida": "F", "Ilaria": "F", "Ilary": "F", "Ilda": "F", "Ilenia": "F",
+    "Immacolata": "F", "Ines": "F", "Irene": "F", "Iris": "F", "Isabel": "F",
+    "Isabella": "F", "Jessica": "F", "Jolanda": "F", "Katia": "F", "Lara": "F",
+    "Laura": "F", "Lavinia": "F", "Lea": "F", "Leila": "F", "Letizia": "F",
+    "Lidia": "F", "Liliana": "F", "Linda": "F", "Lisa": "F", "Livia": "F",
+    "Lorena": "F", "Lorenza": "F", "Luana": "F", "Lucia": "F", "Luciana": "F",
+    "Lucrezia": "F", "Lucyana": "F", "Ludovica": "F", "Luisa": "F", "Luna": "F",
+    "Maddalena": "F", "Manuela": "F", "Mara": "F", "Margherita": "F", "Maria": "F",
+    "Mariafrancesca": "F", "Mariarosaria": "F", "Marianna": "F", "Marina": "F",
+    "Marta": "F", "Martina": "F", "Matilde": "F", "Maya": "F", "Melania": "F",
+    "Melissa": "F", "Michela": "F", "Milena": "F", "Mirella": "F", "Miriam": "F",
+    "Miriana": "F", "Monica": "F", "Nadia": "F", "Natalia": "F", "Nicole": "F",
+    "Nicoletta": "F", "Nina": "F", "Noemi": "F", "Nora": "F", "Nunzia": "F",
+    "Olivia": "F", "Ornella": "F", "Paola": "F", "Patrizia": "F", "Penelope": "F",
+    "Petra": "F", "Rachele": "F", "Raffaella": "F", "Rebecca": "F", "Renata": "F",
+    "Rita": "F", "Roberta": "F", "Rosa": "F", "Rosanna": "F", "Rossana": "F",
+    "Rossella": "F", "Sabrina": "F", "Samantha": "F", "Sandra": "F", "Sara": "F",
+    "Selene": "F", "Serena": "F", "Sibilla": "F", "Silvia": "F", "Simona": "F",
+    "Sofia": "F", "Sonia": "F", "Sophia": "F", "Stefania": "F", "Stella": "F",
+    "Susanna": "F", "Sveva": "F", "Teresa": "F", "Tiziana": "F", "Valentina": "F",
+    "Valeria": "F", "Vanessa": "F", "Vera": "F", "Veronica": "F", "Viola": "F",
+    "Virginia": "F", "Vittoria": "F", "Viviana": "F",
+    # French female
+    "Adèle": "F", "Agathe": "F", "Agnès": "F", "Aimée": "F", "Amélie": "F",
+    "Anaïs": "F", "Angélique": "F", "Anouk": "F", "Brigitte": "F", "Camille": "F",
+    "Capucine": "F", "Caroline": "F", "Catherine": "F", "Céline": "F", "Charlotte": "F",
+    "Chloé": "F", "Christine": "F", "Claire": "F", "Clémence": "F", "Colette": "F",
+    "Corinne": "F", "Delphine": "F", "Dominique": "F", "Éléonore": "F", "Élise": "F",
+    "Élodie": "F", "Émilie": "F", "Estelle": "F", "Fleur": "F", "Florence": "F",
+    "Françoise": "F", "Gaëlle": "F", "Geneviève": "F", "Hélène": "F", "Inès": "F",
+    "Isabelle": "F", "Jeanne": "F", "Joséphine": "F", "Julie": "F", "Juliette": "F",
+    "Léa": "F", "Léonie": "F", "Louise": "F", "Lucie": "F", "Madeleine": "F",
+    "Manon": "F", "Margaux": "F", "Marie": "F", "Marion": "F", "Mathilde": "F",
+    "Nathalie": "F", "Noémie": "F", "Pauline": "F", "Rose": "F", "Sandrine": "F",
+    "Sophie": "F", "Sylvie": "F", "Thérèse": "F", "Valérie": "F", "Véronique": "F",
+    # ── Male ──
+    "Adriano": "M", "Alberto": "M", "Aldo": "M", "Alessandro": "M", "Alessio": "M",
+    "Alfonso": "M", "Alfredo": "M", "Amedeo": "M", "Andrea": "M", "Angelo": "M",
+    "Antonio": "M", "Arturo": "M", "Bruno": "M", "Carlo": "M", "Cesare": "M",
+    "Christian": "M", "Claudio": "M", "Corrado": "M", "Cosimo": "M", "Cristian": "M",
+    "Daniel": "M", "Daniele": "M", "Dario": "M", "Davide": "M", "Diego": "M",
+    "Domenico": "M", "Donato": "M", "Edoardo": "M", "Elia": "M", "Emanuele": "M",
+    "Emiliano": "M", "Enrico": "M", "Enzo": "M", "Ernesto": "M", "Ettore": "M",
+    "Eugenio": "M", "Fabio": "M", "Fabrizio": "M", "Federico": "M", "Felice": "M",
+    "Filippo": "M", "Francesco": "M", "Franco": "M", "Fulvio": "M", "Gabriele": "M",
+    "Gaetano": "M", "Gennaro": "M", "Giacomo": "M", "Gianluca": "M", "Gianmarco": "M",
+    "Gianpaolo": "M", "Giorgio": "M", "Giovanni": "M", "Giuliano": "M", "Giulio": "M",
+    "Giuseppe": "M", "Guglielmo": "M", "Guido": "M", "Jacopo": "M", "Lapo": "M",
+    "Leonardo": "M", "Lorenzo": "M", "Luca": "M", "Luciano": "M", "Luigi": "M",
+    "Manuel": "M", "Marcello": "M", "Marcelo": "M", "Marco": "M", "Mario": "M",
+    "Massimiliano": "M", "Massimo": "M", "Matteo": "M", "Mattia": "M", "Maurizio": "M",
+    "Mauro": "M", "Michael": "M", "Michele": "M", "Mirko": "M", "Niccolò": "M",
+    "Nicola": "M", "Nicolò": "M", "Nunzio": "M", "Omar": "M", "Oreste": "M",
+    "Oscar": "M", "Paolo": "M", "Pasquale": "M", "Patrick": "M", "Piero": "M",
+    "Pietro": "M", "Raffaele": "M", "Renato": "M", "Riccardo": "M", "Roberto": "M",
+    "Rocco": "M", "Salvatore": "M", "Samuele": "M", "Sandro": "M", "Saverio": "M",
+    "Sebastiano": "M", "Sergio": "M", "Silvio": "M", "Simone": "M", "Stefano": "M",
+    "Thomas": "M", "Tommaso": "M", "Ugo": "M", "Umberto": "M", "Valerio": "M",
+    "Vincenzo": "M", "Vittorio": "M",
+    # Additional Italian names
+    "Teodoro": "M", "Zeno": "M", "Duccio": "M", "Tancredi": "M", "Ruggero": "M",
+    "Tito": "M", "Achille": "M", "Neri": "M", "Flavio": "M", "Gherardo": "M",
+    "Ivo": "M", "Nino": "M", "Biagio": "M", "Ciro": "M", "Donato": "M",
+    "Simon": "M", "Sasha": "M", "Damiano": "M", "Tiziano": "M", "Corrado": "M",
+    "Novella": "F", "Azzurra": "F", "Morena": "F", "Carmela": "F", "Alba": "F",
+    "Florinda": "F", "Assunta": "F", "Rosella": "F", "Marika": "F", "Sarah": "F",
+    "Elide": "F", "Concettina": "F", "Oriana": "F", "Loredana": "F", "Wanda": "F",
+    "Filomena": "F", "Giuseppa": "F", "Graziella": "F", "Addolorata": "F", "Nicolina": "F",
+    "Palmina": "F", "Agata": "F", "Micaela": "F", "Noelia": "F", "Giordana": "F",
+    "Celeste": "F", "Clelia": "F", "Romina": "F", "Bruna": "F",
+    "Deborah": "F", "Priscilla": "F", "Floriana": "F", "Olimpia": "F",
+    "Gabriella": "F", "Carol": "F", "Mihaela": "F", "Lilla": "F", "Guya": "F",
+    "Olha": "F", "Marialaura": "F", "Eleonore": "F", "Rosario": "M",
+    "David": "M", "Brando": "M", "Ruben": "M", "Adrián": "M",
+    "Julia": "F", "Marzia": "F", "Ella": "F", "Antonella": "F", "Fiammetta": "F",
+    "Viktoriia": "F", "Philip": "M", "Kevin": "M", "Cristiano": "M",
+    "Gianmaria": "M", "Gabriel": "M", "Dimitri": "M", "Pedro": "M",
+    # French male
+    "Alain": "M", "Alexandre": "M", "Antoine": "M", "Arnaud": "M", "Baptiste": "M",
+    "Benoît": "M", "Bernard": "M", "Bertrand": "M", "Cédric": "M", "Charles": "M",
+    "Christophe": "M", "Claude": "M", "Clément": "M", "Damien": "M", "Denis": "M",
+    "Didier": "M", "Éric": "M", "Étienne": "M", "Fabien": "M", "Florian": "M",
+    "Franck": "M", "François": "M", "Frédéric": "M", "Gauthier": "M", "Gérard": "M",
+    "Grégoire": "M", "Guillaume": "M", "Henri": "M", "Hervé": "M", "Hugo": "M",
+    "Jacques": "M", "Jean": "M", "Jérôme": "M", "Julien": "M", "Laurent": "M",
+    "Léo": "M", "Louis": "M", "Luc": "M", "Lucas": "M", "Marc": "M",
+    "Marcel": "M", "Martin": "M", "Mathieu": "M", "Matthieu": "M", "Maxime": "M",
+    "Nicolas": "M", "Noël": "M", "Olivier": "M", "Pascal": "M", "Patrice": "M",
+    "Paul": "M", "Philippe": "M", "Pierre": "M", "Raphaël": "M", "Rémi": "M",
+    "René": "M", "Romain": "M", "Sébastien": "M", "Serge": "M", "Stéphane": "M",
+    "Théo": "M", "Thibault": "M", "Thierry": "M", "Vincent": "M", "Xavier": "M",
+    "Yves": "M",
+}
+
+def _infer_gender_from_prenom(name) -> str | None:
+    """Return 'F' or 'M' from a first name, or None if unknown."""
+    if pd.isna(name) or not str(name).strip():
+        return None
+    raw = str(name).strip()
+    # Try full name first (handles "Annalaura", "Mariafrancesca", etc.)
+    key_full = raw.split()[0]            # first token for compound "Francesco Pio"
+    # capitalise for lookup
+    key_cap = key_full.capitalize()
+    result = _PRENOM_GENRE_MAP.get(key_cap)
+    if result:
+        return result
+    # Try with accents stripped (common CSV artefacts)
+    import unicodedata as _ud
+    key_ascii = ''.join(
+        c for c in _ud.normalize('NFD', key_cap) if _ud.category(c) != 'Mn'
+    )
+    return _PRENOM_GENRE_MAP.get(key_ascii)
+
+
 def process_profils_clients(df):
     """Process the client profiles export DataFrame."""
     df = df.copy()
@@ -2414,6 +2546,15 @@ def process_profils_clients(df):
             df["Année_Creation"] = df["Date_Inscription_parsed"].dt.year
             df["Mois_Creation"] = df["Date_Inscription_parsed"].dt.month
     
+    # ── Infer gender from first names for rows missing genre ──
+    if "Genre" in df.columns and "Prénom" in df.columns:
+        _no_genre = df["Genre"].isna()
+        if _no_genre.any():
+            inferred = df.loc[_no_genre, "Prénom"].apply(_infer_gender_from_prenom)
+            _found = inferred.notna()
+            if _found.any():
+                df.loc[_no_genre & _found.reindex(df.index, fill_value=False), "Genre"] = inferred[_found]
+
     # Clean Genre: map 'O' and NaN to 'Non spécifié'
     if "Genre" in df.columns:
         df["Genre"] = df["Genre"].fillna("Non spécifié")
@@ -2526,7 +2667,7 @@ def render_profils_tabs(df_profils):
                     period_options.append(label)
                     period_lookup[label] = {"year": yr_int, "month": m_int}
     
-    col_f1, col_f2, col_f3, col_f4 = st.columns(4)
+    col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns(5)
     
     with col_f1:
         available_antennes = sorted([s for s in df_profils["Sede"].unique() if s != "???"])
@@ -2561,6 +2702,23 @@ def render_profils_tabs(df_profils):
         else:
             selected_types = None
     
+    with col_f5:
+        if "Profil client" in df_profils.columns:
+            # Extract individual profile tags from comma-separated values
+            _all_profil_tags = set()
+            for val in df_profils["Profil client"].dropna().unique():
+                for tag in str(val).split(","):
+                    tag = tag.strip()
+                    if tag:
+                        _all_profil_tags.add(tag)
+            all_profils = sorted(_all_profil_tags)
+            selected_profils = st.multiselect(
+                "Profil client", all_profils, default=[], key="profils_profil_client",
+                placeholder="Tous"
+            )
+        else:
+            selected_profils = None
+    
     # Apply filters (empty selection = no filter = all)
     df_p = df_profils.copy()
     
@@ -2584,6 +2742,12 @@ def render_profils_tabs(df_profils):
         df_p = df_p[df_p["Tranche_Custom"].isin(selected_tranches) | df_p["Tranche_Custom"].isna()]
     if selected_types and "Type_Cours_FR" in df_p.columns:
         df_p = df_p[df_p["Type_Cours_FR"].isin(selected_types)]
+    if selected_profils and "Profil client" in df_p.columns:
+        # Keep rows where at least one selected tag appears in the comma-separated profile
+        _prof_mask = df_p["Profil client"].apply(
+            lambda v: any(tag in str(v) for tag in selected_profils) if pd.notna(v) else False
+        )
+        df_p = df_p[_prof_mask]
     
     if len(df_p) == 0:
         st.warning("Aucune donnée avec ces filtres.")
@@ -3153,7 +3317,7 @@ def render_profils_tabs(df_profils):
     st.divider()
     _csv_profils = df_profils.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label=f"⬇️ {t('download_csv')} — Profils clients",
+        label=f"⬇️ {t('download_csv')} — Profils",
         data=_csv_profils,
         file_name="export_profils_clients.csv",
         mime="text/csv",
@@ -3649,7 +3813,7 @@ with st.sidebar:
             # --- Clients ---
             load_clients = False
             if PRELOADED_CLIENTS:
-                load_clients = st.checkbox("Profils clients", key="check_clients", value=True,
+                load_clients = st.checkbox("Profils", key="check_clients", value=True,
                                            help=f"{len(PRELOADED_CLIENTS)} fichier(s) disponible(s)")
 
             # --- Produits ---
@@ -3898,10 +4062,6 @@ if not all_uploaded_files:
         - {t('export_type_3')}
         - {t('export_type_4')}
         """)
-        
-        with st.expander(t('how_to_export'), expanded=False):
-            st.markdown(t('export_steps'))
-            st.markdown(f"[{t('export_script_link')}](#)")  # TODO: link to actual script
     
     with col_right:
         st.markdown(f"### {t('features')}")
@@ -3914,6 +4074,45 @@ if not all_uploaded_files:
         - {t('feature_6')}
         - {t('feature_7')}
         """)
+    
+    # ── Parcours de récupération des fichiers (editable by adrien) ──
+    st.markdown("---")
+    _DEFAULT_INSTRUCTIONS = (
+        "### 📂 Parcours de récupération des fichiers depuis AEC\n\n"
+        "1. **Rapport par catégories** : AEC → *Rapports* → *Par catégories* → exporter en .xlsx "
+        "(un fichier par antenne × par semestre)\n"
+        "2. **Fiches de cours** : AEC → *Cours* → *Fiches de cours* → filtrer → exporter en .csv\n"
+        "3. **Profils clients** : AEC → *Clients* → sélectionner les colonnes utiles → exporter en .xlsx\n"
+        "4. **Catalogue produits** : AEC → *Catalogue* → *Produits* → exporter en .xlsx\n\n"
+        "*Déposez ensuite les fichiers via le panneau latéral gauche.*"
+    )
+    _INSTR_KEY = "_welcome_instructions"
+    if _INSTR_KEY not in st.session_state:
+        st.session_state[_INSTR_KEY] = _DEFAULT_INSTRUCTIONS
+    
+    _is_admin = st.query_params.get("u", "").strip().lower() == "adrien"
+    
+    if _is_admin:
+        with st.expander("📝 Modifier les instructions d'import (admin)", expanded=False):
+            _new_text = st.text_area(
+                "Instructions (Markdown)",
+                value=st.session_state[_INSTR_KEY],
+                height=260,
+                key="_instr_editor",
+            )
+            _col_save, _col_reset = st.columns([1, 1])
+            with _col_save:
+                if st.button("💾 Sauvegarder", key="_save_instr", use_container_width=True):
+                    st.session_state[_INSTR_KEY] = _new_text
+                    st.toast("Instructions sauvegardées ✓", icon="✅")
+                    st.rerun()
+            with _col_reset:
+                if st.button("↩️ Réinitialiser", key="_reset_instr", use_container_width=True):
+                    st.session_state[_INSTR_KEY] = _DEFAULT_INSTRUCTIONS
+                    st.toast("Instructions réinitialisées", icon="🔄")
+                    st.rerun()
+    
+    st.markdown(st.session_state[_INSTR_KEY])
     
     st.stop()
 
@@ -4049,32 +4248,32 @@ else:
 # If no category report data, render other export analyses with tabs and stop
 if df_combined is None:
     available_tabs = []
+    if df_profils is not None:
+        available_tabs.append("Profils")
     if df_fiches is not None:
         available_tabs.append("Fiches de cours")
-    if df_profils is not None:
-        available_tabs.append("Profils clients")
     if df_produits is not None:
         available_tabs.append("Produits")
     
     if len(available_tabs) == 1:
         # Single export type - render directly without tabs
-        if df_fiches is not None:
-            render_fiches_tabs(df_fiches)
-        elif df_profils is not None:
+        if df_profils is not None:
             render_profils_tabs(df_profils)
+        elif df_fiches is not None:
+            render_fiches_tabs(df_fiches)
         elif df_produits is not None:
             render_produits_tabs(df_produits)
     else:
         # Multiple export types - use top-level tabs
         export_tabs = st.tabs(available_tabs)
         tab_idx = 0
-        if df_fiches is not None:
-            with export_tabs[tab_idx]:
-                render_fiches_tabs(df_fiches)
-            tab_idx += 1
         if df_profils is not None:
             with export_tabs[tab_idx]:
                 render_profils_tabs(df_profils)
+            tab_idx += 1
+        if df_fiches is not None:
+            with export_tabs[tab_idx]:
+                render_fiches_tabs(df_fiches)
             tab_idx += 1
         if df_produits is not None:
             with export_tabs[tab_idx]:
@@ -4095,12 +4294,13 @@ _has_other_exports = any([
 ])
 
 if _has_other_exports:
-    _top_labels = ["Cours"]
+    _top_labels = []
+    if df_profils is not None: _top_labels.append("Profils")
+    _top_labels.append("Cours")
     if df_fiches is not None: _top_labels.append("Fiches de cours")
-    if df_profils is not None: _top_labels.append("Profils clients")
     if df_produits is not None: _top_labels.append("Produits")
     _top_tabs = st.tabs(_top_labels)
-    _cours_ctx = _top_tabs[0]
+    _cours_ctx = _top_tabs[_top_labels.index("Cours")]
 else:
     _cours_ctx = st.container()
 
@@ -6872,17 +7072,14 @@ with _cours_ctx:
 
 # Render other export tabs
 if _has_other_exports:
-    _tab_idx = 1
-    if df_fiches is not None:
-        with _top_tabs[_tab_idx]:
-            render_fiches_tabs(st.session_state.course_fiches_data)
-        _tab_idx += 1
     if df_profils is not None:
-        with _top_tabs[_tab_idx]:
+        with _top_tabs[_top_labels.index("Profils")]:
             render_profils_tabs(st.session_state.profils_clients_data)
-        _tab_idx += 1
+    if df_fiches is not None:
+        with _top_tabs[_top_labels.index("Fiches de cours")]:
+            render_fiches_tabs(st.session_state.course_fiches_data)
     if df_produits is not None:
-        with _top_tabs[_tab_idx]:
+        with _top_tabs[_top_labels.index("Produits")]:
             render_produits_tabs(st.session_state.produits_data)
 
 # =====================================================
