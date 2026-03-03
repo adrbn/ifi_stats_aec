@@ -734,6 +734,10 @@ def _login_page():
 
     st.markdown('<div style="text-align:center;color:#94a3b8;font-size:0.7rem;margin-top:2rem;">Accès réservé au personnel autorisé</div>', unsafe_allow_html=True)
 
+    # IFI logo en bas de la page de login
+    if _os_login.path.exists(_lp):
+        st.markdown(f'<div style="text-align:center;margin-top:4rem;"><img src="data:image/png;base64,{_lb}" style="width:60px;opacity:0.5;"></div>', unsafe_allow_html=True)
+
 # Afficher la page login si non authentifié
 if not st.session_state.authenticated:
     _login_page()
@@ -3518,7 +3522,7 @@ with st.sidebar:
     if os.path.exists(_logo_path):
         with open(_logo_path, "rb") as _f:
             _logo_b64 = _b64.b64encode(_f.read()).decode()
-        _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="width:70px; display:block; margin-bottom:8px;">'
+        _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="width:80px; display:block; margin-bottom:10px;">'
     st.markdown(f"""
     <div style="padding:0; text-align:left;">
     {_logo_html}
