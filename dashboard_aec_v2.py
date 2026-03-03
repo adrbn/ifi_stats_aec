@@ -4437,21 +4437,24 @@ if not all_uploaded_files:
     
     if _is_admin:
         with st.expander("📝 Modifier les instructions d'import (admin)", expanded=False):
+            # Initialise widget state from saved instructions (only once)
+            if "_instr_editor" not in st.session_state:
+                st.session_state["_instr_editor"] = st.session_state[_INSTR_KEY]
             _new_text = st.text_area(
                 "Instructions (Markdown)",
-                value=st.session_state[_INSTR_KEY],
                 height=260,
                 key="_instr_editor",
             )
             _col_save, _col_reset = st.columns([1, 1])
             with _col_save:
                 if st.button("💾 Sauvegarder", key="_save_instr", use_container_width=True):
-                    st.session_state[_INSTR_KEY] = _new_text
+                    st.session_state[_INSTR_KEY] = st.session_state["_instr_editor"]
                     st.toast("Instructions sauvegardées ✓", icon="✅")
                     st.rerun()
             with _col_reset:
                 if st.button("↩️ Réinitialiser", key="_reset_instr", use_container_width=True):
                     st.session_state[_INSTR_KEY] = _DEFAULT_INSTRUCTIONS
+                    st.session_state["_instr_editor"] = _DEFAULT_INSTRUCTIONS
                     st.toast("Instructions réinitialisées", icon="🔄")
                     st.rerun()
     
