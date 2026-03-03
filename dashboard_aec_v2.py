@@ -755,6 +755,31 @@ if not st.session_state.authenticated:
     _login_page()
     st.stop()
 
+# --- Ensure sidebar is visible after authentication ---
+# Streamlit may remember a collapsed sidebar from a previous render where CSS hid it.
+# Force it open via an early sidebar element + JS to click expand if collapsed.
+st.sidebar.markdown("")  # create sidebar container early
+
+# Use JS to programmatically expand sidebar if it's collapsed
+import streamlit.components.v1 as _stc_sidebar
+_stc_sidebar.html("""
+<script>
+(function() {
+    function expandSidebar() {
+        var doc = window.parent.document;
+        var sb = doc.querySelector('[data-testid="stSidebar"]');
+        if (sb && sb.getAttribute('aria-expanded') === 'false') {
+            var btn = doc.querySelector('[data-testid="stSidebarCollapsedControl"] button');
+            if (btn) { btn.click(); return; }
+        }
+        // If sidebar not found yet, retry after a short delay
+        if (!sb) { setTimeout(expandSidebar, 200); }
+    }
+    expandSidebar();
+})();
+</script>
+""", height=0)
+
 # =====================================================
 # SESSION STATE INITIALIZATION
 # =====================================================
