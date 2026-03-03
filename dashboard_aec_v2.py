@@ -750,41 +750,10 @@ def _login_page():
 
     st.markdown('<div style="text-align:center;color:#94a3b8;font-size:0.7rem;margin-top:2rem;">Accès réservé au personnel autorisé</div>', unsafe_allow_html=True)
 
-# Render a minimal sidebar on the login page so Streamlit keeps it expanded.
-# (An empty sidebar gets auto-collapsed by Streamlit and won't reopen after login.)
-if not st.session_state.authenticated:
-    with st.sidebar:
-        _lp_pre = os.path.join(os.path.dirname(os.path.abspath(__file__)), "IFI_noir_logo.png")
-        if os.path.exists(_lp_pre):
-            import base64 as _b64_pre
-            with open(_lp_pre, "rb") as _f_pre:
-                _lb_pre = _b64_pre.b64encode(_f_pre.read()).decode()
-            st.markdown(
-                f'<img src="data:image/png;base64,{_lb_pre}" style="width:90px; display:block; margin-bottom:8px;">',
-                unsafe_allow_html=True,
-            )
-        st.markdown(
-            '<div style="font-size:1.2rem; font-weight:800; letter-spacing:0.12em; color:#1a1a1a;">O.S.C.A.R.</div>',
-            unsafe_allow_html=True,
-        )
-
 # Afficher la page login si non authentifié
 if not st.session_state.authenticated:
     _login_page()
     st.stop()
-
-# --- Force sidebar visible after authentication ---
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {
-        visibility: visible !important;
-        display: flex !important;
-        width: auto !important;
-        min-width: 245px !important;
-    }
-    [data-testid="stSidebarCollapsedControl"] { display: flex !important; }
-</style>
-""", unsafe_allow_html=True)
 
 # =====================================================
 # SESSION STATE INITIALIZATION
