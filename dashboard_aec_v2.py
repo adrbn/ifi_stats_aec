@@ -940,14 +940,19 @@ def get_css():
             overflow-y: auto !important;
         }
         
-        /* ── Hide Streamlit chrome (deploy, status, hamburger menu, footer) ── */
+        /* ── Hide Streamlit chrome (deploy, status, hamburger menu, footer, badges) ── */
         [data-testid="stDecoration"],
         [data-testid="stStatusWidget"],
         .stDeployButton,
         [data-testid="stAppDeployButton"],
         [data-testid="stMainMenu"],
         #MainMenu,
-        footer {
+        footer,
+        [data-testid="manage-app-button"],
+        .viewerBadge_container__r5tak,
+        .viewerBadge_link__qRIco,
+        ._profileContainer_gzau3_53,
+        a[href*="streamlit.io/cloud"] {
             display: none !important;
             visibility: hidden !important;
         }
@@ -7393,534 +7398,564 @@ def _oscar_chat_clear():
     st.session_state.oscar_chat_pending = None
     st.session_state.oscar_chat_retry = False
 
-# ── Hidden form for chatbot commands (avoids URL navigation / session loss) ──
-st.markdown('<style>div[data-testid="stForm"]:has(input[aria-label="_oscar_cmd"]){position:fixed!important;top:-9999px!important;left:-9999px!important;}</style>', unsafe_allow_html=True)
-with st.form("_oscar_chat_form", clear_on_submit=True):
-    _oscar_cmd_raw = st.text_input("_oscar_cmd", label_visibility="collapsed")
-    _oscar_form_sub = st.form_submit_button("_oscar_send")
-    if _oscar_form_sub and _oscar_cmd_raw:
-        print(f"[OSCAR] Form submitted: {_oscar_cmd_raw[:100]}", flush=True)
-        try:
-            _cmd = json.loads(_oscar_cmd_raw)
-            _action = _cmd.get('a', '')
-            if _action == 'm':
-                st.session_state.oscar_chat_pending = _cmd.get('t', '')
+@st.fragment
+def _oscar_chatbot_fragment():
+    # ── Hidden form for chatbot commands (avoids URL navigation / session loss) ──
+    st.markdown('<style>div[data-testid="stForm"]:has(input[aria-label="_oscar_cmd"]){position:fixed!important;top:-9999px!important;left:-9999px!important;}</style>', unsafe_allow_html=True)
+    with st.form("_oscar_chat_form", clear_on_submit=True):
+        _oscar_cmd_raw = st.text_input("_oscar_cmd", label_visibility="collapsed")
+        _oscar_form_sub = st.form_submit_button("_oscar_send")
+        if _oscar_form_sub and _oscar_cmd_raw:
+            print(f"[OSCAR] Form submitted: {_oscar_cmd_raw[:100]}", flush=True)
+            try:
+                _cmd = json.loads(_oscar_cmd_raw)
+                _action = _cmd.get('a', '')
+                if _action == 'm':
+                    st.session_state.oscar_chat_pending = _cmd.get('t', '')
+                    st.session_state.oscar_chat_open = True
+                elif _action == 'c':
+                    _oscar_chat_clear()
+                    st.session_state.oscar_chat_open = True
+                elif _action == 'r':
+                    st.session_state.oscar_chat_retry = True
+                    st.session_state.oscar_chat_open = True
+                elif _action == 'M':
+                    st.session_state.oscar_chat_model = _cmd.get('v', 'openweight-large')
+                    st.session_state.oscar_chat_open = True
+            except Exception:
+                st.session_state.oscar_chat_pending = _oscar_cmd_raw
                 st.session_state.oscar_chat_open = True
-            elif _action == 'c':
-                _oscar_chat_clear()
-                st.session_state.oscar_chat_open = True
-            elif _action == 'r':
-                st.session_state.oscar_chat_retry = True
-                st.session_state.oscar_chat_open = True
-            elif _action == 'M':
-                st.session_state.oscar_chat_model = _cmd.get('v', 'openweight-large')
-                st.session_state.oscar_chat_open = True
-        except Exception:
-            st.session_state.oscar_chat_pending = _oscar_cmd_raw
-            st.session_state.oscar_chat_open = True
 
-# ── Process pending message ──
-if st.session_state.oscar_chat_pending or st.session_state.oscar_chat_retry:
-    ctx = _build_chatbot_context()
-    api_messages = [{"role": "system", "content": ctx}]
+    # ── Process pending message ──
+    if st.session_state.oscar_chat_pending or st.session_state.oscar_chat_retry:
+        ctx = _build_chatbot_context()
+        api_messages = [{"role": "system", "content": ctx}]
 
-    if st.session_state.oscar_chat_retry:
-        # Re-send last user message (remove last error from history)
-        if st.session_state.oscar_chat_history and st.session_state.oscar_chat_history[-1].get('error'):
-            st.session_state.oscar_chat_history.pop()
-        st.session_state.oscar_chat_retry = False
-    else:
-        user_msg = st.session_state.oscar_chat_pending
-        st.session_state.oscar_chat_history.append({"role": "user", "content": user_msg})
-        st.session_state.oscar_chat_pending = None
+        if st.session_state.oscar_chat_retry:
+            # Re-send last user message (remove last error from history)
+            if st.session_state.oscar_chat_history and st.session_state.oscar_chat_history[-1].get('error'):
+                st.session_state.oscar_chat_history.pop()
+            st.session_state.oscar_chat_retry = False
+        else:
+            user_msg = st.session_state.oscar_chat_pending
+            st.session_state.oscar_chat_history.append({"role": "user", "content": user_msg})
+            st.session_state.oscar_chat_pending = None
 
-    # Build full message list for API
-    for msg in st.session_state.oscar_chat_history:
-        if msg['role'] in ('user', 'assistant'):
-            api_messages.append({"role": msg['role'], "content": msg['content']})
+        # Build full message list for API
+        for msg in st.session_state.oscar_chat_history:
+            if msg['role'] in ('user', 'assistant'):
+                api_messages.append({"role": msg['role'], "content": msg['content']})
 
-    model = st.session_state.oscar_chat_model
-    content, error = _call_albert_api(api_messages, model=model)
-    if error:
-        st.session_state.oscar_chat_history.append({"role": "assistant", "content": error, "error": True})
-    else:
-        st.session_state.oscar_chat_history.append({"role": "assistant", "content": content})
-    st.session_state.oscar_chat_open = True
+        model = st.session_state.oscar_chat_model
+        content, error = _call_albert_api(api_messages, model=model)
+        if error:
+            st.session_state.oscar_chat_history.append({"role": "assistant", "content": error, "error": True})
+        else:
+            st.session_state.oscar_chat_history.append({"role": "assistant", "content": content})
+        st.session_state.oscar_chat_open = True
 
-# ── Chatbot CSS (popup overlay) ──
-_fs_class = 'oscar-fs' if st.session_state.oscar_chat_fullscreen else ''
-_open_class = 'oscar-open' if st.session_state.oscar_chat_open else ''
+    # ── Chatbot CSS (popup overlay) ──
+    _fs_class = 'oscar-fs' if st.session_state.oscar_chat_fullscreen else ''
+    _open_class = 'oscar-open' if st.session_state.oscar_chat_open else ''
 
-_stc.html(f"""
-<script>
-(function() {{
-    var doc = window.parent.document;
-    var old = doc.getElementById('oscar-chatbot-style');
-    if (old) old.remove();
-    var style = doc.createElement('style');
-    style.id = 'oscar-chatbot-style';
-    style.textContent = `
-    /* FAB button */
-    div[data-testid="stBottom"] {{
-        z-index: 10000000 !important;
+    _stc.html(f"""
+    <script>
+    (function() {{
+        var doc = window.parent.document;
+        var old = doc.getElementById('oscar-chatbot-style');
+        if (old) old.remove();
+        var style = doc.createElement('style');
+        style.id = 'oscar-chatbot-style';
+        style.textContent = `
+        /* FAB button */
+        div[data-testid="stBottom"] {{
+            z-index: 10000000 !important;
+        }}
+        /* Hide default chat input border */
+        .oscar-chat-container {{
+            position: relative;
+        }}
+        /* Popup overlay managed by Streamlit container below */
+        `;
+        doc.head.appendChild(style);
+    }})();
+    </script>
+    """, height=0)
+
+    # ── Render chatbot UI using Streamlit native components ──
+    _chat_css = f"""
+    <style>
+    #oscar-chat-fab {{
+        position: fixed; bottom: 24px; right: 24px; z-index: 10000000;
+        width: 52px; height: 52px; border-radius: 50%;
+        background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+        color: white; border: none; cursor: pointer;
+        font-size: 24px; display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+        transition: transform 0.2s, box-shadow 0.2s;
     }}
-    /* Hide default chat input border */
-    .oscar-chat-container {{
-        position: relative;
-    }}
-    /* Popup overlay managed by Streamlit container below */
-    `;
-    doc.head.appendChild(style);
-}})();
-</script>
-""", height=0)
-
-# ── Render chatbot UI using Streamlit native components ──
-_chat_css = f"""
-<style>
-#oscar-chat-fab {{
-    position: fixed; bottom: 24px; right: 24px; z-index: 10000000;
-    width: 52px; height: 52px; border-radius: 50%;
-    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-    color: white; border: none; cursor: pointer;
-    font-size: 24px; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
-    transition: transform 0.2s, box-shadow 0.2s;
-}}
-#oscar-chat-fab:hover {{ transform: scale(1.1); box-shadow: 0 6px 24px rgba(37,99,235,0.5); }}
-#oscar-chat-popup {{
-    position: fixed; bottom: 88px; right: 24px; z-index: 10000001;
-    width: 420px; max-height: 75vh;
-    background: #ffffff; border-radius: 16px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-    display: none; flex-direction: column; overflow: hidden;
-    font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
-    transition: all 0.3s ease;
-}}
-#oscar-chat-popup.oscar-fs {{
-    top: 8px !important; left: 8px !important; right: 8px !important;
-    bottom: 8px !important; width: auto !important; max-height: none !important;
-    border-radius: 12px;
-}}
-#oscar-chat-popup.oscar-open {{ display: flex; }}
-.oscar-chat-hdr {{
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-    color: white; flex-shrink: 0; border-radius: 16px 16px 0 0;
-}}
-#oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 12px 12px 0 0; }}
-.oscar-chat-hdr-left {{ display: flex; align-items: center; gap: 8px; }}
-.oscar-chat-hdr-title {{ font-weight: 700; font-size: 15px; }}
-.oscar-chat-hdr-btns {{ display: flex; gap: 6px; }}
-.oscar-chat-hdr-btns button {{
-    background: rgba(255,255,255,0.15); border: none; color: white; width: 30px; height: 30px;
-    border-radius: 8px; cursor: pointer; font-size: 15px; display:flex; align-items:center; justify-content:center;
-    transition: background 0.15s;
-}}
-.oscar-chat-hdr-btns button:hover {{ background: rgba(255,255,255,0.3); }}
-.oscar-model-select {{
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
-    color: white; border-radius: 6px; padding: 3px 6px; font-size: 11px;
-    cursor: pointer; outline: none; max-width: 130px;
-}}
-.oscar-model-select option {{ color: #1e293b; background: white; }}
-.oscar-chat-msgs {{
-    flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
-    scroll-behavior: smooth; min-height: 200px; max-height: 55vh;
-}}
-#oscar-chat-popup.oscar-fs .oscar-chat-msgs {{ max-height: none; }}
-.oscar-msg {{ max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.55; word-wrap: break-word; overflow-wrap: break-word; }}
-.oscar-msg-user {{
-    align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 4px;
-}}
-.oscar-msg-ai {{
-    align-self: flex-start; background: #f1f5f9; color: #1e293b; border-bottom-left-radius: 4px;
-}}
-.oscar-msg-ai p {{ margin: 0 0 8px 0; }}
-.oscar-msg-ai p:last-child {{ margin-bottom: 0; }}
-.oscar-msg-ai table {{
-    border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; display: block; overflow-x: auto;
-}}
-.oscar-msg-ai th, .oscar-msg-ai td {{
-    border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; white-space: nowrap;
-}}
-.oscar-msg-ai th {{ background: #e2e8f0; font-weight: 600; }}
-.oscar-msg-ai tr:nth-child(even) {{ background: #f8fafc; }}
-.oscar-msg-ai pre {{
-    background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px;
-    overflow-x: auto; font-size: 13px; position: relative; margin: 8px 0;
-}}
-.oscar-msg-ai code {{
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 13px;
-}}
-.oscar-msg-ai :not(pre) > code {{
-    background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #1e293b;
-}}
-.oscar-copy-btn {{
-    position: absolute; top: 6px; right: 6px; background: rgba(255,255,255,0.12);
-    border: none; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 4px;
-    font-size: 12px; transition: background 0.15s, color 0.15s;
-}}
-.oscar-copy-btn:hover {{ background: rgba(255,255,255,0.25); color: white; }}
-.oscar-msg-ai ul, .oscar-msg-ai ol {{ padding-left: 20px; margin: 4px 0; }}
-.oscar-msg-ai li {{ margin: 2px 0; }}
-.oscar-msg-ai strong {{ font-weight: 700; }}
-.oscar-msg-ai h1,.oscar-msg-ai h2,.oscar-msg-ai h3,.oscar-msg-ai h4 {{
-    margin: 10px 0 6px 0; font-weight: 700;
-}}
-.oscar-msg-ai h1 {{ font-size: 18px; }} .oscar-msg-ai h2 {{ font-size: 16px; }}
-.oscar-msg-ai h3 {{ font-size: 15px; }} .oscar-msg-ai h4 {{ font-size: 14px; }}
-.oscar-msg-ai blockquote {{
-    border-left: 3px solid #2563eb; margin: 8px 0; padding: 4px 12px; color: #475569;
-}}
-.oscar-msg-error {{
-    align-self: flex-start; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;
-    border-bottom-left-radius: 4px; padding: 10px 14px; border-radius: 12px; font-size: 14px;
-    max-width: 88%;
-}}
-.oscar-retry-btn {{
-    display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
-    background: #dc2626; color: white; border: none; border-radius: 8px;
-    padding: 6px 14px; font-size: 13px; cursor: pointer; transition: background 0.15s;
-}}
-.oscar-retry-btn:hover {{ background: #b91c1c; }}
-.oscar-chat-input-area {{
-    display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e2e8f0; flex-shrink: 0;
-    background: #fafbfc; border-radius: 0 0 16px 16px;
-}}
-#oscar-chat-popup.oscar-fs .oscar-chat-input-area {{ border-radius: 0 0 12px 12px; }}
-.oscar-chat-input-area input[type=text] {{
-    flex: 1; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px;
-    font-size: 14px; font-family: inherit; outline: none;
-    transition: border-color 0.15s;
-}}
-.oscar-chat-input-area input[type=text]:focus {{ border-color: #2563eb; }}
-.oscar-chat-input-area button {{
-    background: #2563eb; color: white; border: none; border-radius: 10px;
-    width: 40px; height: 40px; cursor: pointer; font-size: 18px;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s; flex-shrink: 0;
-}}
-.oscar-chat-input-area button:hover {{ background: #1d4ed8; }}
-.oscar-welcome {{ text-align: center; color: #64748b; padding: 24px 16px; }}
-.oscar-welcome h3 {{ color: #1e3a5f; margin-bottom: 8px; }}
-.oscar-suggestions {{
-    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px;
-}}
-.oscar-suggestions button {{
-    background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 20px;
-    padding: 6px 14px; font-size: 13px; color: #334155; cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-}}
-.oscar-suggestions button:hover {{ background: #e2e8f0; border-color: #cbd5e1; }}
-/* ── Mobile responsive ── */
-@media (max-width: 768px) {{
+    #oscar-chat-fab:hover {{ transform: scale(1.1); box-shadow: 0 6px 24px rgba(37,99,235,0.5); }}
     #oscar-chat-popup {{
-        left: 8px !important; right: 8px !important; bottom: 80px !important;
-        width: auto !important; max-height: 70vh !important;
-        border-radius: 12px !important;
+        position: fixed; bottom: 88px; right: 24px; z-index: 10000001;
+        width: 420px; max-height: 75vh;
+        background: #ffffff; border-radius: 16px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+        display: none; flex-direction: column; overflow: hidden;
+        font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+        transition: all 0.3s ease;
     }}
     #oscar-chat-popup.oscar-fs {{
-        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-        border-radius: 0 !important; max-height: none !important;
+        top: 8px !important; left: 8px !important; right: 8px !important;
+        bottom: 8px !important; width: auto !important; max-height: none !important;
+        border-radius: 12px;
     }}
-    #oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 0; }}
-    #oscar-chat-popup.oscar-fs .oscar-chat-input-area {{ border-radius: 0; }}
-    .oscar-msg {{ max-width: 92%; font-size: 13px; }}
-    .oscar-chat-hdr {{ padding: 10px 12px; }}
-    .oscar-chat-msgs {{ padding: 12px; gap: 10px; }}
-    .oscar-chat-input-area {{ padding: 10px 12px; }}
-    #oscar-chat-fab {{ bottom: 16px; right: 16px; width: 48px; height: 48px; }}
-    .oscar-suggestions button {{ font-size: 12px; padding: 5px 10px; }}
-    .oscar-model-select {{ font-size: 10px; max-width: 100px; }}
-}}
-@media (max-width: 400px) {{
-    .oscar-chat-hdr-title {{ font-size: 13px; }}
-    .oscar-suggestions {{ flex-direction: column; }}
-}}
-</style>
-"""
+    #oscar-chat-popup.oscar-open {{ display: flex; }}
+    .oscar-chat-hdr {{
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 16px; background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+        color: white; flex-shrink: 0; border-radius: 16px 16px 0 0;
+    }}
+    #oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 12px 12px 0 0; }}
+    .oscar-chat-hdr-left {{ display: flex; align-items: center; gap: 8px; }}
+    .oscar-chat-hdr-title {{ font-weight: 700; font-size: 15px; }}
+    .oscar-chat-hdr-btns {{ display: flex; gap: 6px; }}
+    .oscar-chat-hdr-btns button {{
+        background: rgba(255,255,255,0.15); border: none; color: white; width: 30px; height: 30px;
+        border-radius: 8px; cursor: pointer; font-size: 15px; display:flex; align-items:center; justify-content:center;
+        transition: background 0.15s;
+    }}
+    .oscar-chat-hdr-btns button:hover {{ background: rgba(255,255,255,0.3); }}
+    .oscar-model-select {{
+        background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+        color: white; border-radius: 6px; padding: 3px 6px; font-size: 11px;
+        cursor: pointer; outline: none; max-width: 130px;
+    }}
+    .oscar-model-select option {{ color: #1e293b; background: white; }}
+    .oscar-chat-msgs {{
+        flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+        scroll-behavior: smooth; min-height: 200px; max-height: 55vh;
+    }}
+    #oscar-chat-popup.oscar-fs .oscar-chat-msgs {{ max-height: none; }}
+    .oscar-msg {{ max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.55; word-wrap: break-word; overflow-wrap: break-word; }}
+    .oscar-msg-user {{
+        align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 4px;
+    }}
+    .oscar-msg-ai {{
+        align-self: flex-start; background: #f1f5f9; color: #1e293b; border-bottom-left-radius: 4px;
+    }}
+    .oscar-msg-ai p {{ margin: 0 0 8px 0; }}
+    .oscar-msg-ai p:last-child {{ margin-bottom: 0; }}
+    .oscar-msg-ai table {{
+        border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; display: block; overflow-x: auto;
+    }}
+    .oscar-msg-ai th, .oscar-msg-ai td {{
+        border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; white-space: nowrap;
+    }}
+    .oscar-msg-ai th {{ background: #e2e8f0; font-weight: 600; }}
+    .oscar-msg-ai tr:nth-child(even) {{ background: #f8fafc; }}
+    .oscar-msg-ai pre {{
+        background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px;
+        overflow-x: auto; font-size: 13px; position: relative; margin: 8px 0;
+    }}
+    .oscar-msg-ai code {{
+        font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 13px;
+    }}
+    .oscar-msg-ai :not(pre) > code {{
+        background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #1e293b;
+    }}
+    .oscar-copy-btn {{
+        position: absolute; top: 6px; right: 6px; background: rgba(255,255,255,0.12);
+        border: none; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 4px;
+        font-size: 12px; transition: background 0.15s, color 0.15s;
+    }}
+    .oscar-copy-btn:hover {{ background: rgba(255,255,255,0.25); color: white; }}
+    .oscar-msg-ai ul, .oscar-msg-ai ol {{ padding-left: 20px; margin: 4px 0; }}
+    .oscar-msg-ai li {{ margin: 2px 0; }}
+    .oscar-msg-ai strong {{ font-weight: 700; }}
+    .oscar-msg-ai h1,.oscar-msg-ai h2,.oscar-msg-ai h3,.oscar-msg-ai h4 {{
+        margin: 10px 0 6px 0; font-weight: 700;
+    }}
+    .oscar-msg-ai h1 {{ font-size: 18px; }} .oscar-msg-ai h2 {{ font-size: 16px; }}
+    .oscar-msg-ai h3 {{ font-size: 15px; }} .oscar-msg-ai h4 {{ font-size: 14px; }}
+    .oscar-msg-ai blockquote {{
+        border-left: 3px solid #2563eb; margin: 8px 0; padding: 4px 12px; color: #475569;
+    }}
+    .oscar-msg-error {{
+        align-self: flex-start; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;
+        border-bottom-left-radius: 4px; padding: 10px 14px; border-radius: 12px; font-size: 14px;
+        max-width: 88%;
+    }}
+    .oscar-retry-btn {{
+        display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+        background: #dc2626; color: white; border: none; border-radius: 8px;
+        padding: 6px 14px; font-size: 13px; cursor: pointer; transition: background 0.15s;
+    }}
+    .oscar-retry-btn:hover {{ background: #b91c1c; }}
+    .oscar-chat-input-area {{
+        display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e2e8f0; flex-shrink: 0;
+        background: #fafbfc; border-radius: 0 0 16px 16px;
+    }}
+    #oscar-chat-popup.oscar-fs .oscar-chat-input-area {{ border-radius: 0 0 12px 12px; }}
+    .oscar-chat-input-area input[type=text] {{
+        flex: 1; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px;
+        font-size: 14px; font-family: inherit; outline: none;
+        transition: border-color 0.15s;
+    }}
+    .oscar-chat-input-area input[type=text]:focus {{ border-color: #2563eb; }}
+    .oscar-chat-input-area button {{
+        background: #2563eb; color: white; border: none; border-radius: 10px;
+        width: 40px; height: 40px; cursor: pointer; font-size: 18px;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s; flex-shrink: 0;
+    }}
+    .oscar-chat-input-area button:hover {{ background: #1d4ed8; }}
+    .oscar-welcome {{ text-align: center; color: #64748b; padding: 24px 16px; }}
+    .oscar-welcome h3 {{ color: #1e3a5f; margin-bottom: 8px; }}
+    .oscar-suggestions {{
+        display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px;
+    }}
+    .oscar-suggestions button {{
+        background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 20px;
+        padding: 6px 14px; font-size: 13px; color: #334155; cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+    }}
+    .oscar-suggestions button:hover {{ background: #e2e8f0; border-color: #cbd5e1; }}
+    /* ── Typing / loading indicator ── */
+    .oscar-typing {{
+        display: flex; gap: 6px; align-items: center;
+        padding: 12px 16px; align-self: flex-start;
+        background: #f1f5f9; border-radius: 12px; border-bottom-left-radius: 4px;
+        max-width: 88%;
+    }}
+    .oscar-dot {{
+        width: 8px; height: 8px; border-radius: 50%; background: #94a3b8;
+        animation: oscar-bounce 1.4s ease-in-out infinite;
+    }}
+    .oscar-dot:nth-child(2) {{ animation-delay: 0.2s; }}
+    .oscar-dot:nth-child(3) {{ animation-delay: 0.4s; }}
+    @keyframes oscar-bounce {{
+        0%, 80%, 100% {{ transform: scale(0.4); opacity: 0.4; }}
+        40% {{ transform: scale(1); opacity: 1; }}
+    }}
+    /* ── Mobile responsive ── */
+    @media (max-width: 768px) {{
+        #oscar-chat-popup {{
+            left: 8px !important; right: 8px !important; bottom: 80px !important;
+            width: auto !important; max-height: 70vh !important;
+            border-radius: 12px !important;
+        }}
+        #oscar-chat-popup.oscar-fs {{
+            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            border-radius: 0 !important; max-height: none !important;
+        }}
+        #oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 0; }}
+        #oscar-chat-popup.oscar-fs .oscar-chat-input-area {{ border-radius: 0; }}
+        .oscar-msg {{ max-width: 92%; font-size: 13px; }}
+        .oscar-chat-hdr {{ padding: 10px 12px; }}
+        .oscar-chat-msgs {{ padding: 12px; gap: 10px; }}
+        .oscar-chat-input-area {{ padding: 10px 12px; }}
+        #oscar-chat-fab {{ bottom: 16px; right: 16px; width: 48px; height: 48px; }}
+        .oscar-suggestions button {{ font-size: 12px; padding: 5px 10px; }}
+        .oscar-model-select {{ font-size: 10px; max-width: 100px; }}
+    }}
+    @media (max-width: 400px) {{
+        .oscar-chat-hdr-title {{ font-size: 13px; }}
+        .oscar-suggestions {{ flex-direction: column; }}
+    }}
+    </style>
+    """
 
-# Build messages HTML
-_msgs_html_parts = []
-_has_history = len(st.session_state.oscar_chat_history) > 0
+    # Build messages HTML
+    _msgs_html_parts = []
+    _has_history = len(st.session_state.oscar_chat_history) > 0
 
-if not _has_history:
-    _msgs_html_parts.append("""
-    <div class="oscar-welcome">
-        <h3>👋 Bonjour !</h3>
-        <p>Je suis <strong>OSCAR AI</strong>, votre assistant data analyst.<br>Posez-moi des questions sur vos données.</p>
-        <div class="oscar-suggestions">
-            <button class="oscar-suggest-btn" data-q="Fais une synthèse globale des données chargées">📊 Synthèse globale</button>
-            <button class="oscar-suggest-btn" data-q="Compare les inscriptions entre les différentes antennes">🏛 Comparer les antennes</button>
-            <button class="oscar-suggest-btn" data-q="Quelles sont les catégories les plus populaires ?">📚 Top catégories</button>
-            <button class="oscar-suggest-btn" data-q="Analyse l'évolution des inscriptions d'année en année">📈 Évolution annuelle</button>
+    if not _has_history:
+        _msgs_html_parts.append("""
+        <div class="oscar-welcome">
+            <h3>👋 Bonjour !</h3>
+            <p>Je suis <strong>OSCAR AI</strong>, votre assistant data analyst.<br>Posez-moi des questions sur vos données.</p>
+            <div class="oscar-suggestions">
+                <button class="oscar-suggest-btn" data-q="Fais une synthèse globale des données chargées">📊 Synthèse globale</button>
+                <button class="oscar-suggest-btn" data-q="Compare les inscriptions entre les différentes antennes">🏛 Comparer les antennes</button>
+                <button class="oscar-suggest-btn" data-q="Quelles sont les catégories les plus populaires ?">📚 Top catégories</button>
+                <button class="oscar-suggest-btn" data-q="Analyse l'évolution des inscriptions d'année en année">📈 Évolution annuelle</button>
+            </div>
+        </div>""")
+
+    for _mi, _m in enumerate(st.session_state.oscar_chat_history):
+        if _m['role'] == 'user':
+            _safe = _m['content'].replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            _msgs_html_parts.append(f'<div class="oscar-msg oscar-msg-user">{_safe}</div>')
+        elif _m.get('error'):
+            _safe = _m['content'].replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            _msgs_html_parts.append(f'<div class="oscar-msg-error">❌ {_safe}<br><button class="oscar-retry-btn" id="oscar-retry-btn">🔄 Réessayer</button></div>')
+        else:
+            # AI message - render as markdown HTML (using marked.js client-side)
+            _ai_content = _m['content'] or 'Désolé, pas de réponse.'
+            import base64 as _b64
+            _b64_content = _b64.b64encode(_ai_content.encode('utf-8')).decode('ascii')
+            _msgs_html_parts.append(f'<div class="oscar-msg oscar-msg-ai" data-md-b64="{_b64_content}"></div>')
+
+    _msgs_html = "\n".join(_msgs_html_parts)
+
+    # Model options HTML
+    _model_options = ""
+    for _mk, _mv in _ALBERT_MODELS.items():
+        _sel = ' selected' if _mk == st.session_state.oscar_chat_model else ''
+        _model_options += f'<option value="{_mk}"{_sel}>{_mv}</option>'
+
+    _fs_icon = '⊡' if st.session_state.oscar_chat_fullscreen else '⛶'
+
+    _chatbot_html = f"""
+    {_chat_css}
+    <div id="oscar-chat-fab" title="Assistant OSCAR AI">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+    </div>
+    <div id="oscar-chat-popup" class="{_open_class} {_fs_class}">
+        <div class="oscar-chat-hdr">
+            <div class="oscar-chat-hdr-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span class="oscar-chat-hdr-title">OSCAR AI</span>
+                <select class="oscar-model-select" id="oscar-model-sel">
+                    {_model_options}
+                </select>
+            </div>
+            <div class="oscar-chat-hdr-btns">
+                <button id="oscar-chat-fs" title="Plein écran">{_fs_icon}</button>
+                <button id="oscar-chat-clear" title="Effacer">🗑</button>
+                <button id="oscar-chat-close" title="Fermer">✕</button>
+            </div>
         </div>
-    </div>""")
-
-for _mi, _m in enumerate(st.session_state.oscar_chat_history):
-    if _m['role'] == 'user':
-        _safe = _m['content'].replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-        _msgs_html_parts.append(f'<div class="oscar-msg oscar-msg-user">{_safe}</div>')
-    elif _m.get('error'):
-        _safe = _m['content'].replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-        _msgs_html_parts.append(f'<div class="oscar-msg-error">❌ {_safe}<br><button class="oscar-retry-btn" id="oscar-retry-btn">🔄 Réessayer</button></div>')
-    else:
-        # AI message - render as markdown HTML (using marked.js client-side)
-        _ai_content = _m['content'] or 'Désolé, pas de réponse.'
-        import base64 as _b64
-        _b64_content = _b64.b64encode(_ai_content.encode('utf-8')).decode('ascii')
-        _msgs_html_parts.append(f'<div class="oscar-msg oscar-msg-ai" data-md-b64="{_b64_content}"></div>')
-
-_msgs_html = "\n".join(_msgs_html_parts)
-
-# Model options HTML
-_model_options = ""
-for _mk, _mv in _ALBERT_MODELS.items():
-    _sel = ' selected' if _mk == st.session_state.oscar_chat_model else ''
-    _model_options += f'<option value="{_mk}"{_sel}>{_mv}</option>'
-
-_fs_icon = '⊡' if st.session_state.oscar_chat_fullscreen else '⛶'
-
-_chatbot_html = f"""
-{_chat_css}
-<div id="oscar-chat-fab" title="Assistant OSCAR AI">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-    </svg>
-</div>
-<div id="oscar-chat-popup" class="{_open_class} {_fs_class}">
-    <div class="oscar-chat-hdr">
-        <div class="oscar-chat-hdr-left">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <span class="oscar-chat-hdr-title">OSCAR AI</span>
-            <select class="oscar-model-select" id="oscar-model-sel">
-                {_model_options}
-            </select>
+        <div class="oscar-chat-msgs" id="oscar-chat-msgs">
+            {_msgs_html}
         </div>
-        <div class="oscar-chat-hdr-btns">
-            <button id="oscar-chat-fs" title="Plein écran">{_fs_icon}</button>
-            <button id="oscar-chat-clear" title="Effacer">🗑</button>
-            <button id="oscar-chat-close" title="Fermer">✕</button>
+        <div class="oscar-chat-input-area">
+            <input type="text" id="oscar-chat-input" placeholder="Posez une question sur vos données..." autocomplete="off" />
+            <button id="oscar-chat-send" title="Envoyer">➤</button>
         </div>
     </div>
-    <div class="oscar-chat-msgs" id="oscar-chat-msgs">
-        {_msgs_html}
-    </div>
-    <div class="oscar-chat-input-area">
-        <input type="text" id="oscar-chat-input" placeholder="Posez une question sur vos données..." autocomplete="off" />
-        <button id="oscar-chat-send" title="Envoyer">➤</button>
-    </div>
-</div>
-"""
+    """
 
-_stc.html(f"""
-{_chatbot_html}
-<script>
-(function() {{
-    var doc = window.parent.document;
-    // Move elements to parent document body for fixed positioning
-    var old = doc.getElementById('oscar-chatbot-root');
-    if (old) old.remove();
-
-    var root = doc.createElement('div');
-    root.id = 'oscar-chatbot-root';
-
-    // Copy style
-    var styleEl = document.querySelector('style');
-    if (styleEl) {{
-        var pStyle = doc.createElement('style');
-        pStyle.id = 'oscar-chatbot-style-v2';
-        var oldS2 = doc.getElementById('oscar-chatbot-style-v2');
-        if (oldS2) oldS2.remove();
-        pStyle.textContent = styleEl.textContent;
-        doc.head.appendChild(pStyle);
-    }}
-
-    // Copy FAB + popup to parent
-    var fab = document.getElementById('oscar-chat-fab');
-    var popup = document.getElementById('oscar-chat-popup');
-    if (fab) root.appendChild(fab.cloneNode(true));
-    if (popup) root.appendChild(popup.cloneNode(true));
-    doc.body.appendChild(root);
-
-    // Load marked.js in parent if needed
-    if (!window.parent.marked && !doc.querySelector('script[data-oscar-marked]')) {{
-        var ms = doc.createElement('script');
-        ms.src = 'https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js';
-        ms.setAttribute('data-oscar-marked', '1');
-        doc.head.appendChild(ms);
-    }}
-
-    // Inject event handler script into parent context (avoids iframe sandbox restrictions)
-    var oldHandler = doc.getElementById('oscar-chatbot-handler');
-    if (oldHandler) oldHandler.remove();
-    var handlerScript = doc.createElement('script');
-    handlerScript.id = 'oscar-chatbot-handler';
-    handlerScript.textContent = `
+    _stc.html(f"""
+    {_chatbot_html}
+    <script>
     (function() {{
-        var root = document.getElementById('oscar-chatbot-root');
-        if (!root) return;
-        var pFab = document.getElementById('oscar-chat-fab');
-        var pPopup = document.getElementById('oscar-chat-popup');
-        var pInput = document.getElementById('oscar-chat-input');
-        var pSend = document.getElementById('oscar-chat-send');
-        var pClose = document.getElementById('oscar-chat-close');
-        var pFs = document.getElementById('oscar-chat-fs');
-        var pClear = document.getElementById('oscar-chat-clear');
-        var pMsgs = document.getElementById('oscar-chat-msgs');
-        var pModelSel = document.getElementById('oscar-model-sel');
-        var pRetry = document.getElementById('oscar-retry-btn');
+        var doc = window.parent.document;
+        // Move elements to parent document body for fixed positioning
+        var old = doc.getElementById('oscar-chatbot-root');
+        if (old) old.remove();
 
-        // Render markdown in AI messages
-        function renderAllMd() {{
-            if (!window.marked) return;
-            window.marked.setOptions({{ breaks: true, gfm: true }});
-            var mdDivs = root.querySelectorAll('[data-md-b64]');
-            for (var i = 0; i < mdDivs.length; i++) {{
-                try {{
-                    var raw = atob(mdDivs[i].getAttribute('data-md-b64'));
-                    // Decode UTF-8 from binary string
-                    raw = decodeURIComponent(Array.prototype.map.call(raw, function(c) {{
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    }}).join(''));
-                    if (raw) {{
-                        mdDivs[i].innerHTML = window.marked.parse(raw);
-                        addCopyBtns(mdDivs[i]);
-                    }} else {{
-                        mdDivs[i].textContent = 'Pas de réponse.';
-                    }}
-                    mdDivs[i].removeAttribute('data-md-b64');
-                }} catch(e) {{ console.error('[OSCAR] MD render error:', e); }}
-            }}
-            if (pMsgs) pMsgs.scrollTop = pMsgs.scrollHeight;
+        var root = doc.createElement('div');
+        root.id = 'oscar-chatbot-root';
+
+        // Copy style
+        var styleEl = document.querySelector('style');
+        if (styleEl) {{
+            var pStyle = doc.createElement('style');
+            pStyle.id = 'oscar-chatbot-style-v2';
+            var oldS2 = doc.getElementById('oscar-chatbot-style-v2');
+            if (oldS2) oldS2.remove();
+            pStyle.textContent = styleEl.textContent;
+            doc.head.appendChild(pStyle);
         }}
 
-        function addCopyBtns(container) {{
-            var pres = container.querySelectorAll('pre');
-            for (var i = 0; i < pres.length; i++) {{
-                (function(pre) {{
-                    if (pre.querySelector('.oscar-copy-btn')) return;
-                    var btn = document.createElement('button');
-                    btn.className = 'oscar-copy-btn';
-                    btn.textContent = 'Copier';
-                    btn.addEventListener('click', function() {{
-                        var code = pre.querySelector('code');
-                        var text = code ? code.textContent : pre.textContent;
-                        if (navigator.clipboard) {{
-                            navigator.clipboard.writeText(text).then(function() {{
-                                btn.textContent = '✓ Copié';
-                                setTimeout(function() {{ btn.textContent = 'Copier'; }}, 1500);
-                            }});
-                        }}
-                    }});
-                    pre.style.position = 'relative';
-                    pre.appendChild(btn);
-                }})(pres[i]);
-            }}
+        // Copy FAB + popup to parent
+        var fab = document.getElementById('oscar-chat-fab');
+        var popup = document.getElementById('oscar-chat-popup');
+        if (fab) root.appendChild(fab.cloneNode(true));
+        if (popup) root.appendChild(popup.cloneNode(true));
+        doc.body.appendChild(root);
+
+        // Load marked.js in parent if needed
+        if (!window.parent.marked && !doc.querySelector('script[data-oscar-marked]')) {{
+            var ms = doc.createElement('script');
+            ms.src = 'https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js';
+            ms.setAttribute('data-oscar-marked', '1');
+            doc.head.appendChild(ms);
         }}
 
-        // Render markdown once marked.js is loaded
-        if (window.marked) {{
-            renderAllMd();
-        }} else {{
-            var checkMarked = setInterval(function() {{
-                if (window.marked) {{ clearInterval(checkMarked); renderAllMd(); }}
-            }}, 100);
-            setTimeout(function() {{ clearInterval(checkMarked); }}, 5000);
-        }}
+        // Inject event handler script into parent context (avoids iframe sandbox restrictions)
+        var oldHandler = doc.getElementById('oscar-chatbot-handler');
+        if (oldHandler) oldHandler.remove();
+        var handlerScript = doc.createElement('script');
+        handlerScript.id = 'oscar-chatbot-handler';
+        handlerScript.textContent = `
+        (function() {{
+            var root = document.getElementById('oscar-chatbot-root');
+            if (!root) return;
+            var pFab = document.getElementById('oscar-chat-fab');
+            var pPopup = document.getElementById('oscar-chat-popup');
+            var pInput = document.getElementById('oscar-chat-input');
+            var pSend = document.getElementById('oscar-chat-send');
+            var pClose = document.getElementById('oscar-chat-close');
+            var pFs = document.getElementById('oscar-chat-fs');
+            var pClear = document.getElementById('oscar-chat-clear');
+            var pMsgs = document.getElementById('oscar-chat-msgs');
+            var pModelSel = document.getElementById('oscar-model-sel');
+            var pRetry = document.getElementById('oscar-retry-btn');
 
-        // Command helper: fills hidden Streamlit form and submits (no page reload)
-        function oscarCmd(cmdObj) {{
-            console.log('[OSCAR] oscarCmd called:', JSON.stringify(cmdObj));
-            // The form input is in the Streamlit app (parent document)
-            var fi = document.querySelector('input[aria-label="_oscar_cmd"]');
-            if (!fi) {{
-                // Try searching in iframes too
-                var iframes = document.querySelectorAll('iframe');
-                console.log('[OSCAR] input not found in parent doc, checking', iframes.length, 'iframes');
-                for (var ii = 0; ii < iframes.length; ii++) {{
+            // Render markdown in AI messages
+            function renderAllMd() {{
+                if (!window.marked) return;
+                window.marked.setOptions({{ breaks: true, gfm: true }});
+                var mdDivs = root.querySelectorAll('[data-md-b64]');
+                for (var i = 0; i < mdDivs.length; i++) {{
                     try {{
-                        fi = iframes[ii].contentDocument.querySelector('input[aria-label="_oscar_cmd"]');
-                        if (fi) {{ console.log('[OSCAR] Found input in iframe', ii); break; }}
-                    }} catch(e) {{}}
+                        var raw = atob(mdDivs[i].getAttribute('data-md-b64'));
+                        // Decode UTF-8 from binary string
+                        raw = decodeURIComponent(Array.prototype.map.call(raw, function(c) {{
+                            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                        }}).join(''));
+                        if (raw) {{
+                            mdDivs[i].innerHTML = window.marked.parse(raw);
+                            addCopyBtns(mdDivs[i]);
+                        }} else {{
+                            mdDivs[i].textContent = 'Pas de réponse.';
+                        }}
+                        mdDivs[i].removeAttribute('data-md-b64');
+                    }} catch(e) {{ console.error('[OSCAR] MD render error:', e); }}
+                }}
+                if (pMsgs) pMsgs.scrollTop = pMsgs.scrollHeight;
+            }}
+
+            function addCopyBtns(container) {{
+                var pres = container.querySelectorAll('pre');
+                for (var i = 0; i < pres.length; i++) {{
+                    (function(pre) {{
+                        if (pre.querySelector('.oscar-copy-btn')) return;
+                        var btn = document.createElement('button');
+                        btn.className = 'oscar-copy-btn';
+                        btn.textContent = 'Copier';
+                        btn.addEventListener('click', function() {{
+                            var code = pre.querySelector('code');
+                            var text = code ? code.textContent : pre.textContent;
+                            if (navigator.clipboard) {{
+                                navigator.clipboard.writeText(text).then(function() {{
+                                    btn.textContent = '✓ Copié';
+                                    setTimeout(function() {{ btn.textContent = 'Copier'; }}, 1500);
+                                }});
+                            }}
+                        }});
+                        pre.style.position = 'relative';
+                        pre.appendChild(btn);
+                    }})(pres[i]);
                 }}
             }}
-            if (!fi) {{
-                console.error('[OSCAR] CANNOT FIND hidden form input! Listing all inputs:');
-                var allInputs = document.querySelectorAll('input');
-                allInputs.forEach(function(inp, idx) {{
-                    console.log('[OSCAR] input #' + idx + ':', inp.getAttribute('aria-label'), inp.type, inp.name);
-                }});
-                return;
+
+            // Render markdown once marked.js is loaded
+            if (window.marked) {{
+                renderAllMd();
+            }} else {{
+                var checkMarked = setInterval(function() {{
+                    if (window.marked) {{ clearInterval(checkMarked); renderAllMd(); }}
+                }}, 100);
+                setTimeout(function() {{ clearInterval(checkMarked); }}, 5000);
             }}
-            console.log('[OSCAR] Found input, setting value...');
-            var ns = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-            ns.call(fi, JSON.stringify(cmdObj));
-            // Reset React _valueTracker so React detects the change
-            var tracker = fi._valueTracker;
-            if (tracker) tracker.setValue('');
-            fi.dispatchEvent(new Event('input', {{ bubbles: true }}));
-            fi.dispatchEvent(new Event('change', {{ bubbles: true }}));
-            var form = fi.closest('[data-testid="stForm"]');
-            var btn = form ? form.querySelector('[data-testid="stFormSubmitButton"] button') : null;
-            console.log('[OSCAR] form:', !!form, 'btn:', !!btn);
-            if (btn) setTimeout(function() {{ btn.click(); console.log('[OSCAR] Clicked submit button'); }}, 50);
-        }}
 
-        // FAB toggle (client-side only)
-        if (pFab) pFab.onclick = function() {{
-            pPopup.classList.toggle('oscar-open');
-            if (pPopup.classList.contains('oscar-open') && pInput) pInput.focus();
-        }};
-        // Close (client-side only)
-        if (pClose) pClose.onclick = function() {{
-            pPopup.classList.remove('oscar-open');
-        }};
-        // Fullscreen (client-side only)
-        if (pFs) pFs.onclick = function() {{
-            pPopup.classList.toggle('oscar-fs');
-            pFs.textContent = pPopup.classList.contains('oscar-fs') ? '⊡' : '⛶';
-        }};
-        // Clear → hidden form
-        if (pClear) pClear.onclick = function() {{
-            oscarCmd({{ a: 'c' }});
-        }};
-        // Model select → hidden form
-        if (pModelSel) pModelSel.onchange = function() {{
-            oscarCmd({{ a: 'M', v: this.value }});
-        }};
-        // Send message → hidden form
-        function submitMsg(text) {{
-            text = (text || '').trim();
-            if (!text) return;
-            oscarCmd({{ a: 'm', t: text }});
-        }}
-        if (pSend) pSend.onclick = function() {{ submitMsg(pInput.value); }};
-        if (pInput) pInput.onkeydown = function(e) {{
-            if (e.key === 'Enter') {{ e.preventDefault(); submitMsg(pInput.value); }}
-        }};
-        // Suggestion buttons
-        var sugBtns = root.querySelectorAll('.oscar-suggest-btn');
-        for (var si = 0; si < sugBtns.length; si++) {{
-            (function(btn) {{
-                btn.onclick = function() {{ submitMsg(btn.getAttribute('data-q')); }};
-            }})(sugBtns[si]);
-        }}
-        // Retry button → hidden form
-        if (pRetry) pRetry.onclick = function() {{
-            oscarCmd({{ a: 'r' }});
-        }};
-        // Scroll to bottom
-        if (pMsgs) setTimeout(function() {{ pMsgs.scrollTop = pMsgs.scrollHeight; }}, 100);
+            // Command helper: fills hidden Streamlit form and submits (no page reload)
+            function oscarCmd(cmdObj) {{
+                console.log('[OSCAR] oscarCmd called:', JSON.stringify(cmdObj));
+                // The form input is in the Streamlit app (parent document)
+                var fi = document.querySelector('input[aria-label="_oscar_cmd"]');
+                if (!fi) {{
+                    // Try searching in iframes too
+                    var iframes = document.querySelectorAll('iframe');
+                    console.log('[OSCAR] input not found in parent doc, checking', iframes.length, 'iframes');
+                    for (var ii = 0; ii < iframes.length; ii++) {{
+                        try {{
+                            fi = iframes[ii].contentDocument.querySelector('input[aria-label="_oscar_cmd"]');
+                            if (fi) {{ console.log('[OSCAR] Found input in iframe', ii); break; }}
+                        }} catch(e) {{}}
+                    }}
+                }}
+                if (!fi) {{
+                    console.error('[OSCAR] CANNOT FIND hidden form input! Listing all inputs:');
+                    var allInputs = document.querySelectorAll('input');
+                    allInputs.forEach(function(inp, idx) {{
+                        console.log('[OSCAR] input #' + idx + ':', inp.getAttribute('aria-label'), inp.type, inp.name);
+                    }});
+                    return;
+                }}
+                console.log('[OSCAR] Found input, setting value...');
+                var ns = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+                ns.call(fi, JSON.stringify(cmdObj));
+                // Reset React _valueTracker so React detects the change
+                var tracker = fi._valueTracker;
+                if (tracker) tracker.setValue('');
+                fi.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                fi.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                var form = fi.closest('[data-testid="stForm"]');
+                var btn = form ? form.querySelector('[data-testid="stFormSubmitButton"] button') : null;
+                console.log('[OSCAR] form:', !!form, 'btn:', !!btn);
+                if (btn) setTimeout(function() {{ btn.click(); console.log('[OSCAR] Clicked submit button'); }}, 50);
+            }}
+
+            // FAB toggle (client-side only)
+            if (pFab) pFab.onclick = function() {{
+                pPopup.classList.toggle('oscar-open');
+                if (pPopup.classList.contains('oscar-open') && pInput) pInput.focus();
+            }};
+            // Close (client-side only)
+            if (pClose) pClose.onclick = function() {{
+                pPopup.classList.remove('oscar-open');
+            }};
+            // Fullscreen (client-side only)
+            if (pFs) pFs.onclick = function() {{
+                pPopup.classList.toggle('oscar-fs');
+                pFs.textContent = pPopup.classList.contains('oscar-fs') ? '⊡' : '⛶';
+            }};
+            // Clear → hidden form
+            if (pClear) pClear.onclick = function() {{
+                oscarCmd({{ a: 'c' }});
+            }};
+            // Model select → hidden form
+            if (pModelSel) pModelSel.onchange = function() {{
+                oscarCmd({{ a: 'M', v: this.value }});
+            }};
+            // Send message → hidden form
+            function submitMsg(text) {{
+                text = (text || '').trim();
+                if (!text) return;
+                // Immediately show user message + typing indicator
+                if (pMsgs) {{
+                    var safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    pMsgs.innerHTML += '<div class="oscar-msg oscar-msg-user">' + safe + '</div>';
+                    pMsgs.innerHTML += '<div class="oscar-typing"><span class="oscar-dot"></span><span class="oscar-dot"></span><span class="oscar-dot"></span></div>';
+                    pMsgs.scrollTop = pMsgs.scrollHeight;
+                }}
+                if (pInput) pInput.value = '';
+                oscarCmd({{ a: 'm', t: text }});
+            }}
+            if (pSend) pSend.onclick = function() {{ submitMsg(pInput.value); }};
+            if (pInput) pInput.onkeydown = function(e) {{
+                if (e.key === 'Enter') {{ e.preventDefault(); submitMsg(pInput.value); }}
+            }};
+            // Suggestion buttons
+            var sugBtns = root.querySelectorAll('.oscar-suggest-btn');
+            for (var si = 0; si < sugBtns.length; si++) {{
+                (function(btn) {{
+                    btn.onclick = function() {{ submitMsg(btn.getAttribute('data-q')); }};
+                }})(sugBtns[si]);
+            }}
+            // Retry button → hidden form
+            if (pRetry) pRetry.onclick = function() {{
+                oscarCmd({{ a: 'r' }});
+            }};
+            // Scroll to bottom
+            if (pMsgs) setTimeout(function() {{ pMsgs.scrollTop = pMsgs.scrollHeight; }}, 100);
+        }})();
+        `;
+        doc.head.appendChild(handlerScript);
     }})();
-    `;
-    doc.head.appendChild(handlerScript);
-}})();
-</script>
-""", height=0)
+    </script>
+    """, height=0)
 
 
 
+
+
+_oscar_chatbot_fragment()
 st.markdown("---")
 st.caption("OSCAR v3.0 • Institut français Italia")
