@@ -467,6 +467,7 @@ TRANSLATIONS = {
         "export_type_2": "Fiches de cours (.csv) — export global",
         "export_type_3": "Profils clients (.xlsx) — par antenne",
         "export_type_4": "Catalogue produits (.xlsx) — par antenne",
+        "export_type_5": "Activité par période (.xlsx) — Rapports AEC express",
         "need_help": "Besoin d'aide ?", "contact_support": "Contactez le support",
         "filter_years": "Sélectionner les années", "showing_years": "Années affichées",
         "showing_all_years": "Toutes les années",
@@ -587,6 +588,35 @@ TRANSLATIONS = {
         "produits_avg_member_advantage": "Avantage membre moyen",
         "produits_hours_analysis": "Analyse des heures",
         "produits_price_per_hour": "Prix moyen par heure",
+        # Rapports AEC express (Activité par période)
+        "activite_section": "Rapports AEC express",
+        "activite_loaded": "Export activité par période détecté",
+        "tab_activite_global": "Tableau global",
+        "tab_activite_evolution": "Évolutions",
+        "tab_activite_antenna": "Par antenne",
+        "activite_periode": "Période",
+        "activite_year_mode": "Mode année",
+        "activite_civil_year": "Année civile (jan-déc)",
+        "activite_school_year": "Année scolaire (sept-août)",
+        "activite_period_grouping": "Regroupement",
+        "activite_by_month": "Par mois",
+        "activite_by_semester": "Par semestre",
+        "activite_sem1": "Semestre 1 (jan-juil)",
+        "activite_sem2": "Semestre 2 (août-déc)",
+        "activite_select_periods": "Sélection des périodes",
+        "activite_select_antenna": "Sélectionner l'antenne",
+        "activite_ifi_total": "IFI (total toutes antennes)",
+        "activite_indicator": "Indicateur",
+        "activite_eleves_diff": "Élèves différents",
+        "activite_eleves_inscrits": "Élèves inscrits",
+        "activite_cours": "Cours",
+        "activite_heures_contractuelles": "Heures contractuelles",
+        "activite_heures_enseignees": "Heures enseignées",
+        "activite_heures_eleves": "Heures-Élèves",
+        "activite_nouveaux": "Nouveaux étudiants",
+        "activite_reinscrits": "Étudiants réinscrits",
+        "activite_ca_cours": "CA cours",
+        "activite_depenses_cours": "Dépenses cours",
     },
 }
 
@@ -1682,6 +1712,8 @@ MONTH_NUM_TO_FR = {
 def detect_export_type(df):
     """Detect export type from DataFrame columns."""
     cols = set(df.columns)
+    # Activity report (Activité par période): has "Période", "Élèves différents", "Heures-Élèves"
+    activite_markers = {"Période", "Élèves différents", "Heures-Élèves", "Heures enseignées"}
     # Course fiches: has "Centre", "Catégorie", "Nb total de participants", "Date début"
     fiches_markers = {"Centre", "Catégorie", "Nb total de participants", "Date début"}
     # Category report: has "Catégorie de cours"
@@ -1696,8 +1728,11 @@ def detect_export_type(df):
     report_score = len(report_markers & cols)
     profils_score = len(profils_markers & cols)
     produits_score = len(produits_markers & cols)
+    activite_score = len(activite_markers & cols)
     
-    if profils_score >= 3:
+    if activite_score >= 3:
+        return "activite_periode"
+    elif profils_score >= 3:
         return "profils_clients"
     elif produits_score >= 3:
         return "produits"
@@ -4016,6 +4051,445 @@ class DataAssistant:
 """
 
 # =====================================================
+# ACTIVITÉ PAR PÉRIODE (Rapports AEC express)
+# =====================================================
+
+_FRENCH_MONTHS = {
+    "JANVIER": 1, "FEVRIER": 2, "MARS": 3, "AVRIL": 4,
+    "MAI": 5, "JUIN": 6, "JUILLET": 7, "AOUT": 8, "AOÛT": 8,
+    "SEPTEMBRE": 9, "OCTOBRE": 10, "NOVEMBRE": 11, "DECEMBRE": 12, "DÉCEMBRE": 12,
+}
+
+_ACTIVITE_NUM_COLS = [
+    "Élèves différents", "Élèves inscrits", "Cours",
+    "Heures contractuelles", "Heures synchrones", "Heures enseignées",
+    "Heures-Élèves", "Nouveaux étudiants inscrits", "Étudiants réinscrits",
+    "CA cours", "Dépenses cours",
+]
+
+def process_activite_periode(df):
+    """Parse the hierarchical AEC 'Activité par période' export.
+
+    The file has period header rows (e.g. '2026-JANVIER' in the Période col)
+    followed by rows per Centre with numeric data. This function flattens
+    it into a tidy DataFrame with Période, Centre, Année, Mois, Mois_Num columns.
+    """
+    rows = []
+    current_period = None
+    for _, row in df.iterrows():
+        p = row.get("Période")
+        c = row.get("Centre")
+        # Blank separator row → reset period (avoids grand total inheriting last period)
+        if pd.isna(p) and pd.isna(c):
+            current_period = None
+            continue
+        if pd.notna(p) and isinstance(p, str) and "-" in p:
+            current_period = p.strip()
+            continue
+        if pd.notna(c) and current_period is not None:
+            centre = str(c).strip()
+            # Parse year & month from period
+            parts = current_period.split("-", 1)
+            year_str = parts[0].strip()
+            month_str = parts[1].strip().upper() if len(parts) > 1 else ""
+            try:
+                year = int(year_str)
+            except ValueError:
+                year = None
+            mois_num = _FRENCH_MONTHS.get(month_str, 0)
+            mois_label = month_str.capitalize() if month_str else ""
+            rec = {
+                "Période": current_period,
+                "Centre": centre,
+                "Année": year,
+                "Mois": mois_label,
+                "Mois_Num": mois_num,
+            }
+            for col in _ACTIVITE_NUM_COLS:
+                val = row.get(col)
+                if pd.notna(val):
+                    try:
+                        rec[col] = float(val)
+                    except (ValueError, TypeError):
+                        rec[col] = 0.0
+                else:
+                    rec[col] = 0.0
+            # Derive Sede short name
+            sede_map = {
+                "Milano": "IFM", "Firenze": "IFF", "Napoli": "IFN", "Palermo": "IFP",
+            }
+            sede = "IFI"
+            for city, code in sede_map.items():
+                if city.lower() in centre.lower():
+                    sede = code
+                    break
+            if centre.upper() == "TOTAL":
+                sede = "TOTAL"
+            rec["Sede"] = sede
+            rows.append(rec)
+    result = pd.DataFrame(rows)
+    # Ensure numeric cols
+    for col in _ACTIVITE_NUM_COLS:
+        if col in result.columns:
+            result[col] = pd.to_numeric(result[col], errors="coerce").fillna(0)
+    # Add semester column
+    if "Mois_Num" in result.columns:
+        result["Semestre"] = result["Mois_Num"].apply(lambda m: "S1" if 1 <= m <= 7 else "S2")
+    return result
+
+
+def render_activite_tabs(df_act):
+    """Render the 'Rapports AEC express' analysis tabs."""
+    st.markdown(f"## {t('activite_section')}")
+
+    # ── Key indicators for reference ──
+    _INDICATORS = [
+        ("Élèves différents", "👥"),
+        ("Élèves inscrits", "📝"),
+        ("Cours", "📚"),
+        ("Heures contractuelles", "⏱️"),
+        ("Heures enseignées", "🕐"),
+        ("Heures-Élèves", "⏳"),
+        ("Nouveaux étudiants inscrits", "🆕"),
+        ("Étudiants réinscrits", "🔄"),
+        ("CA cours", "💰"),
+        ("Dépenses cours", "💸"),
+    ]
+
+    # ── FILTERS ──
+    st.markdown(f"### {t('filters')}")
+
+    # Only keep non-TOTAL rows for analysis (TOTAL rows used for IFI view)
+    df_centres = df_act[df_act["Sede"] != "TOTAL"].copy()
+    df_totals = df_act[df_act["Sede"] == "TOTAL"].copy()
+
+    fcol1, fcol2, fcol3 = st.columns(3)
+
+    with fcol1:
+        year_mode = st.radio(
+            t("activite_year_mode"),
+            [t("activite_civil_year"), t("activite_school_year")],
+            horizontal=True, key="act_year_mode",
+        )
+        is_school_year = year_mode == t("activite_school_year")
+
+    with fcol2:
+        grouping = st.radio(
+            t("activite_period_grouping"),
+            [t("activite_by_month"), t("activite_by_semester")],
+            horizontal=True, key="act_grouping",
+        )
+        by_semester = grouping == t("activite_by_semester")
+
+    with fcol3:
+        available_periods = sorted(df_centres["Période"].unique(), key=lambda p: (
+            int(p.split("-")[0]) if "-" in p else 0,
+            _FRENCH_MONTHS.get(p.split("-")[1].strip().upper(), 0) if "-" in p and len(p.split("-")) > 1 else 0
+        ))
+        selected_periods = st.multiselect(
+            t("activite_select_periods"),
+            available_periods,
+            default=available_periods,
+            key="act_periods",
+        )
+
+    # Apply period filter
+    if selected_periods:
+        df_view = df_centres[df_centres["Période"].isin(selected_periods)].copy()
+        df_totals_view = df_totals[df_totals["Période"].isin(selected_periods)].copy()
+    else:
+        df_view = df_centres.copy()
+        df_totals_view = df_totals.copy()
+
+    # School year re-labeling (Sept Y → Aug Y+1 = "Y/Y+1")
+    if is_school_year and "Mois_Num" in df_view.columns:
+        df_view["Année_Scolaire"] = df_view.apply(
+            lambda r: f"{int(r['Année'])}/{int(r['Année'])+1}" if r["Mois_Num"] >= 9
+            else f"{int(r['Année'])-1}/{int(r['Année'])}" if r["Mois_Num"] <= 8
+            else str(int(r["Année"])), axis=1
+        )
+        df_totals_view["Année_Scolaire"] = df_totals_view.apply(
+            lambda r: f"{int(r['Année'])}/{int(r['Année'])+1}" if r["Mois_Num"] >= 9
+            else f"{int(r['Année'])-1}/{int(r['Année'])}" if r["Mois_Num"] <= 8
+            else str(int(r["Année"])), axis=1
+        )
+        year_col = "Année_Scolaire"
+    else:
+        year_col = "Année"
+
+    # ── Semester grouping helper ──
+    def _semester_label(row):
+        m = row["Mois_Num"]
+        if 1 <= m <= 7:
+            return t("activite_sem1")
+        else:
+            return t("activite_sem2")
+
+    # ── TABS ──
+    tab_g, tab_e, tab_a = st.tabs([
+        t("tab_activite_global"),
+        t("tab_activite_evolution"),
+        t("tab_activite_antenna"),
+    ])
+
+    # ═══════════════════════════════════════════════════
+    # TAB 1: Tableau global (IFI total)
+    # ═══════════════════════════════════════════════════
+    with tab_g:
+        st.markdown(f"#### {t('activite_ifi_total')}")
+
+        if by_semester:
+            # Group by semester
+            df_totals_view["Sem_Label"] = df_totals_view.apply(_semester_label, axis=1)
+            group_col = "Sem_Label"
+            if is_school_year:
+                idx_cols = [year_col, group_col]
+            else:
+                idx_cols = [group_col]
+            agg = df_totals_view.groupby(idx_cols, sort=False)[_ACTIVITE_NUM_COLS].sum().reset_index()
+        else:
+            # By month
+            if is_school_year:
+                idx_cols = [year_col, "Mois", "Mois_Num"]
+            else:
+                idx_cols = ["Mois", "Mois_Num"]
+            agg = df_totals_view.groupby(idx_cols, sort=False)[_ACTIVITE_NUM_COLS].sum().reset_index()
+            agg = agg.sort_values("Mois_Num")
+            agg = agg.drop(columns=["Mois_Num"])
+
+        # Add grand total row
+        total_row = {col: agg[col].sum() for col in _ACTIVITE_NUM_COLS if col in agg.columns}
+        first_col = agg.columns[0]
+        total_row[first_col] = "TOTAL"
+        for c in agg.columns:
+            if c not in total_row:
+                total_row[c] = ""
+        total_df = pd.concat([agg, pd.DataFrame([total_row])], ignore_index=True)
+
+        # Format numeric columns for display
+        display_df = total_df.copy()
+        for col in _ACTIVITE_NUM_COLS:
+            if col in display_df.columns:
+                display_df[col] = display_df[col].apply(
+                    lambda v: f"{v:,.0f}".replace(",", " ") if isinstance(v, (int, float)) and v != 0 else (str(v) if v else "")
+                )
+
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+        # KPI metrics row
+        st.markdown("---")
+        ifi_totals = df_totals_view[_ACTIVITE_NUM_COLS].sum()
+        mcols = st.columns(5)
+        kpi_items = [
+            ("👥 Élèves différents", ifi_totals.get("Élèves différents", 0)),
+            ("📝 Élèves inscrits", ifi_totals.get("Élèves inscrits", 0)),
+            ("📚 Cours", ifi_totals.get("Cours", 0)),
+            ("🕐 Heures enseignées", ifi_totals.get("Heures enseignées", 0)),
+            ("⏳ Heures-Élèves", ifi_totals.get("Heures-Élèves", 0)),
+        ]
+        for i, (label, val) in enumerate(kpi_items):
+            mcols[i].metric(label, f"{val:,.0f}".replace(",", " "))
+
+        mcols2 = st.columns(5)
+        kpi_items2 = [
+            ("🆕 Nouveaux inscrits", ifi_totals.get("Nouveaux étudiants inscrits", 0)),
+            ("🔄 Réinscrits", ifi_totals.get("Étudiants réinscrits", 0)),
+            ("💰 CA cours", ifi_totals.get("CA cours", 0)),
+            ("💸 Dépenses", ifi_totals.get("Dépenses cours", 0)),
+            ("⏱️ H. contractuelles", ifi_totals.get("Heures contractuelles", 0)),
+        ]
+        for i, (label, val) in enumerate(kpi_items2):
+            fmt = f"€{val:,.0f}".replace(",", " ") if "CA" in label or "Dépenses" in label else f"{val:,.0f}".replace(",", " ")
+            mcols2[i].metric(label, fmt)
+
+        # Global table by antenna (pivot)
+        st.markdown("---")
+        st.markdown("#### Récapitulatif par antenne")
+        pivot_cols = ["Élèves différents", "Élèves inscrits", "Cours", "Heures enseignées", "Heures-Élèves", "Nouveaux étudiants inscrits"]
+        antenna_agg = df_view.groupby("Sede")[pivot_cols].sum().reset_index()
+        # Add IFI total row
+        ifi_row = {"Sede": "IFI TOTAL"}
+        for c in pivot_cols:
+            ifi_row[c] = antenna_agg[c].sum()
+        antenna_agg = pd.concat([antenna_agg, pd.DataFrame([ifi_row])], ignore_index=True)
+        # Format
+        disp_ant = antenna_agg.copy()
+        for c in pivot_cols:
+            disp_ant[c] = disp_ant[c].apply(lambda v: f"{v:,.0f}".replace(",", " "))
+        st.dataframe(disp_ant, use_container_width=True, hide_index=True)
+
+    # ═══════════════════════════════════════════════════
+    # TAB 2: Graphiques d'évolution par indicateur
+    # ═══════════════════════════════════════════════════
+    with tab_e:
+        st.markdown(f"#### {t('tab_activite_evolution')}")
+
+        ecol1, ecol2 = st.columns([1, 3])
+        with ecol1:
+            indicator_labels = [label for label, _ in _INDICATORS]
+            selected_indicator = st.selectbox(
+                t("activite_indicator"),
+                indicator_labels,
+                key="act_indicator",
+            )
+
+        with ecol2:
+            evo_view = st.radio(
+                t("view_mode"),
+                [t("activite_ifi_total"), t("details_by_antenna")],
+                horizontal=True, key="act_evo_view",
+            )
+
+        if evo_view == t("activite_ifi_total"):
+            # IFI total evolution
+            if by_semester:
+                df_totals_view["Sem_Label"] = df_totals_view.apply(_semester_label, axis=1)
+                evo_data = df_totals_view.groupby("Sem_Label", sort=False)[[selected_indicator]].sum().reset_index()
+                x_col = "Sem_Label"
+            else:
+                evo_data = df_totals_view.sort_values("Mois_Num").copy()
+                x_col = "Mois"
+
+            import plotly.express as px
+            fig = px.bar(
+                evo_data, x=x_col, y=selected_indicator,
+                title=f"{selected_indicator} — IFI Total",
+                text=selected_indicator,
+                color_discrete_sequence=["#1e3a5f"],
+            )
+            fig.update_traces(texttemplate="%{text:,.0f}", textposition="outside")
+            fig.update_layout(xaxis_title="", yaxis_title=selected_indicator, showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            # By antenna
+            if by_semester:
+                df_view["Sem_Label"] = df_view.apply(_semester_label, axis=1)
+                evo_data = df_view.groupby(["Sem_Label", "Sede"], sort=False)[[selected_indicator]].sum().reset_index()
+                x_col = "Sem_Label"
+            else:
+                evo_data = df_view.sort_values("Mois_Num").copy()
+                x_col = "Mois"
+
+            import plotly.express as px
+            fig = px.bar(
+                evo_data, x=x_col, y=selected_indicator, color="Sede",
+                title=f"{selected_indicator} — Par antenne",
+                barmode="group",
+                text=selected_indicator,
+                color_discrete_sequence=["#1e3a5f", "#2d6a4f", "#e76f51", "#6c63ff"],
+            )
+            fig.update_traces(texttemplate="%{text:,.0f}", textposition="outside", textfont_size=9)
+            fig.update_layout(xaxis_title="", yaxis_title=selected_indicator)
+            st.plotly_chart(fig, use_container_width=True)
+
+        # Line chart (trend)
+        st.markdown("---")
+        st.markdown(f"##### Tendance — {selected_indicator}")
+        if by_semester:
+            df_view_trend = df_view.copy()
+            df_view_trend["Sem_Label"] = df_view_trend.apply(_semester_label, axis=1)
+            trend = df_view_trend.groupby(["Sem_Label", "Sede"], sort=False)[[selected_indicator]].sum().reset_index()
+            x_trend = "Sem_Label"
+        else:
+            trend = df_view.sort_values("Mois_Num").copy()
+            x_trend = "Mois"
+
+        import plotly.express as px
+        fig2 = px.line(
+            trend, x=x_trend, y=selected_indicator, color="Sede",
+            markers=True,
+            color_discrete_sequence=["#1e3a5f", "#2d6a4f", "#e76f51", "#6c63ff"],
+        )
+        fig2.update_layout(xaxis_title="", yaxis_title=selected_indicator)
+        st.plotly_chart(fig2, use_container_width=True)
+
+    # ═══════════════════════════════════════════════════
+    # TAB 3: Vue par antenne
+    # ═══════════════════════════════════════════════════
+    with tab_a:
+        st.markdown(f"#### {t('tab_activite_antenna')}")
+
+        sedi_available = sorted(df_view["Sede"].unique())
+        selected_sede = st.selectbox(
+            t("activite_select_antenna"),
+            sedi_available,
+            key="act_sede_select",
+        )
+
+        df_sede = df_view[df_view["Sede"] == selected_sede].copy()
+
+        if df_sede.empty:
+            st.info("Aucune donnée pour cette antenne.")
+        else:
+            # KPI row for selected antenna
+            sede_totals = df_sede[_ACTIVITE_NUM_COLS].sum()
+            st.markdown(f"##### {selected_sede} — Indicateurs clés")
+            acols = st.columns(5)
+            akpi = [
+                ("👥 Élèves diff.", sede_totals.get("Élèves différents", 0)),
+                ("📝 Inscrits", sede_totals.get("Élèves inscrits", 0)),
+                ("📚 Cours", sede_totals.get("Cours", 0)),
+                ("🕐 H. enseignées", sede_totals.get("Heures enseignées", 0)),
+                ("⏳ H-Élèves", sede_totals.get("Heures-Élèves", 0)),
+            ]
+            for i, (label, val) in enumerate(akpi):
+                acols[i].metric(label, f"{val:,.0f}".replace(",", " "))
+
+            # Monthly/semester table for this antenna
+            st.markdown("---")
+            if by_semester:
+                df_sede["Sem_Label"] = df_sede.apply(_semester_label, axis=1)
+                sede_agg = df_sede.groupby("Sem_Label", sort=False)[_ACTIVITE_NUM_COLS].sum().reset_index()
+            else:
+                sede_agg = df_sede.sort_values("Mois_Num")[["Mois"] + [c for c in _ACTIVITE_NUM_COLS if c in df_sede.columns]].copy()
+
+            # Format
+            disp_sede = sede_agg.copy()
+            for c in _ACTIVITE_NUM_COLS:
+                if c in disp_sede.columns:
+                    disp_sede[c] = disp_sede[c].apply(lambda v: f"{v:,.0f}".replace(",", " ") if v else "")
+            st.dataframe(disp_sede, use_container_width=True, hide_index=True)
+
+            # Bar chart for this antenna
+            st.markdown("---")
+            sel_ind = st.selectbox(
+                t("activite_indicator"),
+                [label for label, _ in _INDICATORS],
+                key="act_sede_indicator",
+            )
+            if by_semester:
+                chart_data = df_sede.groupby("Sem_Label", sort=False)[[sel_ind]].sum().reset_index()
+                x_chart = "Sem_Label"
+            else:
+                chart_data = df_sede.sort_values("Mois_Num").copy()
+                x_chart = "Mois"
+
+            import plotly.express as px
+            fig3 = px.bar(
+                chart_data, x=x_chart, y=sel_ind,
+                title=f"{sel_ind} — {selected_sede}",
+                text=sel_ind,
+                color_discrete_sequence=["#1e3a5f"],
+            )
+            fig3.update_traces(texttemplate="%{text:,.0f}", textposition="outside")
+            fig3.update_layout(xaxis_title="", yaxis_title=sel_ind, showlegend=False)
+            st.plotly_chart(fig3, use_container_width=True)
+
+            # Comparison with IFI share
+            st.markdown("---")
+            st.markdown(f"##### Part de {selected_sede} dans l'IFI")
+            compare_cols = ["Élèves différents", "Élèves inscrits", "Cours", "Heures enseignées", "Heures-Élèves"]
+            ifi_sums = df_view[compare_cols].sum()
+            sede_sums = df_sede[compare_cols].sum()
+            share_data = []
+            for c in compare_cols:
+                pct = (sede_sums[c] / ifi_sums[c] * 100) if ifi_sums[c] > 0 else 0
+                share_data.append({"Indicateur": c, selected_sede: f"{sede_sums[c]:,.0f}".replace(",", " "),
+                                   "IFI Total": f"{ifi_sums[c]:,.0f}".replace(",", " "), "Part (%)": f"{pct:.1f}%"})
+            st.dataframe(pd.DataFrame(share_data), use_container_width=True, hide_index=True)
+
+
+# =====================================================
 # SIDEBAR
 # =====================================================
 
@@ -4337,6 +4811,7 @@ if not all_uploaded_files:
         - {t('export_type_2')}
         - {t('export_type_3')}
         - {t('export_type_4')}
+        - {t('export_type_5')}
         """)
     
     with col_right:
@@ -4359,7 +4834,9 @@ if not all_uploaded_files:
         "(un fichier par antenne × par semestre)\n"
         "2. **Fiches de cours** : AEC → *Cours* → *Fiches de cours* → filtrer → exporter en .csv\n"
         "3. **Profils clients** : AEC → *Clients* → sélectionner les colonnes utiles → exporter en .xlsx\n"
-        "4. **Catalogue produits** : AEC → *Catalogue* → *Produits* → exporter en .xlsx\n\n"
+        "4. **Catalogue produits** : AEC → *Catalogue* → *Produits* → exporter en .xlsx\n"
+        "5. **Activité par période** : AEC → *Cours* → *Rapports* → *Activité par période* → exporter en .xlsx "
+        "(décocher « exporter uniquement colonnes visibles »)\n\n"
         "*Déposez ensuite les fichiers via le panneau latéral gauche.*"
     )
     _INSTR_KEY = "_welcome_instructions"
@@ -4471,14 +4948,16 @@ if _cache_hit:
     df_fiches = st.session_state.get('course_fiches_data')
     df_profils = st.session_state.get('profils_clients_data')
     df_produits = st.session_state.get('produits_data')
+    df_activite = st.session_state.get('activite_periode_data')
     file_info = st.session_state.get('file_info', [])
     fiches_info = st.session_state.get('fiches_file_info', [])
     profils_info = st.session_state.get('profils_file_info', [])
     produits_info = st.session_state.get('produits_file_info', [])
+    activite_info = st.session_state.get('activite_file_info', [])
 else:
     # Full processing
-    all_data, all_fiches, all_profils, all_produits = [], [], [], []
-    file_info, fiches_info, profils_info, produits_info, errors = [], [], [], [], []
+    all_data, all_fiches, all_profils, all_produits, all_activite = [], [], [], [], []
+    file_info, fiches_info, profils_info, produits_info, activite_info, errors = [], [], [], [], [], []
     with st.spinner("Traitement des fichiers en cours..."):
         for uploaded_file in files_to_process:
             # Load file (auto-detect CSV vs Excel)
@@ -4521,6 +5000,18 @@ else:
                     "Sede": sede_code,
                     "Lignes": len(processed)
                 })
+            elif export_type == "activite_periode":
+                # Activity report (Activité par période)
+                processed = process_activite_periode(df)
+                all_activite.append(processed)
+                centres_found = [s for s in processed["Sede"].unique() if s != "TOTAL"]
+                periodes_found = processed["Période"].nunique()
+                activite_info.append({
+                    "Fichier": uploaded_file.name, "Type": "Activité par période",
+                    "Centres": ", ".join(centres_found),
+                    "Périodes": periodes_found,
+                    "Lignes": len(processed)
+                })
             else:
                 # Category report export (existing flow)
                 sede, semester, year = detect_from_filename(uploaded_file.name)
@@ -4542,6 +5033,7 @@ else:
     df_fiches = None
     df_profils = None
     df_produits = None
+    df_activite = None
     if all_data:
         df_combined = pd.concat(all_data, ignore_index=True)
     if all_fiches:
@@ -4550,8 +5042,10 @@ else:
         df_profils = pd.concat(all_profils, ignore_index=True)
     if all_produits:
         df_produits = pd.concat(all_produits, ignore_index=True)
+    if all_activite:
+        df_activite = pd.concat(all_activite, ignore_index=True)
 
-    has_any_data = any(x is not None for x in [df_combined, df_fiches, df_profils, df_produits])
+    has_any_data = any(x is not None for x in [df_combined, df_fiches, df_profils, df_produits, df_activite])
     if not has_any_data:
         st.error("Aucune donnée valide chargée.")
         st.stop()
@@ -4565,6 +5059,8 @@ else:
     st.session_state.profils_file_info = profils_info
     st.session_state.produits_data = df_produits
     st.session_state.produits_file_info = produits_info
+    st.session_state.activite_periode_data = df_activite
+    st.session_state.activite_file_info = activite_info
     st.session_state._files_hash = _file_names_hash
 
     # Show detection toasts (bottom-right, auto-dismiss)
@@ -4581,6 +5077,10 @@ else:
         nb_produits = len(df_produits)
         sedi_produits = [s for s in df_produits["Sede"].unique() if s != "???"]
         _toast_msgs.append(f"{t('produits_loaded')}: {nb_produits} produits ({', '.join(sedi_produits)})")
+    if df_activite is not None:
+        nb_activite = len(df_activite[df_activite['Sede'] != 'TOTAL'])
+        nb_periodes = df_activite['Période'].nunique()
+        _toast_msgs.append(f"{t('activite_loaded')}: {nb_periodes} périodes, {nb_activite} lignes")
     for _msg in _toast_msgs:
         st.toast(_msg, icon="\u2705")
 
@@ -4593,6 +5093,8 @@ if df_combined is None:
         available_tabs.append("Fiches de cours")
     if df_produits is not None:
         available_tabs.append("Produits")
+    if df_activite is not None:
+        available_tabs.append("Rapports AEC express")
     
     if len(available_tabs) == 1:
         # Single export type - render directly without tabs
@@ -4602,6 +5104,8 @@ if df_combined is None:
             render_fiches_tabs(df_fiches)
         elif df_produits is not None:
             render_produits_tabs(df_produits)
+        elif df_activite is not None:
+            render_activite_tabs(df_activite)
     else:
         # Multiple export types - use top-level tabs
         export_tabs = st.tabs(available_tabs)
@@ -4618,6 +5122,10 @@ if df_combined is None:
             with export_tabs[tab_idx]:
                 render_produits_tabs(df_produits)
             tab_idx += 1
+        if df_activite is not None:
+            with export_tabs[tab_idx]:
+                render_activite_tabs(df_activite)
+            tab_idx += 1
     st.markdown("---")
     st.caption("OSCAR v3.0 • Institut français Italia")
     st.stop()
@@ -4629,7 +5137,8 @@ if df_combined is None:
 _has_other_exports = any([
     df_fiches is not None,
     df_profils is not None,
-    df_produits is not None
+    df_produits is not None,
+    df_activite is not None
 ])
 
 if _has_other_exports:
@@ -4638,6 +5147,7 @@ if _has_other_exports:
     _top_labels.append("Cours")
     if df_fiches is not None: _top_labels.append("Fiches de cours")
     if df_produits is not None: _top_labels.append("Produits")
+    if df_activite is not None: _top_labels.append("Rapports AEC express")
     _top_tabs = st.tabs(_top_labels)
     _cours_ctx = _top_tabs[_top_labels.index("Cours")]
 else:
@@ -7420,6 +7930,9 @@ if _has_other_exports:
     if df_produits is not None:
         with _top_tabs[_top_labels.index("Produits")]:
             render_produits_tabs(st.session_state.produits_data)
+    if df_activite is not None:
+        with _top_tabs[_top_labels.index("Rapports AEC express")]:
+            render_activite_tabs(st.session_state.activite_periode_data)
 
 # =====================================================
 # FOOTER
