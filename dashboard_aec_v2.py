@@ -4694,26 +4694,37 @@ with st.sidebar:
                     uploaded_files.append(f)
             
             # Store raw file data in session state for persistence across refreshes
-            # Always update when we have new uploaded files
+            # Merge with existing stored files (pre-loaded + previous uploads)
             if uploaded_files:
-                st.session_state.stored_files = []
+                # Build set of new file names for deduplication
+                new_file_entries = []
+                new_names = set()
                 for f in uploaded_files:
                     if hasattr(f, 'getvalue'):
-                        st.session_state.stored_files.append({
+                        new_file_entries.append({
                             'name': f.name,
                             'data': f.getvalue()
                         })
                     elif hasattr(f, 'read'):
                         f.seek(0)
-                        st.session_state.stored_files.append({
+                        new_file_entries.append({
                             'name': f.name,
                             'data': f.read()
                         })
+                    new_names.add(f.name)
+                # Keep existing stored files that are NOT being replaced by new uploads
+                existing = st.session_state.get('stored_files', [])
+                merged = [sf for sf in existing if sf['name'] not in new_names]
+                merged.extend(new_file_entries)
+                st.session_state.stored_files = merged
+                # Clear processed data cache to force reprocessing with all files
+                for _k in ['processed_data', 'file_info', '_files_hash']:
+                    st.session_state.pop(_k, None)
                 # ── Save to recent files (persists across app restarts) ──
                 save_recent_session(st.session_state.stored_files)
         
-        # If no new upload, try to use stored files from session state
-        if not uploaded_files and 'stored_files' in st.session_state and st.session_state.stored_files:
+        # Always rebuild uploaded_files from stored_files (pre-loaded + uploads combined)
+        if 'stored_files' in st.session_state and st.session_state.stored_files:
             class StoredFile:
                 def __init__(self, name, data):
                     self.name = name
@@ -4727,7 +4738,8 @@ with st.sidebar:
                     return self._data.getvalue()
             
             uploaded_files = [StoredFile(sf['name'], sf['data']) for sf in st.session_state.stored_files]
-            st.info(f" {len(uploaded_files)} fichiers restaurés depuis la session")
+            if not raw_uploaded_files:
+                st.info(f" {len(uploaded_files)} fichiers restaurés depuis la session")
         
         # Button to clear stored data
         if 'stored_files' in st.session_state and st.session_state.stored_files:
