@@ -949,26 +949,33 @@ def get_css():
         }
         
         /* ── Hide Streamlit chrome (deploy, status, hamburger menu, footer, badges) ── */
+        #MainMenu,
+        header,
+        footer,
         [data-testid="stDecoration"],
         [data-testid="stStatusWidget"],
+        [data-testid="stToolbar"],
         .stDeployButton,
         [data-testid="stAppDeployButton"],
         [data-testid="stMainMenu"],
-        #MainMenu,
-        footer,
         [data-testid="manage-app-button"],
+        [data-testid="stBottomBlockContainer"],
         [class*="viewerBadge"],
         [class*="_profileContainer"],
+        [class*="stActionButton"],
         a[href*="streamlit.io"],
         [data-testid="stBottom"] > div:last-child,
-        [data-testid="stBottomBlockContainer"],
         header[data-testid="stHeader"] a[href*="github"],
-        iframe[title="streamlit-badge"] {
+        iframe[title="streamlit-badge"],
+        iframe[title*="Streamlit"],
+        iframe[src*="badge"] {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
             width: 0 !important;
             overflow: hidden !important;
+            position: absolute !important;
+            pointer-events: none !important;
         }
         /* Hide right section of toolbar (deploy/menu) but keep expand sidebar button */
         [data-testid="stToolbar"] [data-testid="stToolbarActions"] {
@@ -1110,43 +1117,134 @@ import streamlit.components.v1 as _stc
 _stc.html("""
 <script>
 (function() {
-    var doc = window.parent.document;
-    function killBadges() {
-        // Remove any element linking to streamlit.io
-        doc.querySelectorAll('a[href*="streamlit.io"], a[href*="streamlit.app"]').forEach(function(el) {
-            el.remove();
-        });
-        // Remove viewer badge containers (class contains "viewerBadge")
-        doc.querySelectorAll('[class*="viewerBadge"], [class*="_profileContainer"]').forEach(function(el) {
-            el.remove();
-        });
-        // Remove manage-app-button
-        doc.querySelectorAll('[data-testid="manage-app-button"]').forEach(function(el) {
-            el.remove();
-        });
-        // Remove badge iframes
-        doc.querySelectorAll('iframe[title*="badge"], iframe[src*="badge"]').forEach(function(el) {
-            el.remove();
-        });
-        // Remove stBottom branding containers
-        doc.querySelectorAll('[data-testid="stBottomBlockContainer"]').forEach(function(el) {
-            el.remove();
-        });
-        // Remove any fixed-position elements at bottom-right that look like badges
-        doc.querySelectorAll('footer, [data-testid="stDecoration"]').forEach(function(el) {
-            el.style.display = 'none';
-        });
-    }
-    killBadges();
-    // MutationObserver to catch late-loaded badges
-    var obs = new MutationObserver(function() { killBadges(); });
-    obs.observe(doc.body, { childList: true, subtree: true });
-    // Also run periodically for first 10 seconds
-    var count = 0;
-    var iv = setInterval(function() {
+    try {
+        var doc = window.parent.document;
+
+        // 1) Inject a <style> directly into the PARENT document head
+        //    This is more reliable than st.markdown CSS for Cloud-injected elements
+        if (!doc.getElementById('_hide_streamlit_chrome')) {
+            var s = doc.createElement('style');
+            s.id = '_hide_streamlit_chrome';
+            s.textContent = [
+                '#MainMenu, footer, header,',
+                '[data-testid="stDecoration"],',
+                '[data-testid="stStatusWidget"],',
+                '[data-testid="stToolbar"],',
+                '[data-testid="stAppDeployButton"],',
+                '.stDeployButton,',
+                '[data-testid="manage-app-button"],',
+                '[data-testid="stBottomBlockContainer"],',
+                '[class*="viewerBadge"],',
+                '[class*="_profileContainer"],',
+                '[class*="stActionButton"],',
+                'iframe[title*="badge"], iframe[title*="Streamlit"],',
+                'iframe[src*="badge"]',
+                '{ display:none!important; visibility:hidden!important;',
+                '  height:0!important; width:0!important; overflow:hidden!important;',
+                '  position:absolute!important; pointer-events:none!important; }'
+            ].join('\\n');
+            doc.head.appendChild(s);
+        }
+
+        // 2) DOM removal function
+        function killBadges() {
+            // Remove by data-testid
+            var selectors = [
+                '[data-testid="manage-app-button"]',
+                '[data-testid="stToolbar"]',
+                '[data-testid="stDecoration"]',
+                '[data-testid="stStatusWidget"]',
+                '[data-testid="stAppDeployButton"]',
+                '[data-testid="stBottomBlockContainer"]',
+                '[class*="viewerBadge"]',
+                '[class*="_profileContainer"]',
+                'iframe[title*="badge"]',
+                'iframe[title*="Streamlit"]',
+                'iframe[src*="badge"]'
+            ];
+            selectors.forEach(function(sel) {
+                doc.querySelectorAll(sel).forEach(function(el) { el.remove(); });
+            });
+
+            // Remove links to streamlit.io (but NOT links within the app itself)
+            doc.querySelectorAll('a[href*="streamlit.io"]').forEach(function(el) {
+                // Only remove if it's outside the main app container or looks like branding
+                if (!el.closest('[data-testid="stAppViewContainer"]') &&
+                    !el.closest('[data-testid="stSidebar"]')) {
+                    el.remove();
+                }
+            });
+
+            // Hide footer
+            doc.querySelectorAll('footer').forEach(function(el) {
+                el.style.display = 'none';
+            });
+
+            // Search by text content: find elements containing branding text
+            var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT, null, false);
+            while (walker.nextNode()) {
+                var node = walker.currentNode;
+                if (node.children && node.children.length === 0) {
+                    var txt = (node.textContent || '').trim();
+                    if (/^(Hosted|Built|Made) with Streamlit$/i.test(txt) ||
+                        /^Manage [Aa]pp$/i.test(txt)) {
+                        // Walk up to find the fixed-position container and hide it
+                        var p = node;
+                        for (var i = 0; i < 5 && p && p !== doc.body; i++) {
+                            var cs = window.parent.getComputedStyle(p);
+                            if (cs.position === 'fixed' || cs.position === 'absolute') {
+                                p.style.display = 'none';
+                                break;
+                            }
+                            p = p.parentElement;
+                        }
+                        node.style.display = 'none';
+                    }
+                }
+            }
+
+            // Find fixed-position elements in bottom-right corner that look like badges
+            doc.querySelectorAll('div, aside, section').forEach(function(el) {
+                var cs = window.parent.getComputedStyle(el);
+                if (cs.position === 'fixed') {
+                    var r = el.getBoundingClientRect();
+                    // Bottom-right corner: right edge near viewport right, bottom edge near viewport bottom
+                    if (r.bottom > window.parent.innerHeight - 80 &&
+                        r.right > window.parent.innerWidth - 200 &&
+                        r.width < 300 && r.height < 80) {
+                        // Check if it contains streamlit-related content
+                        var html = (el.innerHTML || '').toLowerCase();
+                        if (html.indexOf('streamlit') !== -1 ||
+                            html.indexOf('manage') !== -1 ||
+                            el.querySelector('a[href*="streamlit"]') ||
+                            el.querySelector('img[src*="streamlit"]') ||
+                            el.querySelector('img[alt*="streamlit"]')) {
+                            el.style.display = 'none';
+                        }
+                    }
+                }
+            });
+        }
+
         killBadges();
-        if (++count > 20) clearInterval(iv);
-    }, 500);
+
+        // MutationObserver to catch late-loaded badges
+        var obs = new MutationObserver(function() { killBadges(); });
+        obs.observe(doc.body, { childList: true, subtree: true });
+
+        // Run periodically for 30 seconds then every 5 seconds permanently
+        var count = 0;
+        var iv = setInterval(function() {
+            killBadges();
+            if (++count > 60) {
+                clearInterval(iv);
+                // Switch to slower interval permanently
+                setInterval(function() { killBadges(); }, 5000);
+            }
+        }, 500);
+    } catch(e) {
+        // Silently fail if cross-origin restrictions prevent parent access
+    }
 })();
 </script>
 """, height=0)
