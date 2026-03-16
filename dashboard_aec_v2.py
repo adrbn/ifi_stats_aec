@@ -7682,7 +7682,6 @@ _chatbot_html = f"""
 
 _stc.html(f"""
 {_chatbot_html}
-<script src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js"></script>
 <script>
 (function() {{
     var doc = window.parent.document;
@@ -7704,148 +7703,147 @@ _stc.html(f"""
         doc.head.appendChild(pStyle);
     }}
 
-    // Copy FAB
+    // Copy FAB + popup to parent
     var fab = document.getElementById('oscar-chat-fab');
     var popup = document.getElementById('oscar-chat-popup');
     if (fab) root.appendChild(fab.cloneNode(true));
     if (popup) root.appendChild(popup.cloneNode(true));
     doc.body.appendChild(root);
 
-    // References in parent doc
-    var pFab = doc.getElementById('oscar-chat-fab');
-    var pPopup = doc.getElementById('oscar-chat-popup');
-    var pInput = doc.getElementById('oscar-chat-input');
-    var pSend = doc.getElementById('oscar-chat-send');
-    var pClose = doc.getElementById('oscar-chat-close');
-    var pFs = doc.getElementById('oscar-chat-fs');
-    var pClear = doc.getElementById('oscar-chat-clear');
-    var pMsgs = doc.getElementById('oscar-chat-msgs');
-    var pModelSel = doc.getElementById('oscar-model-sel');
-    var pRetry = doc.getElementById('oscar-retry-btn');
-
-    // Load marked in parent
-    if (!window.parent.marked) {{
+    // Load marked.js in parent if needed
+    if (!window.parent.marked && !doc.querySelector('script[data-oscar-marked]')) {{
         var ms = doc.createElement('script');
         ms.src = 'https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js';
-        ms.onload = function() {{ renderAllMd(); }};
+        ms.setAttribute('data-oscar-marked', '1');
         doc.head.appendChild(ms);
-    }} else {{
-        renderAllMd();
     }}
 
-    function renderAllMd() {{
-        if (!window.parent.marked) return;
-        window.parent.marked.setOptions({{ breaks: true, gfm: true }});
-        var mdDivs = root.querySelectorAll('[data-md]');
-        for (var i = 0; i < mdDivs.length; i++) {{
-            try {{
-                var raw = JSON.parse(mdDivs[i].getAttribute('data-md'));
-                mdDivs[i].innerHTML = window.parent.marked.parse(raw);
-                addCopyBtns(mdDivs[i]);
-            }} catch(e) {{}}
+    // Inject event handler script into parent context (avoids iframe sandbox restrictions)
+    var oldHandler = doc.getElementById('oscar-chatbot-handler');
+    if (oldHandler) oldHandler.remove();
+    var handlerScript = doc.createElement('script');
+    handlerScript.id = 'oscar-chatbot-handler';
+    handlerScript.textContent = `
+    (function() {{
+        var root = document.getElementById('oscar-chatbot-root');
+        if (!root) return;
+        var pFab = document.getElementById('oscar-chat-fab');
+        var pPopup = document.getElementById('oscar-chat-popup');
+        var pInput = document.getElementById('oscar-chat-input');
+        var pSend = document.getElementById('oscar-chat-send');
+        var pClose = document.getElementById('oscar-chat-close');
+        var pFs = document.getElementById('oscar-chat-fs');
+        var pClear = document.getElementById('oscar-chat-clear');
+        var pMsgs = document.getElementById('oscar-chat-msgs');
+        var pModelSel = document.getElementById('oscar-model-sel');
+        var pRetry = document.getElementById('oscar-retry-btn');
+
+        // Render markdown in AI messages
+        function renderAllMd() {{
+            if (!window.marked) return;
+            window.marked.setOptions({{ breaks: true, gfm: true }});
+            var mdDivs = root.querySelectorAll('[data-md]');
+            for (var i = 0; i < mdDivs.length; i++) {{
+                try {{
+                    var raw = JSON.parse(mdDivs[i].getAttribute('data-md'));
+                    mdDivs[i].innerHTML = window.marked.parse(raw);
+                    addCopyBtns(mdDivs[i]);
+                    mdDivs[i].removeAttribute('data-md');
+                }} catch(e) {{}}
+            }}
+            if (pMsgs) pMsgs.scrollTop = pMsgs.scrollHeight;
         }}
-        if (pMsgs) pMsgs.scrollTop = pMsgs.scrollHeight;
-    }}
 
-    function addCopyBtns(container) {{
-        var pres = container.querySelectorAll('pre');
-        for (var i = 0; i < pres.length; i++) {{
-            (function(pre) {{
-                var btn = doc.createElement('button');
-                btn.className = 'oscar-copy-btn';
-                btn.textContent = 'Copier';
-                btn.addEventListener('click', function() {{
-                    var code = pre.querySelector('code');
-                    var text = code ? code.textContent : pre.textContent;
-                    if (navigator.clipboard) {{
-                        navigator.clipboard.writeText(text).then(function() {{
-                            btn.textContent = '✓ Copié';
-                            setTimeout(function() {{ btn.textContent = 'Copier'; }}, 1500);
-                        }});
-                    }}
-                }});
-                pre.style.position = 'relative';
-                pre.appendChild(btn);
-            }})(pres[i]);
+        function addCopyBtns(container) {{
+            var pres = container.querySelectorAll('pre');
+            for (var i = 0; i < pres.length; i++) {{
+                (function(pre) {{
+                    if (pre.querySelector('.oscar-copy-btn')) return;
+                    var btn = document.createElement('button');
+                    btn.className = 'oscar-copy-btn';
+                    btn.textContent = 'Copier';
+                    btn.addEventListener('click', function() {{
+                        var code = pre.querySelector('code');
+                        var text = code ? code.textContent : pre.textContent;
+                        if (navigator.clipboard) {{
+                            navigator.clipboard.writeText(text).then(function() {{
+                                btn.textContent = '✓ Copié';
+                                setTimeout(function() {{ btn.textContent = 'Copier'; }}, 1500);
+                            }});
+                        }}
+                    }});
+                    pre.style.position = 'relative';
+                    pre.appendChild(btn);
+                }})(pres[i]);
+            }}
         }}
-    }}
 
-    // Helper: set Streamlit query param to trigger rerun
-    function stSet(key, val) {{
-        // Use Streamlit's setComponentValue or manipulate URL
-        var url = new URL(window.parent.location);
-        url.searchParams.set(key, val);
-        url.searchParams.set('_t', Date.now());
-        window.parent.history.replaceState(null, '', url);
-        // Trigger Streamlit rerun
-        var iframes = doc.querySelectorAll('iframe');
-        for (var f = 0; f < iframes.length; f++) {{
-            try {{
-                if (iframes[f].contentWindow && iframes[f].contentWindow.Streamlit) {{
-                    iframes[f].contentWindow.Streamlit.setComponentValue(val);
-                }}
-            }} catch(e) {{}}
+        // Render markdown once marked.js is loaded
+        if (window.marked) {{
+            renderAllMd();
+        }} else {{
+            var checkMarked = setInterval(function() {{
+                if (window.marked) {{ clearInterval(checkMarked); renderAllMd(); }}
+            }}, 100);
+            setTimeout(function() {{ clearInterval(checkMarked); }}, 5000);
         }}
-    }}
 
-    // ── Events ──
-    if (pFab) pFab.addEventListener('click', function() {{
-        pPopup.classList.toggle('oscar-open');
-        if (pPopup.classList.contains('oscar-open') && pInput) pInput.focus();
-    }});
-    if (pClose) pClose.addEventListener('click', function() {{
-        pPopup.classList.remove('oscar-open');
-    }});
-    if (pFs) pFs.addEventListener('click', function() {{
-        pPopup.classList.toggle('oscar-fs');
-        pFs.textContent = pPopup.classList.contains('oscar-fs') ? '⊡' : '⛶';
-    }});
-    if (pClear) pClear.addEventListener('click', function() {{
-        // Clear via URL params → Streamlit rerun
-        var url = new URL(window.parent.location);
-        url.searchParams.set('oscar_action', 'clear');
-        url.searchParams.set('_t', Date.now());
-        window.parent.location.href = url.toString();
-    }});
-    if (pModelSel) pModelSel.addEventListener('change', function() {{
-        var url = new URL(window.parent.location);
-        url.searchParams.set('oscar_model', this.value);
-        url.searchParams.set('_t', Date.now());
-        window.parent.location.href = url.toString();
-    }});
+        // Navigation helper (runs in parent context — no sandbox restriction)
+        function oscarNav(params) {{
+            var url = new URL(window.location);
+            for (var k in params) url.searchParams.set(k, params[k]);
+            url.searchParams.set('_t', Date.now());
+            window.location.href = url.toString();
+        }}
 
-    function submitMsg(text) {{
-        text = (text || '').trim();
-        if (!text) return;
-        var url = new URL(window.parent.location);
-        url.searchParams.set('oscar_msg', encodeURIComponent(text));
-        url.searchParams.set('_t', Date.now());
-        window.parent.location.href = url.toString();
-    }}
-
-    if (pSend) pSend.addEventListener('click', function() {{ submitMsg(pInput.value); }});
-    if (pInput) pInput.addEventListener('keydown', function(e) {{
-        if (e.key === 'Enter') {{ e.preventDefault(); submitMsg(pInput.value); }}
-    }});
-
-    // Suggestion buttons
-    var sugBtns = root.querySelectorAll('.oscar-suggest-btn');
-    for (var si = 0; si < sugBtns.length; si++) {{
-        (function(btn) {{
-            btn.addEventListener('click', function() {{ submitMsg(btn.getAttribute('data-q')); }});
-        }})(sugBtns[si]);
-    }}
-
-    // Retry button
-    if (pRetry) pRetry.addEventListener('click', function() {{
-        var url = new URL(window.parent.location);
-        url.searchParams.set('oscar_action', 'retry');
-        url.searchParams.set('_t', Date.now());
-        window.parent.location.href = url.toString();
-    }});
-
-    // Scroll to bottom
-    if (pMsgs) setTimeout(function() {{ pMsgs.scrollTop = pMsgs.scrollHeight; }}, 100);
+        // FAB toggle
+        if (pFab) pFab.onclick = function() {{
+            pPopup.classList.toggle('oscar-open');
+            if (pPopup.classList.contains('oscar-open') && pInput) pInput.focus();
+        }};
+        // Close
+        if (pClose) pClose.onclick = function() {{
+            pPopup.classList.remove('oscar-open');
+        }};
+        // Fullscreen
+        if (pFs) pFs.onclick = function() {{
+            pPopup.classList.toggle('oscar-fs');
+            pFs.textContent = pPopup.classList.contains('oscar-fs') ? '⊡' : '⛶';
+        }};
+        // Clear
+        if (pClear) pClear.onclick = function() {{
+            oscarNav({{ oscar_action: 'clear' }});
+        }};
+        // Model select
+        if (pModelSel) pModelSel.onchange = function() {{
+            oscarNav({{ oscar_model: this.value }});
+        }};
+        // Send message
+        function submitMsg(text) {{
+            text = (text || '').trim();
+            if (!text) return;
+            oscarNav({{ oscar_msg: encodeURIComponent(text) }});
+        }}
+        if (pSend) pSend.onclick = function() {{ submitMsg(pInput.value); }};
+        if (pInput) pInput.onkeydown = function(e) {{
+            if (e.key === 'Enter') {{ e.preventDefault(); submitMsg(pInput.value); }}
+        }};
+        // Suggestion buttons
+        var sugBtns = root.querySelectorAll('.oscar-suggest-btn');
+        for (var si = 0; si < sugBtns.length; si++) {{
+            (function(btn) {{
+                btn.onclick = function() {{ submitMsg(btn.getAttribute('data-q')); }};
+            }})(sugBtns[si]);
+        }}
+        // Retry button
+        if (pRetry) pRetry.onclick = function() {{
+            oscarNav({{ oscar_action: 'retry' }});
+        }};
+        // Scroll to bottom
+        if (pMsgs) setTimeout(function() {{ pMsgs.scrollTop = pMsgs.scrollHeight; }}, 100);
+    }})();
+    `;
+    doc.head.appendChild(handlerScript);
 }})();
 </script>
 """, height=0)
