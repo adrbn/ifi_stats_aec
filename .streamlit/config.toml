@@ -1,0 +1,13 @@
+[client]
+showSidebarNavigation = false
+toolbarMode = "minimal"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[ui]
+hideTopBar = true
+hideSidebarNav = true
