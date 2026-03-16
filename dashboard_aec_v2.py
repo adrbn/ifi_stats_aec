@@ -7763,6 +7763,7 @@ def _oscar_chatbot_fragment():
         <div class="oscar-welcome">
             <h3>👋 Bonjour !</h3>
             <p>Je suis <strong>OSCAR AI</strong>, votre assistant data analyst.<br>Posez-moi des questions sur vos données.</p>
+            <p style="font-size:11px;color:#94a3b8;margin-top:8px;">🇫🇷 Propulsé par <a href="https://albert.sites.beta.gouv.fr/" target="_blank" style="color:#2563eb;text-decoration:none;">Albert API</a>, l'IA souveraine de l'État français.<br>Vos données restent en France — aucun transfert hors UE.</p>
             <div class="oscar-suggestions">
                 <button class="oscar-suggest-btn" data-q="Fais une synthèse globale des données chargées">📊 Synthèse globale</button>
                 <button class="oscar-suggest-btn" data-q="Compare les inscriptions entre les différentes antennes">🏛 Comparer les antennes</button>
