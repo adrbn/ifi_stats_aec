@@ -743,6 +743,36 @@ def _login_page():
 
     st.markdown('<div style="text-align:center;color:#94a3b8;font-size:0.7rem;margin-top:2rem;">Accès réservé au personnel autorisé</div>', unsafe_allow_html=True)
 
+    # Enable browser autocomplete / saved credentials on login form
+    import streamlit.components.v1 as _stc_login
+    _stc_login.html("""
+    <script>
+    (function() {
+        var doc = window.parent.document;
+        function fixAutocomplete() {
+            var inputs = doc.querySelectorAll('[data-testid="stForm"] input');
+            inputs.forEach(function(inp) {
+                if (inp.getAttribute('aria-label') === 'Identifiant') {
+                    inp.setAttribute('autocomplete', 'username');
+                    inp.setAttribute('name', 'username');
+                    inp.setAttribute('id', 'oscar-username');
+                } else if (inp.type === 'password') {
+                    inp.setAttribute('autocomplete', 'current-password');
+                    inp.setAttribute('name', 'password');
+                    inp.setAttribute('id', 'oscar-password');
+                }
+            });
+            var forms = doc.querySelectorAll('[data-testid="stForm"] form');
+            forms.forEach(function(f) { f.setAttribute('autocomplete', 'on'); });
+        }
+        fixAutocomplete();
+        // Retry after DOM updates
+        setTimeout(fixAutocomplete, 500);
+        setTimeout(fixAutocomplete, 1500);
+    })();
+    </script>
+    """, height=0)
+
 # Afficher la page login si non authentifié
 if not st.session_state.authenticated:
     _login_page()
@@ -7545,7 +7575,7 @@ def _oscar_chatbot_fragment():
     _chat_css = f"""
     <style>
     #oscar-chat-fab {{
-        position: fixed; bottom: 24px; right: 24px; z-index: 10000000;
+        position: fixed; bottom: 80px; right: 24px; z-index: 10000000;
         width: 52px; height: 52px; border-radius: 50%;
         background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
         color: white; border: none; cursor: pointer;
@@ -7555,7 +7585,7 @@ def _oscar_chatbot_fragment():
     }}
     #oscar-chat-fab:hover {{ transform: scale(1.1); box-shadow: 0 6px 24px rgba(37,99,235,0.5); }}
     #oscar-chat-popup {{
-        position: fixed; bottom: 88px; right: 24px; z-index: 10000001;
+        position: fixed; bottom: 144px; right: 24px; z-index: 10000001;
         width: 420px; max-height: 75vh;
         background: #ffffff; border-radius: 16px;
         box-shadow: 0 8px 40px rgba(0,0,0,0.18);
@@ -7699,7 +7729,7 @@ def _oscar_chatbot_fragment():
     /* ── Mobile responsive ── */
     @media (max-width: 768px) {{
         #oscar-chat-popup {{
-            left: 8px !important; right: 8px !important; bottom: 80px !important;
+            left: 8px !important; right: 8px !important; bottom: 136px !important;
             width: auto !important; max-height: 70vh !important;
             border-radius: 12px !important;
         }}
@@ -7713,7 +7743,7 @@ def _oscar_chatbot_fragment():
         .oscar-chat-hdr {{ padding: 10px 12px; }}
         .oscar-chat-msgs {{ padding: 12px; gap: 10px; }}
         .oscar-chat-input-area {{ padding: 10px 12px; }}
-        #oscar-chat-fab {{ bottom: 16px; right: 16px; width: 48px; height: 48px; }}
+        #oscar-chat-fab {{ bottom: 72px; right: 16px; width: 48px; height: 48px; }}
         .oscar-suggestions button {{ font-size: 12px; padding: 5px 10px; }}
         .oscar-model-select {{ font-size: 10px; max-width: 100px; }}
     }}
