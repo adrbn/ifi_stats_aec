@@ -771,6 +771,14 @@ if 'produits_file_info' not in st.session_state:
 if 'fiches_file_info' not in st.session_state:
     st.session_state.fiches_file_info = None
 
+# ── Auto-restore last session on page refresh ──
+if 'stored_files' not in st.session_state or not st.session_state.get('stored_files'):
+    _recent = load_recent_sessions()
+    if _recent:
+        _restored = restore_recent_session(_recent[0])
+        if _restored:
+            st.session_state.stored_files = _restored
+
 # =====================================================
 # CUSTOM CSS
 # =====================================================
@@ -1097,8 +1105,53 @@ def get_css():
 
 st.markdown(get_css(), unsafe_allow_html=True)
 
-# ── Fixed print button (top-right corner) ──
+# ── JS: aggressively remove Streamlit Cloud badges ──
 import streamlit.components.v1 as _stc
+_stc.html("""
+<script>
+(function() {
+    var doc = window.parent.document;
+    function killBadges() {
+        // Remove any element linking to streamlit.io
+        doc.querySelectorAll('a[href*="streamlit.io"], a[href*="streamlit.app"]').forEach(function(el) {
+            el.remove();
+        });
+        // Remove viewer badge containers (class contains "viewerBadge")
+        doc.querySelectorAll('[class*="viewerBadge"], [class*="_profileContainer"]').forEach(function(el) {
+            el.remove();
+        });
+        // Remove manage-app-button
+        doc.querySelectorAll('[data-testid="manage-app-button"]').forEach(function(el) {
+            el.remove();
+        });
+        // Remove badge iframes
+        doc.querySelectorAll('iframe[title*="badge"], iframe[src*="badge"]').forEach(function(el) {
+            el.remove();
+        });
+        // Remove stBottom branding containers
+        doc.querySelectorAll('[data-testid="stBottomBlockContainer"]').forEach(function(el) {
+            el.remove();
+        });
+        // Remove any fixed-position elements at bottom-right that look like badges
+        doc.querySelectorAll('footer, [data-testid="stDecoration"]').forEach(function(el) {
+            el.style.display = 'none';
+        });
+    }
+    killBadges();
+    // MutationObserver to catch late-loaded badges
+    var obs = new MutationObserver(function() { killBadges(); });
+    obs.observe(doc.body, { childList: true, subtree: true });
+    // Also run periodically for first 10 seconds
+    var count = 0;
+    var iv = setInterval(function() {
+        killBadges();
+        if (++count > 20) clearInterval(iv);
+    }, 500);
+})();
+</script>
+""", height=0)
+
+# ── Fixed print button (top-right corner) ──
 _stc.html("""
 <div class="print-btn-fixed" style="
     position:fixed; top:12px; right:70px; z-index:999999;
