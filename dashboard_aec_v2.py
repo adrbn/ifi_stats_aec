@@ -2853,12 +2853,38 @@ def process_profils_clients(df):
     if "Nb de cours" in df.columns:
         df["Nb_Cours_Client"] = pd.to_numeric(df["Nb de cours"], errors="coerce").fillna(0).astype(int)
     
+    # ── RGPD: Strip PII columns — keep only analytical fields ──
+    _SAFE_COLUMNS = {
+        # Identifiers (anonymized)
+        "Centre", "Sede",
+        # Temporal
+        "Année_Creation", "Mois_Creation", "Semestre",
+        # Demographics (non-identifying aggregates)
+        "Genre", "Age", "Age_Clean", "Age_Missing", "Tranche_Custom",
+        "Tranche d'âge de l'élève", "Groupe_Age",
+        "Nationalité",
+        # Course info
+        "Type_Cours_FR", "Macro_Niveau", "Niveau suivi",
+        "Nb de cours", "Nb_Cours_Client",
+        "Profil client",
+        # Motivation & acquisition (no PII)
+        "Motivation",
+        "Catégorie socio-professionnelle",
+        # Derived
+        "Date_Inscription_parsed",
+    }
+    # Also keep any column matching "comment.*connu" (canal d'acquisition)
+    keep_cols = [c for c in df.columns if c in _SAFE_COLUMNS
+                 or ("comment" in c.lower() and "connu" in c.lower())]
+    df = df[keep_cols]
+    
     return df
 
 def render_profils_tabs(df_profils):
     """Render analysis tabs for client profiles export data."""
     
     st.markdown(f"## {t('profils_section')}")
+    st.info("🔒 **RGPD** — Les données personnelles (noms, emails, téléphones, adresses, données bancaires) sont automatiquement supprimées avant traitement. Seules les données agrégées et anonymisées sont utilisées pour l'analyse.")
     
     # ── Filters ──────────────────────────────────────────
     st.markdown(f"### {t('filters')}")
@@ -3568,13 +3594,13 @@ def render_profils_tabs(df_profils):
                 fig_csp.update_layout(margin=dict(l=20, r=20, t=40, b=80), xaxis_tickangle=-45)
                 st.plotly_chart(fig_csp, use_container_width=True)
 
-    # ── Export CSV ──
+    # ── Export CSV (RGPD-safe: PII already stripped by process_profils_clients) ──
     st.divider()
     _csv_profils = df_profils.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label=f"⬇️ {t('download_csv')} — Profils",
+        label=f"⬇️ {t('download_csv')} — Profils (anonymisé)",
         data=_csv_profils,
-        file_name="export_profils_clients.csv",
+        file_name="export_profils_clients_anonymise.csv",
         mime="text/csv",
         use_container_width=True,
         key="dl_profils"
@@ -7389,14 +7415,20 @@ def _build_chatbot_context():
         parts.append(f"\n## Échantillon de données (50 premières lignes, CSV):\n{csv_sample}")
     if 'profils_clients_data' in st.session_state and st.session_state.profils_clients_data is not None:
         dfp = st.session_state.profils_clients_data
-        parts.append(f"\n## Profils clients: {len(dfp)} lignes, colonnes: {', '.join(dfp.columns.tolist())}")
+        parts.append(f"\n## Profils clients: {len(dfp)} lignes (données anonymisées, colonnes PII supprimées)")
         if 'Genre' in dfp.columns:
             parts.append(f"Répartition genre: {dfp['Genre'].value_counts().to_dict()}")
-        if 'Groupe_Age' in dfp.columns:
-            parts.append(f"Tranches d'âge: {dfp['Groupe_Age'].value_counts().to_dict()}")
+        if 'Tranche_Custom' in dfp.columns:
+            parts.append(f"Tranches d'âge: {dfp['Tranche_Custom'].value_counts().to_dict()}")
         if 'Nationalité' in dfp.columns:
             parts.append(f"Top nationalités: {dfp['Nationalité'].value_counts().head(10).to_dict()}")
-        parts.append(f"\nÉchantillon profils (30 lignes):\n{dfp.head(30).to_csv(index=False)}")
+        if 'Sede' in dfp.columns:
+            parts.append(f"Répartition par sede: {dfp['Sede'].value_counts().to_dict()}")
+        if 'Type_Cours_FR' in dfp.columns:
+            parts.append(f"Types de cours: {dfp['Type_Cours_FR'].value_counts().to_dict()}")
+        if 'Profil client' in dfp.columns:
+            parts.append(f"Profils: {dfp['Profil client'].value_counts().to_dict()}")
+        # RGPD: Ne PAS envoyer de lignes brutes, uniquement des agrégats
     if 'course_fiches_data' in st.session_state and st.session_state.course_fiches_data is not None:
         dff = st.session_state.course_fiches_data
         parts.append(f"\n## Fiches de cours: {len(dff)} lignes, colonnes: {', '.join(dff.columns.tolist())}")
