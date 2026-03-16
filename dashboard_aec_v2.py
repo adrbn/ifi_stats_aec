@@ -708,8 +708,7 @@ def _login_page():
     st.markdown("""
     <style>
         [data-testid="stSidebar"] { display: none !important; }
-        [data-testid="stSidebarCollapsedControl"] { display: none !important; }
-        #oscar-sidebar-btn { display: none !important; }
+        [data-testid="stExpandSidebarButton"] { display: none !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -927,83 +926,24 @@ def get_css():
             overflow-y: auto !important;
         }
         
-        /* ── Hide Streamlit chrome (toolbar, deploy, rerun, hamburger menu) ── */
-        [data-testid="stToolbar"],
+        /* ── Hide Streamlit chrome (deploy, status, hamburger menu, footer) ── */
         [data-testid="stDecoration"],
         [data-testid="stStatusWidget"],
         .stDeployButton,
+        [data-testid="stAppDeployButton"],
+        [data-testid="stMainMenu"],
         #MainMenu,
         footer {
             display: none !important;
             visibility: hidden !important;
         }
-
-        /* ── Force sidebar collapse/expand button to ALWAYS be visible ── */
-        [data-testid="stSidebarCollapsedControl"] {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            position: fixed !important;
-            top: 0.5rem !important;
-            left: 0.5rem !important;
-            z-index: 999999 !important;
-            background: white !important;
-            border-radius: 6px !important;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
+        /* Hide right section of toolbar (deploy/menu) but keep expand sidebar button */
+        [data-testid="stToolbar"] [data-testid="stToolbarActions"] {
+            display: none !important;
         }
-        /* Also try Streamlit 1.40+ selector names */
-        [data-testid="stSidebarNavToggle"],
-        [data-testid="collapsedControl"] {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            position: fixed !important;
-            top: 0.5rem !important;
-            left: 0.5rem !important;
-            z-index: 999999 !important;
-        }
-        /* Keep the header wrapper visible so the collapse control can render */
-        [data-testid="stHeader"] {
-            visibility: visible !important;
-            pointer-events: auto !important;
-            z-index: 999998 !important;
-        }
-        /* Ensure the collapse button itself is styled and clickable */
-        [data-testid="stSidebarCollapsedControl"] button,
-        [data-testid="stSidebarNavToggle"] button,
-        [data-testid="collapsedControl"] button {
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-        }
-        /* Remove the top padding left by the hidden header */
+        /* Reduce top padding since toolbar is minimal */
         .block-container {
             padding-top: 1.5rem !important;
-        }
-
-        /* ── Custom sidebar toggle fallback (JS-injected #oscar-sidebar-btn) ── */
-        #oscar-sidebar-btn {
-            position: fixed !important;
-            top: 0.6rem;
-            left: 0.6rem;
-            z-index: 9999999;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            background: white;
-            color: #334155;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-            transition: background 0.15s, box-shadow 0.15s;
-        }
-        #oscar-sidebar-btn:hover {
-            background: #f1f5f9;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.18);
         }
 
         /* ── Print / PDF export styles ── */
@@ -1152,149 +1092,7 @@ _stc.html("""
 </div>
 """, height=0)
 
-# ── Custom sidebar toggle button (JS fallback for collapsed sidebar) ──
-_stc.html("""
-<script>
-(function() {
-    var doc = window.parent.document;
 
-    // Remove any previously injected button (Streamlit re-runs can duplicate)
-    var existing = doc.getElementById('oscar-sidebar-btn');
-    if (existing) existing.remove();
-
-    // Create the floating hamburger button
-    var btn = doc.createElement('button');
-    btn.id = 'oscar-sidebar-btn';
-    btn.innerHTML = '&#9776;';
-    btn.title = 'Ouvrir / Fermer la sidebar';
-
-    btn.style.cssText = 'position:fixed;top:0.6rem;left:0.6rem;z-index:9999999;' +
-        'width:36px;height:36px;border-radius:8px;border:1px solid #cbd5e1;' +
-        'background:white;color:#334155;font-size:1.2rem;cursor:pointer;' +
-        'display:none;align-items:center;justify-content:center;' +
-        'box-shadow:0 2px 6px rgba(0,0,0,0.12);transition:background 0.15s;';
-
-    // Helper: simulate a real user click (mousedown+mouseup+click) for React compat
-    function realClick(el) {
-        ['mousedown', 'mouseup', 'click'].forEach(function(evtType) {
-            el.dispatchEvent(new MouseEvent(evtType, {
-                view: window.parent, bubbles: true, cancelable: true
-            }));
-        });
-    }
-
-    // Helper: walk ancestors to check if element lives within a sidebar control
-    function isInsideSidebarCtrl(el) {
-        var p = el;
-        while (p) {
-            var tid = (p.getAttribute && p.getAttribute('data-testid')) || '';
-            if (/sidebar|collapse/i.test(tid)) return true;
-            p = p.parentElement;
-        }
-        return false;
-    }
-
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // ── Strategy 1: known selectors with full event simulation ──
-        var selectors = [
-            '[data-testid="stSidebarCollapsedControl"] button',
-            '[data-testid="collapsedControl"] button',
-            '[data-testid="stSidebarNavToggle"] button',
-            'button[aria-label*="sidebar" i]',
-            'button[aria-label*="Sidebar" i]',
-            'button[aria-label*="navigation" i]',
-            'button[aria-label*="menu" i]',
-            'button[aria-label*="expand" i]',
-            'button[aria-label*="collapse" i]',
-        ];
-        for (var i = 0; i < selectors.length; i++) {
-            try {
-                var el = doc.querySelector(selectors[i]);
-                if (el) { realClick(el); return; }
-            } catch(ex) {}
-        }
-
-        // ── Strategy 2: scan ALL buttons for one inside a sidebar control ──
-        var allBtns = doc.querySelectorAll('button');
-        for (var j = 0; j < allBtns.length; j++) {
-            if (isInsideSidebarCtrl(allBtns[j])) {
-                realClick(allBtns[j]); return;
-            }
-        }
-
-        // ── Strategy 3: find the close button INSIDE the expanded sidebar ──
-        // (grab the button that collapses, then look for its expand counterpart)
-        var closeBtn = doc.querySelector('[data-testid="stSidebar"] button[aria-label]');
-        if (closeBtn) {
-            realClick(closeBtn); return;
-        }
-
-        // ── Strategy 4: brute-force CSS to show the sidebar ──
-        var sidebar = doc.querySelector('[data-testid="stSidebar"]');
-        if (sidebar) {
-            sidebar.setAttribute('aria-expanded', 'true');
-            // Walk up to find the section/container that clips
-            var target = sidebar;
-            for (var k = 0; k < 4; k++) {
-                target.style.setProperty('width', '21rem', 'important');
-                target.style.setProperty('min-width', '21rem', 'important');
-                target.style.setProperty('transform', 'none', 'important');
-                target.style.setProperty('margin-left', '0px', 'important');
-                target.style.setProperty('visibility', 'visible', 'important');
-                target.style.setProperty('display', 'flex', 'important');
-                target.style.setProperty('opacity', '1', 'important');
-                if (target.parentElement) target = target.parentElement;
-                else break;
-            }
-        }
-    });
-
-    btn.addEventListener('mouseenter', function() { btn.style.background = '#f1f5f9'; });
-    btn.addEventListener('mouseleave', function() { btn.style.background = 'white'; });
-
-    doc.body.appendChild(btn);
-
-    // ── Visibility: show the hamburger only when sidebar is collapsed ──
-    function isSidebarCollapsed() {
-        var sidebar = doc.querySelector('[data-testid="stSidebar"]');
-        if (!sidebar) return true;
-        // Check aria-expanded
-        if (sidebar.getAttribute('aria-expanded') === 'false') return true;
-        // Check computed width
-        var w = sidebar.getBoundingClientRect().width;
-        if (w < 10) return true;
-        // Check if sidebar is off-screen (transform translateX)
-        var cs = window.parent.getComputedStyle(sidebar);
-        var tf = cs.transform || cs.webkitTransform || '';
-        if (tf && tf !== 'none') {
-            var m = tf.match(/matrix.*\((.+)\)/);
-            if (m) {
-                var vals = m[1].split(',');
-                var tx = parseFloat(vals[4] || vals[12] || 0);
-                if (tx < -50) return true;
-            }
-        }
-        return false;
-    }
-
-    function updateBtnVisibility() {
-        btn.style.display = isSidebarCollapsed() ? 'flex' : 'none';
-    }
-
-    setInterval(updateBtnVisibility, 300);
-    updateBtnVisibility();
-
-    var sidebar = doc.querySelector('[data-testid="stSidebar"]');
-    if (sidebar) {
-        var obs = new MutationObserver(updateBtnVisibility);
-        obs.observe(sidebar, { attributes: true, childList: false, subtree: false });
-    }
-})();
-</script>
-""", height=0)
 
 
 # =====================================================
@@ -7435,5 +7233,475 @@ if _has_other_exports:
 # =====================================================
 # FOOTER
 # =====================================================
+
+# ── OSCAR AI Chatbot (Albert API – DINUM sovereign AI) ──
+def _build_chatbot_context():
+    """Gather dashboard context for the AI chatbot."""
+    parts = ["Tu es OSCAR AI, l'assistant data analyst du dashboard OSCAR (Outil de Suivi des Cours et d'Analyse du Réseau) de l'Institut français d'Italie (IFI).",
+             "Tu analyses les données des cours de français dispensés par les 4 antennes (sedi) : IFM (Milan), IFF (Florence), IFN (Naples), IFP (Palerme).",
+             "Réponds en français. Sois précis, utilise des chiffres. Formate avec du markdown (tableaux, listes, gras, code blocks si pertinent).",
+             ""]
+    # Processed data summary
+    if 'processed_data' in st.session_state and st.session_state.processed_data is not None:
+        df = st.session_state.processed_data
+        parts.append(f"## Données chargées : {len(df)} lignes, colonnes: {', '.join(df.columns.tolist())}")
+        parts.append(f"Années: {sorted(df['Année'].unique().tolist()) if 'Année' in df.columns else 'N/A'}")
+        parts.append(f"Sedi: {sorted(df['Sede'].unique().tolist()) if 'Sede' in df.columns else 'N/A'}")
+        if 'Semestre' in df.columns:
+            parts.append(f"Semestres: {sorted(df['Semestre'].unique().tolist())}")
+        # Key metrics
+        num_cols = ['Nb. de Cours', "Nb. d'inscriptions", 'Nouveaux inscrits', 'Réinscrits',
+                    'Nombre total d\'heures vendues (heures-étudiants)', 'Nombre d\'heures prévues',
+                    'Recettes', 'Dépenses']
+        for c in num_cols:
+            if c in df.columns:
+                parts.append(f"  {c}: total={df[c].sum():,.0f}, moy/ligne={df[c].mean():,.1f}")
+        # Sector/category breakdown
+        if 'Secteur' in df.columns:
+            parts.append(f"Secteurs: {df['Secteur'].unique().tolist()}")
+        if 'Sous-secteur' in df.columns:
+            ss = df['Sous-secteur'].dropna().unique().tolist()
+            parts.append(f"Sous-secteurs ({len(ss)}): {ss[:30]}")
+        if 'Catégorie de cours' in df.columns:
+            cats = df['Catégorie de cours'].dropna().unique().tolist()
+            parts.append(f"Catégories ({len(cats)}): {cats[:40]}")
+        # Aggregated by sede
+        if 'Sede' in df.columns and "Nb. d'inscriptions" in df.columns:
+            by_sede = df.groupby('Sede').agg({
+                "Nb. d'inscriptions": 'sum',
+                'Nb. de Cours': 'sum',
+                'Recettes': 'sum'
+            }).to_string() if 'Recettes' in df.columns else df.groupby('Sede')["Nb. d'inscriptions"].sum().to_string()
+            parts.append(f"\nRésumé par sede:\n{by_sede}")
+        # Full data as CSV (truncated if too large)
+        csv_str = df.to_csv(index=False)
+        if len(csv_str) < 200000:
+            parts.append(f"\n## Données complètes (CSV):\n{csv_str}")
+        else:
+            parts.append(f"\n## Échantillon de données (100 premières lignes, CSV):\n{df.head(100).to_csv(index=False)}")
+    # Profils clients
+    if 'profils_clients_data' in st.session_state and st.session_state.profils_clients_data is not None:
+        dfp = st.session_state.profils_clients_data
+        parts.append(f"\n## Profils clients: {len(dfp)} lignes, colonnes: {', '.join(dfp.columns.tolist())}")
+        if 'Genre' in dfp.columns:
+            parts.append(f"Répartition genre: {dfp['Genre'].value_counts().to_dict()}")
+        if 'Groupe_Age' in dfp.columns:
+            parts.append(f"Tranches d'âge: {dfp['Groupe_Age'].value_counts().to_dict()}")
+        if 'Nationalité' in dfp.columns:
+            parts.append(f"Top nationalités: {dfp['Nationalité'].value_counts().head(10).to_dict()}")
+        csv_p = dfp.to_csv(index=False)
+        if len(csv_p) < 100000:
+            parts.append(f"\nDonnées profils (CSV):\n{csv_p}")
+        else:
+            parts.append(f"\nÉchantillon profils (60 lignes):\n{dfp.head(60).to_csv(index=False)}")
+    # Course fiches
+    if 'course_fiches_data' in st.session_state and st.session_state.course_fiches_data is not None:
+        dff = st.session_state.course_fiches_data
+        parts.append(f"\n## Fiches de cours: {len(dff)} lignes, colonnes: {', '.join(dff.columns.tolist())}")
+        csv_f = dff.to_csv(index=False)
+        if len(csv_f) < 100000:
+            parts.append(f"\nDonnées fiches (CSV):\n{csv_f}")
+        else:
+            parts.append(f"\nÉchantillon fiches (60 lignes):\n{dff.head(60).to_csv(index=False)}")
+    return "\n".join(parts)
+
+_chatbot_ctx = _build_chatbot_context()
+_chatbot_ctx_escaped = json.dumps(_chatbot_ctx)
+
+_stc.html(f"""
+<script>
+(function() {{
+    var doc = window.parent.document;
+    // Cleanup previous injection
+    var old = doc.getElementById('oscar-chatbot-root');
+    if (old) old.remove();
+    var oldStyle = doc.getElementById('oscar-chatbot-style');
+    if (oldStyle) oldStyle.remove();
+
+    // ── CSS ──
+    var style = doc.createElement('style');
+    style.id = 'oscar-chatbot-style';
+    style.textContent = `
+    #oscar-chat-fab {{
+        position: fixed; bottom: 24px; right: 24px; z-index: 10000000;
+        width: 52px; height: 52px; border-radius: 50%;
+        background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+        color: white; border: none; cursor: pointer;
+        font-size: 24px; display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }}
+    #oscar-chat-fab:hover {{ transform: scale(1.1); box-shadow: 0 6px 24px rgba(37,99,235,0.5); }}
+    #oscar-chat-popup {{
+        position: fixed; bottom: 88px; right: 24px; z-index: 10000001;
+        width: 420px; height: 520px; max-height: 80vh;
+        background: #ffffff; border-radius: 16px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+        display: none; flex-direction: column; overflow: hidden;
+        font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+        transition: all 0.3s ease;
+    }}
+    #oscar-chat-popup.oscar-fs {{
+        top: 16px !important; left: 16px !important; right: 16px !important;
+        bottom: 16px !important; width: auto !important; height: auto !important;
+        max-height: none !important; border-radius: 12px;
+    }}
+    #oscar-chat-popup.oscar-open {{ display: flex; }}
+    .oscar-chat-hdr {{
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 16px; background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+        color: white; flex-shrink: 0; border-radius: 16px 16px 0 0;
+    }}
+    #oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 12px 12px 0 0; }}
+    .oscar-chat-hdr-title {{ font-weight: 700; font-size: 15px; display:flex; align-items:center; gap:8px; }}
+    .oscar-chat-hdr-btns {{ display: flex; gap: 6px; }}
+    .oscar-chat-hdr-btns button {{
+        background: rgba(255,255,255,0.15); border: none; color: white; width: 30px; height: 30px;
+        border-radius: 8px; cursor: pointer; font-size: 15px; display:flex; align-items:center; justify-content:center;
+        transition: background 0.15s;
+    }}
+    .oscar-chat-hdr-btns button:hover {{ background: rgba(255,255,255,0.3); }}
+    .oscar-chat-msgs {{
+        flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+        scroll-behavior: smooth;
+    }}
+    .oscar-msg {{ max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.55; word-wrap: break-word; }}
+    .oscar-msg-user {{
+        align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 4px;
+    }}
+    .oscar-msg-ai {{
+        align-self: flex-start; background: #f1f5f9; color: #1e293b; border-bottom-left-radius: 4px;
+    }}
+    .oscar-msg-ai p {{ margin: 0 0 8px 0; }}
+    .oscar-msg-ai p:last-child {{ margin-bottom: 0; }}
+    .oscar-msg-ai table {{
+        border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px;
+    }}
+    .oscar-msg-ai th, .oscar-msg-ai td {{
+        border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left;
+    }}
+    .oscar-msg-ai th {{ background: #e2e8f0; font-weight: 600; }}
+    .oscar-msg-ai tr:nth-child(even) {{ background: #f8fafc; }}
+    .oscar-msg-ai pre {{
+        background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px;
+        overflow-x: auto; font-size: 13px; position: relative; margin: 8px 0;
+    }}
+    .oscar-msg-ai code {{
+        font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 13px;
+    }}
+    .oscar-msg-ai :not(pre) > code {{
+        background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #1e293b;
+    }}
+    .oscar-copy-btn {{
+        position: absolute; top: 6px; right: 6px; background: rgba(255,255,255,0.12);
+        border: none; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 4px;
+        font-size: 12px; transition: background 0.15s, color 0.15s;
+    }}
+    .oscar-copy-btn:hover {{ background: rgba(255,255,255,0.25); color: white; }}
+    .oscar-msg-ai ul, .oscar-msg-ai ol {{ padding-left: 20px; margin: 4px 0; }}
+    .oscar-msg-ai li {{ margin: 2px 0; }}
+    .oscar-msg-ai strong {{ font-weight: 700; }}
+    .oscar-msg-ai h1,.oscar-msg-ai h2,.oscar-msg-ai h3,.oscar-msg-ai h4 {{
+        margin: 10px 0 6px 0; font-weight: 700;
+    }}
+    .oscar-msg-ai h1 {{ font-size: 18px; }} .oscar-msg-ai h2 {{ font-size: 16px; }}
+    .oscar-msg-ai h3 {{ font-size: 15px; }} .oscar-msg-ai h4 {{ font-size: 14px; }}
+    .oscar-msg-ai blockquote {{
+        border-left: 3px solid #2563eb; margin: 8px 0; padding: 4px 12px; color: #475569;
+    }}
+    .oscar-chat-input-area {{
+        display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e2e8f0; flex-shrink: 0;
+        background: #fafbfc;
+    }}
+    .oscar-chat-input-area textarea {{
+        flex: 1; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px;
+        font-size: 14px; font-family: inherit; resize: none; outline: none;
+        min-height: 40px; max-height: 120px; line-height: 1.4;
+        transition: border-color 0.15s;
+    }}
+    .oscar-chat-input-area textarea:focus {{ border-color: #2563eb; }}
+    .oscar-chat-input-area button {{
+        background: #2563eb; color: white; border: none; border-radius: 10px;
+        width: 40px; height: 40px; cursor: pointer; font-size: 18px;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s; flex-shrink: 0; align-self: flex-end;
+    }}
+    .oscar-chat-input-area button:hover {{ background: #1d4ed8; }}
+    .oscar-chat-input-area button:disabled {{ background: #94a3b8; cursor: not-allowed; }}
+    .oscar-typing {{ display: flex; gap: 4px; padding: 8px 14px; align-self: flex-start; }}
+    .oscar-typing span {{
+        width: 8px; height: 8px; background: #94a3b8; border-radius: 50%;
+        animation: oscar-bounce 1.4s infinite ease-in-out both;
+    }}
+    .oscar-typing span:nth-child(1) {{ animation-delay: -0.32s; }}
+    .oscar-typing span:nth-child(2) {{ animation-delay: -0.16s; }}
+    @keyframes oscar-bounce {{
+        0%, 80%, 100% {{ transform: scale(0); }} 40% {{ transform: scale(1); }}
+    }}
+    .oscar-welcome {{ text-align: center; color: #64748b; padding: 32px 20px; }}
+    .oscar-welcome h3 {{ color: #1e3a5f; margin-bottom: 8px; }}
+    .oscar-suggestions {{
+        display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px;
+    }}
+    .oscar-suggestions button {{
+        background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 20px;
+        padding: 6px 14px; font-size: 13px; color: #334155; cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+    }}
+    .oscar-suggestions button:hover {{ background: #e2e8f0; border-color: #cbd5e1; }}
+    @media (max-width: 600px) {{
+        #oscar-chat-popup {{ left: 8px; right: 8px; bottom: 80px; width: auto; height: 70vh; }}
+    }}
+    `;
+    doc.head.appendChild(style);
+
+    // ── Load marked.js ──
+    function loadScript(src, cb) {{
+        if (doc.querySelector('script[src="'+src+'"]')) {{ if(cb) cb(); return; }}
+        var s = doc.createElement('script');
+        s.src = src;
+        s.onload = cb;
+        doc.head.appendChild(s);
+    }}
+    loadScript('https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js', function() {{
+        if (window.parent.marked && window.parent.marked.setOptions) {{
+            window.parent.marked.setOptions({{ breaks: true, gfm: true }});
+        }}
+    }});
+
+    // ── DOM ──
+    var root = doc.createElement('div');
+    root.id = 'oscar-chatbot-root';
+    root.innerHTML = `
+    <button id="oscar-chat-fab" title="Assistant OSCAR AI">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+    </button>
+    <div id="oscar-chat-popup">
+        <div class="oscar-chat-hdr">
+            <div class="oscar-chat-hdr-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                OSCAR AI
+            </div>
+            <div class="oscar-chat-hdr-btns">
+                <button id="oscar-chat-fs" title="Plein écran">⛶</button>
+                <button id="oscar-chat-clear" title="Effacer">🗑</button>
+                <button id="oscar-chat-close" title="Fermer">✕</button>
+            </div>
+        </div>
+        <div class="oscar-chat-msgs" id="oscar-chat-msgs">
+            <div class="oscar-welcome">
+                <h3>👋 Bonjour !</h3>
+                <p>Je suis <strong>OSCAR AI</strong>, votre assistant data analyst.<br>Posez-moi des questions sur vos données.</p>
+                <div class="oscar-suggestions">
+                    <button data-q="Fais une synthèse globale des données chargées">📊 Synthèse globale</button>
+                    <button data-q="Compare les inscriptions entre les différentes antennes">🏛 Comparer les antennes</button>
+                    <button data-q="Quelles sont les catégories les plus populaires ?">📚 Top catégories</button>
+                    <button data-q="Analyse l'évolution des inscriptions d'année en année">📈 Évolution annuelle</button>
+                </div>
+            </div>
+        </div>
+        <div class="oscar-chat-input-area">
+            <textarea id="oscar-chat-input" placeholder="Posez une question sur vos données..." rows="1"></textarea>
+            <button id="oscar-chat-send" title="Envoyer">➤</button>
+        </div>
+    </div>`;
+    doc.body.appendChild(root);
+
+    // ── State ──
+    var CONTEXT = {_chatbot_ctx_escaped};
+    var API_KEY = 'sk-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo5NTk0LCJ0b2tlbl9pZCI6MTczNjAsImV4cGlyZXMiOjE4MDUxOTk1OTV9.qkh7XSjk_hU0_GN_3MKUUsD9_IYkhkwQFqiyC_-WiwI';
+    var MODEL = 'openweight-large';
+    var messages = [{{ role: 'system', content: CONTEXT }}];
+    var isStreaming = false;
+
+    var fab = doc.getElementById('oscar-chat-fab');
+    var popup = doc.getElementById('oscar-chat-popup');
+    var msgsEl = doc.getElementById('oscar-chat-msgs');
+    var input = doc.getElementById('oscar-chat-input');
+    var sendBtn = doc.getElementById('oscar-chat-send');
+    var closeBtn = doc.getElementById('oscar-chat-close');
+    var fsBtn = doc.getElementById('oscar-chat-fs');
+    var clearBtn = doc.getElementById('oscar-chat-clear');
+    var suggestions = doc.querySelectorAll ? root.querySelectorAll('.oscar-suggestions button') : [];
+
+    // ── Events ──
+    fab.addEventListener('click', function() {{
+        popup.classList.toggle('oscar-open');
+        if (popup.classList.contains('oscar-open')) input.focus();
+    }});
+    closeBtn.addEventListener('click', function() {{ popup.classList.remove('oscar-open'); }});
+    fsBtn.addEventListener('click', function() {{
+        popup.classList.toggle('oscar-fs');
+        fsBtn.textContent = popup.classList.contains('oscar-fs') ? '⊡' : '⛶';
+    }});
+    clearBtn.addEventListener('click', function() {{
+        messages = [{{ role: 'system', content: CONTEXT }}];
+        msgsEl.innerHTML = '<div class="oscar-welcome"><h3>👋 Conversation effacée</h3><p>Posez une nouvelle question.</p></div>';
+    }});
+
+    for (var si = 0; si < suggestions.length; si++) {{
+        (function(s) {{
+            s.addEventListener('click', function() {{ sendMessage(s.getAttribute('data-q')); }});
+        }})(suggestions[si]);
+    }}
+
+    input.addEventListener('keydown', function(e) {{
+        if (e.key === 'Enter' && !e.shiftKey) {{
+            e.preventDefault();
+            sendMessage(input.value);
+        }}
+    }});
+    input.addEventListener('input', function() {{
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    }});
+    sendBtn.addEventListener('click', function() {{ sendMessage(input.value); }});
+
+    // ── Markdown rendering ──
+    function renderMd(text) {{
+        if (window.parent.marked && window.parent.marked.parse) {{
+            try {{ return window.parent.marked.parse(text); }} catch(e) {{}}
+        }}
+        // Fallback: basic formatting
+        return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                   .replace(/\\n/g,'<br>').replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>')
+                   .replace(/`(.+?)`/g,'<code>$1</code>');
+    }}
+
+    function addCopyButtons(container) {{
+        var pres = container.querySelectorAll('pre');
+        for (var i = 0; i < pres.length; i++) {{
+            (function(pre) {{
+                var btn = doc.createElement('button');
+                btn.className = 'oscar-copy-btn';
+                btn.textContent = 'Copier';
+                btn.addEventListener('click', function() {{
+                    var code = pre.querySelector('code');
+                    var text = code ? code.textContent : pre.textContent;
+                    if (navigator.clipboard) {{
+                        navigator.clipboard.writeText(text).then(function() {{
+                            btn.textContent = '✓ Copié';
+                            setTimeout(function() {{ btn.textContent = 'Copier'; }}, 1500);
+                        }});
+                    }}
+                }});
+                pre.style.position = 'relative';
+                pre.appendChild(btn);
+            }})(pres[i]);
+        }}
+    }}
+
+    // ── Send / Stream ──
+    function sendMessage(text) {{
+        text = (text || '').trim();
+        if (!text || isStreaming) return;
+        // Remove welcome
+        var welcome = msgsEl.querySelector('.oscar-welcome');
+        if (welcome) welcome.remove();
+
+        // User message
+        var userDiv = doc.createElement('div');
+        userDiv.className = 'oscar-msg oscar-msg-user';
+        userDiv.textContent = text;
+        msgsEl.appendChild(userDiv);
+        input.value = '';
+        input.style.height = 'auto';
+
+        messages.push({{ role: 'user', content: text }});
+
+        // Typing indicator
+        var typingDiv = doc.createElement('div');
+        typingDiv.className = 'oscar-typing';
+        typingDiv.innerHTML = '<span></span><span></span><span></span>';
+        msgsEl.appendChild(typingDiv);
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+
+        isStreaming = true;
+        sendBtn.disabled = true;
+
+        // AI response bubble
+        var aiDiv = doc.createElement('div');
+        aiDiv.className = 'oscar-msg oscar-msg-ai';
+        var fullText = '';
+
+        fetch('https://albert.api.etalab.gouv.fr/v1/chat/completions', {{
+            method: 'POST',
+            headers: {{
+                'Authorization': 'Bearer ' + API_KEY,
+                'Content-Type': 'application/json'
+            }},
+            body: JSON.stringify({{
+                model: MODEL,
+                messages: messages,
+                temperature: 0.3,
+                max_completion_tokens: 4096,
+                stream: true
+            }})
+        }}).then(function(resp) {{
+            if (!resp.ok) {{
+                return resp.text().then(function(t) {{ throw new Error('API error: ' + resp.status + ' ' + t); }});
+            }}
+            typingDiv.remove();
+            msgsEl.appendChild(aiDiv);
+
+            var reader = resp.body.getReader();
+            var decoder = new TextDecoder();
+            var buffer = '';
+
+            function processStream() {{
+                reader.read().then(function(result) {{
+                    if (result.done) {{
+                        messages.push({{ role: 'assistant', content: fullText }});
+                        aiDiv.innerHTML = renderMd(fullText);
+                        addCopyButtons(aiDiv);
+                        msgsEl.scrollTop = msgsEl.scrollHeight;
+                        isStreaming = false;
+                        sendBtn.disabled = false;
+                        return;
+                    }}
+                    buffer += decoder.decode(result.value, {{ stream: true }});
+                    var lines = buffer.split('\\n');
+                    buffer = lines.pop();
+                    for (var li = 0; li < lines.length; li++) {{
+                        var line = lines[li].trim();
+                        if (!line.startsWith('data:')) continue;
+                        var data = line.slice(5).trim();
+                        if (data === '[DONE]') continue;
+                        try {{
+                            var json = JSON.parse(data);
+                            var delta = json.choices && json.choices[0] && json.choices[0].delta;
+                            if (delta && delta.content) {{
+                                fullText += delta.content;
+                                aiDiv.innerHTML = renderMd(fullText) + '<span class="oscar-cursor" style="display:inline-block;width:2px;height:14px;background:#2563eb;animation:oscar-blink 1s infinite;vertical-align:text-bottom;margin-left:2px;"></span>';
+                                msgsEl.scrollTop = msgsEl.scrollHeight;
+                            }}
+                        }} catch(e) {{}}
+                    }}
+                    processStream();
+                }});
+            }}
+            processStream();
+        }}).catch(function(err) {{
+            typingDiv.remove();
+            var errDiv = doc.createElement('div');
+            errDiv.className = 'oscar-msg oscar-msg-ai';
+            errDiv.innerHTML = '<p style="color:#dc2626;">❌ Erreur : ' + err.message + '</p><p>Vérifiez votre connexion ou réessayez.</p>';
+            msgsEl.appendChild(errDiv);
+            msgsEl.scrollTop = msgsEl.scrollHeight;
+            isStreaming = false;
+            sendBtn.disabled = false;
+        }});
+    }}
+
+    // Blink cursor animation
+    var blinkStyle = doc.createElement('style');
+    blinkStyle.textContent = '@keyframes oscar-blink {{ 0%,50% {{ opacity:1; }} 51%,100% {{ opacity:0; }} }}';
+    doc.head.appendChild(blinkStyle);
+}})();
+</script>
+""", height=0)
+
 st.markdown("---")
 st.caption("OSCAR v3.0 • Institut français Italia")
