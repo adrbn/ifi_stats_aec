@@ -950,11 +950,9 @@ def get_css():
         
         /* ── Hide Streamlit chrome (deploy, status, hamburger menu, footer, badges) ── */
         #MainMenu,
-        header,
         footer,
         [data-testid="stDecoration"],
         [data-testid="stStatusWidget"],
-        [data-testid="stToolbar"],
         .stDeployButton,
         [data-testid="stAppDeployButton"],
         [data-testid="stMainMenu"],
@@ -962,7 +960,6 @@ def get_css():
         [data-testid="stBottomBlockContainer"],
         [class*="viewerBadge"],
         [class*="_profileContainer"],
-        [class*="stActionButton"],
         a[href*="streamlit.io"],
         [data-testid="stBottom"] > div:last-child,
         header[data-testid="stHeader"] a[href*="github"],
@@ -974,8 +971,6 @@ def get_css():
             height: 0 !important;
             width: 0 !important;
             overflow: hidden !important;
-            position: absolute !important;
-            pointer-events: none !important;
         }
         /* Hide right section of toolbar (deploy/menu) but keep expand sidebar button */
         [data-testid="stToolbar"] [data-testid="stToolbarActions"] {
@@ -1126,22 +1121,19 @@ _stc.html("""
             var s = doc.createElement('style');
             s.id = '_hide_streamlit_chrome';
             s.textContent = [
-                '#MainMenu, footer, header,',
+                '#MainMenu, footer,',
                 '[data-testid="stDecoration"],',
                 '[data-testid="stStatusWidget"],',
-                '[data-testid="stToolbar"],',
                 '[data-testid="stAppDeployButton"],',
                 '.stDeployButton,',
                 '[data-testid="manage-app-button"],',
                 '[data-testid="stBottomBlockContainer"],',
                 '[class*="viewerBadge"],',
                 '[class*="_profileContainer"],',
-                '[class*="stActionButton"],',
                 'iframe[title*="badge"], iframe[title*="Streamlit"],',
                 'iframe[src*="badge"]',
                 '{ display:none!important; visibility:hidden!important;',
-                '  height:0!important; width:0!important; overflow:hidden!important;',
-                '  position:absolute!important; pointer-events:none!important; }'
+                '  height:0!important; width:0!important; overflow:hidden!important; }'
             ].join('\\n');
             doc.head.appendChild(s);
         }
@@ -1151,7 +1143,6 @@ _stc.html("""
             // Remove by data-testid
             var selectors = [
                 '[data-testid="manage-app-button"]',
-                '[data-testid="stToolbar"]',
                 '[data-testid="stDecoration"]',
                 '[data-testid="stStatusWidget"]',
                 '[data-testid="stAppDeployButton"]',
