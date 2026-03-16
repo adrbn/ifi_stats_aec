@@ -7381,11 +7381,30 @@ def _oscar_chat_clear():
     st.session_state.oscar_chat_pending = None
     st.session_state.oscar_chat_retry = False
 
-def _oscar_toggle_chat():
-    st.session_state.oscar_chat_open = not st.session_state.oscar_chat_open
-
-def _oscar_toggle_fs():
-    st.session_state.oscar_chat_fullscreen = not st.session_state.oscar_chat_fullscreen
+# ── Hidden form for chatbot commands (avoids URL navigation / session loss) ──
+st.markdown('<style>div[data-testid="stForm"]:has(input[aria-label="_oscar_cmd"]){position:fixed!important;top:-9999px!important;left:-9999px!important;}</style>', unsafe_allow_html=True)
+with st.form("_oscar_chat_form", clear_on_submit=True):
+    _oscar_cmd_raw = st.text_input("_oscar_cmd", label_visibility="collapsed")
+    _oscar_form_sub = st.form_submit_button("_oscar_send")
+    if _oscar_form_sub and _oscar_cmd_raw:
+        try:
+            _cmd = json.loads(_oscar_cmd_raw)
+            _action = _cmd.get('a', '')
+            if _action == 'm':
+                st.session_state.oscar_chat_pending = _cmd.get('t', '')
+                st.session_state.oscar_chat_open = True
+            elif _action == 'c':
+                _oscar_chat_clear()
+                st.session_state.oscar_chat_open = True
+            elif _action == 'r':
+                st.session_state.oscar_chat_retry = True
+                st.session_state.oscar_chat_open = True
+            elif _action == 'M':
+                st.session_state.oscar_chat_model = _cmd.get('v', 'openweight-large')
+                st.session_state.oscar_chat_open = True
+        except Exception:
+            st.session_state.oscar_chat_pending = _oscar_cmd_raw
+            st.session_state.oscar_chat_open = True
 
 # ── Process pending message ──
 if st.session_state.oscar_chat_pending or st.session_state.oscar_chat_retry:
@@ -7788,41 +7807,49 @@ _stc.html(f"""
             setTimeout(function() {{ clearInterval(checkMarked); }}, 5000);
         }}
 
-        // Navigation helper (runs in parent context — no sandbox restriction)
-        function oscarNav(params) {{
-            var url = new URL(window.location);
-            for (var k in params) url.searchParams.set(k, params[k]);
-            url.searchParams.set('_t', Date.now());
-            window.location.href = url.toString();
+        // Command helper: fills hidden Streamlit form and submits (no page reload)
+        function oscarCmd(cmdObj) {{
+            var fi = document.querySelector('input[aria-label="_oscar_cmd"]');
+            if (!fi) return;
+            var ns = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+            ns.call(fi, JSON.stringify(cmdObj));
+            // Reset React _valueTracker so React detects the change
+            var tracker = fi._valueTracker;
+            if (tracker) tracker.setValue('');
+            fi.dispatchEvent(new Event('input', {{ bubbles: true }}));
+            fi.dispatchEvent(new Event('change', {{ bubbles: true }}));
+            var form = fi.closest('[data-testid="stForm"]');
+            var btn = form ? form.querySelector('[data-testid="stFormSubmitButton"] button') : null;
+            if (btn) setTimeout(function() {{ btn.click(); }}, 50);
         }}
 
-        // FAB toggle
+        // FAB toggle (client-side only)
         if (pFab) pFab.onclick = function() {{
             pPopup.classList.toggle('oscar-open');
             if (pPopup.classList.contains('oscar-open') && pInput) pInput.focus();
         }};
-        // Close
+        // Close (client-side only)
         if (pClose) pClose.onclick = function() {{
             pPopup.classList.remove('oscar-open');
         }};
-        // Fullscreen
+        // Fullscreen (client-side only)
         if (pFs) pFs.onclick = function() {{
             pPopup.classList.toggle('oscar-fs');
             pFs.textContent = pPopup.classList.contains('oscar-fs') ? '⊡' : '⛶';
         }};
-        // Clear
+        // Clear → hidden form
         if (pClear) pClear.onclick = function() {{
-            oscarNav({{ oscar_action: 'clear' }});
+            oscarCmd({{ a: 'c' }});
         }};
-        // Model select
+        // Model select → hidden form
         if (pModelSel) pModelSel.onchange = function() {{
-            oscarNav({{ oscar_model: this.value }});
+            oscarCmd({{ a: 'M', v: this.value }});
         }};
-        // Send message
+        // Send message → hidden form
         function submitMsg(text) {{
             text = (text || '').trim();
             if (!text) return;
-            oscarNav({{ oscar_msg: encodeURIComponent(text) }});
+            oscarCmd({{ a: 'm', t: text }});
         }}
         if (pSend) pSend.onclick = function() {{ submitMsg(pInput.value); }};
         if (pInput) pInput.onkeydown = function(e) {{
@@ -7835,9 +7862,9 @@ _stc.html(f"""
                 btn.onclick = function() {{ submitMsg(btn.getAttribute('data-q')); }};
             }})(sugBtns[si]);
         }}
-        // Retry button
+        // Retry button → hidden form
         if (pRetry) pRetry.onclick = function() {{
-            oscarNav({{ oscar_action: 'retry' }});
+            oscarCmd({{ a: 'r' }});
         }};
         // Scroll to bottom
         if (pMsgs) setTimeout(function() {{ pMsgs.scrollTop = pMsgs.scrollHeight; }}, 100);
@@ -7848,26 +7875,7 @@ _stc.html(f"""
 </script>
 """, height=0)
 
-# ── Handle URL query params for chat actions ──
-_qp = st.query_params
-if 'oscar_msg' in _qp:
-    _msg_text = urllib.request.unquote(_qp['oscar_msg'])
-    st.session_state.oscar_chat_pending = _msg_text
-    st.session_state.oscar_chat_open = True
-    st.query_params.clear()
-    st.rerun()
-if _qp.get('oscar_action') == 'clear':
-    _oscar_chat_clear()
-    st.query_params.clear()
-    st.rerun()
-if _qp.get('oscar_action') == 'retry':
-    st.session_state.oscar_chat_retry = True
-    st.query_params.clear()
-    st.rerun()
-if 'oscar_model' in _qp:
-    st.session_state.oscar_chat_model = _qp['oscar_model']
-    st.query_params.clear()
-    st.rerun()
+
 
 st.markdown("---")
 st.caption("OSCAR v3.0 • Institut français Italia")
