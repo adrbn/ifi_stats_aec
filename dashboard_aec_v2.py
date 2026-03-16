@@ -949,12 +949,18 @@ def get_css():
         #MainMenu,
         footer,
         [data-testid="manage-app-button"],
-        .viewerBadge_container__r5tak,
-        .viewerBadge_link__qRIco,
-        ._profileContainer_gzau3_53,
-        a[href*="streamlit.io/cloud"] {
+        [class*="viewerBadge"],
+        [class*="_profileContainer"],
+        a[href*="streamlit.io"],
+        [data-testid="stBottom"] > div:last-child,
+        [data-testid="stBottomBlockContainer"],
+        header[data-testid="stHeader"] a[href*="github"],
+        iframe[title="streamlit-badge"] {
             display: none !important;
             visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
         }
         /* Hide right section of toolbar (deploy/menu) but keep expand sidebar button */
         [data-testid="stToolbar"] [data-testid="stToolbarActions"] {
