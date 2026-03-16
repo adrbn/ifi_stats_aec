@@ -7668,8 +7668,9 @@ for _mi, _m in enumerate(st.session_state.oscar_chat_history):
     else:
         # AI message - render as markdown HTML (using marked.js client-side)
         _ai_content = _m['content'] or 'Désolé, pas de réponse.'
-        _escaped_content = json.dumps(_ai_content)
-        _msgs_html_parts.append(f'<div class="oscar-msg oscar-msg-ai" data-md={_escaped_content}></div>')
+        import base64 as _b64
+        _b64_content = _b64.b64encode(_ai_content.encode('utf-8')).decode('ascii')
+        _msgs_html_parts.append(f'<div class="oscar-msg oscar-msg-ai" data-md-b64="{_b64_content}"></div>')
 
 _msgs_html = "\n".join(_msgs_html_parts)
 
@@ -7775,17 +7776,21 @@ _stc.html(f"""
         function renderAllMd() {{
             if (!window.marked) return;
             window.marked.setOptions({{ breaks: true, gfm: true }});
-            var mdDivs = root.querySelectorAll('[data-md]');
+            var mdDivs = root.querySelectorAll('[data-md-b64]');
             for (var i = 0; i < mdDivs.length; i++) {{
                 try {{
-                    var raw = JSON.parse(mdDivs[i].getAttribute('data-md'));
-                    if (raw && typeof raw === 'string') {{
+                    var raw = atob(mdDivs[i].getAttribute('data-md-b64'));
+                    // Decode UTF-8 from binary string
+                    raw = decodeURIComponent(Array.prototype.map.call(raw, function(c) {{
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }}).join(''));
+                    if (raw) {{
                         mdDivs[i].innerHTML = window.marked.parse(raw);
                         addCopyBtns(mdDivs[i]);
                     }} else {{
-                        mdDivs[i].textContent = raw || 'Pas de réponse.';
+                        mdDivs[i].textContent = 'Pas de réponse.';
                     }}
-                    mdDivs[i].removeAttribute('data-md');
+                    mdDivs[i].removeAttribute('data-md-b64');
                 }} catch(e) {{ console.error('[OSCAR] MD render error:', e); }}
             }}
             if (pMsgs) pMsgs.scrollTop = pMsgs.scrollHeight;
