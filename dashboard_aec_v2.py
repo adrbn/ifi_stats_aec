@@ -7290,11 +7290,9 @@ def _build_chatbot_context():
                 'Recettes': 'sum'
             }).to_string() if 'Recettes' in df.columns else df.groupby('Sede')["Nb. d'inscriptions"].sum().to_string()
             parts.append(f"\nRésumé par sede:\n{by_sede}")
-        csv_str = df.to_csv(index=False)
-        if len(csv_str) < 200000:
-            parts.append(f"\n## Données complètes (CSV):\n{csv_str}")
-        else:
-            parts.append(f"\n## Échantillon de données (100 premières lignes, CSV):\n{df.head(100).to_csv(index=False)}")
+        # Send a reasonably sized sample (not the whole CSV – too slow for reasoning models)
+        csv_sample = df.head(50).to_csv(index=False)
+        parts.append(f"\n## Échantillon de données (50 premières lignes, CSV):\n{csv_sample}")
     if 'profils_clients_data' in st.session_state and st.session_state.profils_clients_data is not None:
         dfp = st.session_state.profils_clients_data
         parts.append(f"\n## Profils clients: {len(dfp)} lignes, colonnes: {', '.join(dfp.columns.tolist())}")
@@ -7304,28 +7302,25 @@ def _build_chatbot_context():
             parts.append(f"Tranches d'âge: {dfp['Groupe_Age'].value_counts().to_dict()}")
         if 'Nationalité' in dfp.columns:
             parts.append(f"Top nationalités: {dfp['Nationalité'].value_counts().head(10).to_dict()}")
-        csv_p = dfp.to_csv(index=False)
-        if len(csv_p) < 100000:
-            parts.append(f"\nDonnées profils (CSV):\n{csv_p}")
-        else:
-            parts.append(f"\nÉchantillon profils (60 lignes):\n{dfp.head(60).to_csv(index=False)}")
+        parts.append(f"\nÉchantillon profils (30 lignes):\n{dfp.head(30).to_csv(index=False)}")
     if 'course_fiches_data' in st.session_state and st.session_state.course_fiches_data is not None:
         dff = st.session_state.course_fiches_data
         parts.append(f"\n## Fiches de cours: {len(dff)} lignes, colonnes: {', '.join(dff.columns.tolist())}")
-        csv_f = dff.to_csv(index=False)
-        if len(csv_f) < 100000:
-            parts.append(f"\nDonnées fiches (CSV):\n{csv_f}")
-        else:
-            parts.append(f"\nÉchantillon fiches (60 lignes):\n{dff.head(60).to_csv(index=False)}")
+        parts.append(f"\nÉchantillon fiches (30 lignes):\n{dff.head(30).to_csv(index=False)}")
     return "\n".join(parts)
 
 def _call_albert_api(messages_list, model='openweight-large'):
     """Call Albert API server-side (no CORS). Returns (content, error)."""
+    import time as _t
+    _api_start = _t.time()
+    # Estimate token count (rough: 1 token ≈ 4 chars)
+    _total_chars = sum(len(m.get('content', '') or '') for m in messages_list)
+    print(f"[OSCAR] API call: model={model}, messages={len(messages_list)}, ~{_total_chars} chars (~{_total_chars//4} tokens)", flush=True)
     payload = json.dumps({
         "model": model,
         "messages": messages_list,
         "temperature": 0.3,
-        "max_completion_tokens": 4096,
+        "max_tokens": 2048,
         "stream": False
     }).encode('utf-8')
     req = urllib.request.Request(
@@ -7338,13 +7333,30 @@ def _call_albert_api(messages_list, model='openweight-large'):
         method='POST'
     )
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             body = json.loads(resp.read().decode('utf-8'))
-            return body['choices'][0]['message']['content'], None
+            _elapsed = _t.time() - _api_start
+            msg = body['choices'][0]['message']
+            content = msg.get('content')
+            # Reasoning models may return content=null with reasoning field
+            if content is None:
+                reasoning = msg.get('reasoning') or ''
+                if reasoning:
+                    content = reasoning
+                    print(f"[OSCAR] API returned content=null, using reasoning field ({len(reasoning)} chars)", flush=True)
+                else:
+                    content = "Désolé, le modèle n'a pas produit de réponse. Essayez de reformuler votre question."
+                    print(f"[OSCAR] API returned content=null AND no reasoning", flush=True)
+            print(f"[OSCAR] API OK in {_elapsed:.1f}s, finish={body['choices'][0].get('finish_reason')}, content={len(content)} chars", flush=True)
+            return content, None
     except urllib.error.HTTPError as e:
         err_body = e.read().decode('utf-8', errors='replace')
+        _elapsed = _t.time() - _api_start
+        print(f"[OSCAR] API HTTP error {e.code} in {_elapsed:.1f}s: {err_body[:200]}", flush=True)
         return None, f"Erreur API {e.code}: {err_body[:300]}"
     except Exception as e:
+        _elapsed = _t.time() - _api_start
+        print(f"[OSCAR] API error in {_elapsed:.1f}s: {e}", flush=True)
         return None, f"Erreur réseau: {str(e)}"
 
 # ── Chat session state ──
@@ -7387,6 +7399,7 @@ with st.form("_oscar_chat_form", clear_on_submit=True):
     _oscar_cmd_raw = st.text_input("_oscar_cmd", label_visibility="collapsed")
     _oscar_form_sub = st.form_submit_button("_oscar_send")
     if _oscar_form_sub and _oscar_cmd_raw:
+        print(f"[OSCAR] Form submitted: {_oscar_cmd_raw[:100]}", flush=True)
         try:
             _cmd = json.loads(_oscar_cmd_raw)
             _action = _cmd.get('a', '')
@@ -7654,7 +7667,8 @@ for _mi, _m in enumerate(st.session_state.oscar_chat_history):
         _msgs_html_parts.append(f'<div class="oscar-msg-error">❌ {_safe}<br><button class="oscar-retry-btn" id="oscar-retry-btn">🔄 Réessayer</button></div>')
     else:
         # AI message - render as markdown HTML (using marked.js client-side)
-        _escaped_content = json.dumps(_m['content'])
+        _ai_content = _m['content'] or 'Désolé, pas de réponse.'
+        _escaped_content = json.dumps(_ai_content)
         _msgs_html_parts.append(f'<div class="oscar-msg oscar-msg-ai" data-md={_escaped_content}></div>')
 
 _msgs_html = "\n".join(_msgs_html_parts)
@@ -7765,10 +7779,14 @@ _stc.html(f"""
             for (var i = 0; i < mdDivs.length; i++) {{
                 try {{
                     var raw = JSON.parse(mdDivs[i].getAttribute('data-md'));
-                    mdDivs[i].innerHTML = window.marked.parse(raw);
-                    addCopyBtns(mdDivs[i]);
+                    if (raw && typeof raw === 'string') {{
+                        mdDivs[i].innerHTML = window.marked.parse(raw);
+                        addCopyBtns(mdDivs[i]);
+                    }} else {{
+                        mdDivs[i].textContent = raw || 'Pas de réponse.';
+                    }}
                     mdDivs[i].removeAttribute('data-md');
-                }} catch(e) {{}}
+                }} catch(e) {{ console.error('[OSCAR] MD render error:', e); }}
             }}
             if (pMsgs) pMsgs.scrollTop = pMsgs.scrollHeight;
         }}
@@ -7809,8 +7827,29 @@ _stc.html(f"""
 
         // Command helper: fills hidden Streamlit form and submits (no page reload)
         function oscarCmd(cmdObj) {{
+            console.log('[OSCAR] oscarCmd called:', JSON.stringify(cmdObj));
+            // The form input is in the Streamlit app (parent document)
             var fi = document.querySelector('input[aria-label="_oscar_cmd"]');
-            if (!fi) return;
+            if (!fi) {{
+                // Try searching in iframes too
+                var iframes = document.querySelectorAll('iframe');
+                console.log('[OSCAR] input not found in parent doc, checking', iframes.length, 'iframes');
+                for (var ii = 0; ii < iframes.length; ii++) {{
+                    try {{
+                        fi = iframes[ii].contentDocument.querySelector('input[aria-label="_oscar_cmd"]');
+                        if (fi) {{ console.log('[OSCAR] Found input in iframe', ii); break; }}
+                    }} catch(e) {{}}
+                }}
+            }}
+            if (!fi) {{
+                console.error('[OSCAR] CANNOT FIND hidden form input! Listing all inputs:');
+                var allInputs = document.querySelectorAll('input');
+                allInputs.forEach(function(inp, idx) {{
+                    console.log('[OSCAR] input #' + idx + ':', inp.getAttribute('aria-label'), inp.type, inp.name);
+                }});
+                return;
+            }}
+            console.log('[OSCAR] Found input, setting value...');
             var ns = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
             ns.call(fi, JSON.stringify(cmdObj));
             // Reset React _valueTracker so React detects the change
@@ -7820,7 +7859,8 @@ _stc.html(f"""
             fi.dispatchEvent(new Event('change', {{ bubbles: true }}));
             var form = fi.closest('[data-testid="stForm"]');
             var btn = form ? form.querySelector('[data-testid="stFormSubmitButton"] button') : null;
-            if (btn) setTimeout(function() {{ btn.click(); }}, 50);
+            console.log('[OSCAR] form:', !!form, 'btn:', !!btn);
+            if (btn) setTimeout(function() {{ btn.click(); console.log('[OSCAR] Clicked submit button'); }}, 50);
         }}
 
         // FAB toggle (client-side only)
