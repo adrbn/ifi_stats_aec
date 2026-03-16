@@ -4393,6 +4393,66 @@ if not all_uploaded_files:
     
     st.markdown(st.session_state[_INSTR_KEY])
     
+    # ── RGPD / Protection des données ──
+    st.markdown("---")
+    with st.expander("🔒 Protection des données & conformité RGPD", expanded=False):
+        st.markdown("""
+### 🛡️ Politique de protection des données
+
+OSCAR a été conçu avec la **protection des données personnelles** comme priorité. Voici les mesures mises en place :
+
+---
+
+#### 1. 🧹 Suppression automatique des données personnelles
+
+Lorsque vous importez un fichier **Profils Clients** depuis AEC (qui peut contenir jusqu'à 149 colonnes dont des données sensibles), **toutes les colonnes contenant des données à caractère personnel sont automatiquement supprimées** avant tout traitement.
+
+**Données supprimées** (jamais stockées, ni traitées, ni transmises) :
+- 👤 Noms, prénoms, civilité
+- 📧 Adresses email
+- 📱 Numéros de téléphone
+- 🏠 Adresses postales
+- 🏦 Données bancaires (IBAN, BIC, mandats SEPA)
+- 🪪 Numéros de pièces d'identité
+- 🏥 Données de santé (handicap, allergies)
+- 📝 Notes et commentaires libres nominatifs
+
+**Données conservées** (uniquement pour l'analyse statistique agrégée) :
+- Centre / Sede (antenne)
+- Genre, tranche d'âge, nationalité
+- Type de cours, niveau suivi, nombre de cours
+- Catégorie socio-professionnelle, motivation
+- Canal d'acquisition
+
+---
+
+#### 2. 🤖 Intelligence artificielle souveraine
+
+Le chatbot OSCAR utilise **Albert API**, l'IA souveraine développée par la **DINUM** (Direction Interministérielle du Numérique) de l'État français.
+
+- 🇫🇷 **Hébergement en France** — Les requêtes sont traitées sur des serveurs situés en France
+- 🚫 **Aucun transfert hors UE** — Vos données ne quittent pas le territoire européen
+- 📊 **Données agrégées uniquement** — L'IA ne reçoit que des statistiques agrégées (répartitions, moyennes, tendances), jamais de données individuelles
+
+---
+
+#### 3. 📤 Export anonymisé
+
+Les fichiers CSV exportés depuis l'onglet Profils Clients sont automatiquement **anonymisés** : seules les colonnes analytiques sont incluses dans le fichier téléchargé.
+
+---
+
+#### 4. 🔐 Aucun stockage persistant
+
+- Les données importées **restent en mémoire le temps de la session** uniquement
+- **Aucune base de données** ne stocke vos fichiers sur le serveur
+- À la fermeture du navigateur, toutes les données sont effacées
+
+---
+
+*Conformité : Règlement Général sur la Protection des Données (RGPD — UE 2016/679)*
+""")
+    
     st.stop()
 
 # Process files - dual pipeline (category reports + course fiches)
