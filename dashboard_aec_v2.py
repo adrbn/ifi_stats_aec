@@ -781,11 +781,25 @@ def get_css():
         [data-testid="stSidebar"] > div:first-child {
             padding-top: 1rem !important;
         }
-        /* Smaller logout button in sidebar */
+        /* Sidebar user block */
+        .oscar-sidebar-user {
+            margin-top: 14px;
+            margin-bottom: 2px;
+        }
+        .oscar-sidebar-user .oscar-username {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.3;
+        }
+        /* Smaller logout button right under name */
         [data-testid="stSidebar"] button[kind="secondary"] {
-            font-size: 0.7rem !important;
-            padding: 0.15rem 0.4rem !important;
-            min-height: 1.5rem !important;
+            font-size: 0.65rem !important;
+            padding: 0.1rem 0.5rem !important;
+            min-height: 1.3rem !important;
+            max-width: 100px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
         }
         /* Add more top padding to push content down */
         .block-container {
@@ -3925,16 +3939,13 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     # ── Utilisateur + déconnexion ──
-    _user_col, _logout_col = st.columns([3, 2])
-    with _user_col:
-        st.markdown(f"<span style='font-size:0.8rem;color:#475569;'>👤 {st.session_state.user_name}</span>", unsafe_allow_html=True)
-    with _logout_col:
-        if os.environ.get("OSCAR_DESKTOP_MODE") != "1":
-            if st.button("Déconnexion", key="logout_btn", type="secondary", use_container_width=True):
-                st.session_state.authenticated = False
-                st.session_state.user_name = ""
-                _clear_persistent_login()
-                st.rerun()
+    st.markdown(f'<div class="oscar-sidebar-user"><span class="oscar-username">{st.session_state.user_name}</span></div>', unsafe_allow_html=True)
+    if os.environ.get("OSCAR_DESKTOP_MODE") != "1":
+        if st.button("Déconnexion", key="logout_btn", type="secondary"):
+            st.session_state.authenticated = False
+            st.session_state.user_name = ""
+            _clear_persistent_login()
+            st.rerun()
 
     st.markdown("---")
 
