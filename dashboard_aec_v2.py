@@ -5150,7 +5150,6 @@ _has_other_exports = any([
     df_fiches is not None,
     df_profils is not None,
     df_produits is not None,
-    df_activite is not None
 ])
 
 if _has_other_exports:
@@ -5159,7 +5158,6 @@ if _has_other_exports:
     _top_labels.append("Cours")
     if df_fiches is not None: _top_labels.append("Fiches de cours")
     if df_produits is not None: _top_labels.append("Produits")
-    if df_activite is not None: _top_labels.append("Rapports AEC express")
     _top_tabs = st.tabs(_top_labels)
     _cours_ctx = _top_tabs[_top_labels.index("Cours")]
 else:
@@ -5237,11 +5235,16 @@ with _cours_ctx:
     # =====================================================
     # TABS - Right after year selection
     # =====================================================
-    tab1, tab2, tab3, tab3_ss, tab3_mc, tab3b, tab4, tab_evo, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
+    _cours_tab_labels = [
         t("tab_prova_stats"), t("tab_by_sede"), t("tab_by_sector"), t("tab_by_sous_secteur"), t("tab_by_macro_category"), t("tab_by_category"),
         t("tab_yoy"), t("tab_evolutions"), t("tab_profitability"), t("tab_map"),
         t("tab_comparisons"), t("tab_graphs"), t("tab_ai"), t("tab_export"), t("tab_config")
-    ])
+    ]
+    if df_activite is not None:
+        _cours_tab_labels.append(t("activite_section"))
+    _cours_all_tabs = st.tabs(_cours_tab_labels)
+    tab1, tab2, tab3, tab3_ss, tab3_mc, tab3b, tab4, tab_evo, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = _cours_all_tabs[:15]
+    tab_act = _cours_all_tabs[15] if df_activite is not None else None
 
     # Day mode colors
     text_color = "#1e293b"
@@ -7930,6 +7933,11 @@ with _cours_ctx:
         else:
             st.success("Toutes les catégories sont reconnues dans le tableau de correspondances.")
 
+    # TAB: RAPPORTS AEC EXPRESS (Activité par période)
+    if tab_act is not None:
+        with tab_act:
+            render_activite_tabs(df_activite)
+
 
 # Render other export tabs
 if _has_other_exports:
@@ -7942,9 +7950,6 @@ if _has_other_exports:
     if df_produits is not None:
         with _top_tabs[_top_labels.index("Produits")]:
             render_produits_tabs(st.session_state.produits_data)
-    if df_activite is not None:
-        with _top_tabs[_top_labels.index("Rapports AEC express")]:
-            render_activite_tabs(st.session_state.activite_periode_data)
 
 # =====================================================
 # FOOTER
