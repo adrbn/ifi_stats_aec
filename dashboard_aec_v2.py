@@ -5212,17 +5212,18 @@ with _cours_ctx:
     st.markdown(f"## {t('overview')}")
 
     # Check if multiple years are loaded
-    available_years = sorted(df_combined["Année"].unique())
+    available_years = sorted(df_combined["Année"].unique(), reverse=True)
     multiple_years = len(available_years) > 1
 
-    # Initialize year selection in session state
+    # Initialize year selection in session state – only most recent year selected by default
     if 'selected_years' not in st.session_state:
-        st.session_state.selected_years = {year: True for year in available_years}
+        most_recent = available_years[0] if available_years else None
+        st.session_state.selected_years = {year: (year == most_recent) for year in available_years}
 
     # Ensure all available years are in the selection dict
     for year in available_years:
         if year not in st.session_state.selected_years:
-            st.session_state.selected_years[year] = True
+            st.session_state.selected_years[year] = False
 
     # Year filter buttons (only show if multiple years)
     if multiple_years:
@@ -5398,6 +5399,13 @@ with _cours_ctx:
             }
             _delta_decimal_cols = {t('students_per_course')}
 
+            # Build mapping: each selected year → previous selected year (for non-consecutive selections)
+            _years_asc = sorted(year_data_map.keys())
+            _prev_selected_year = {}
+            for _i, _y in enumerate(_years_asc):
+                if _i > 0:
+                    _prev_selected_year[_y] = _years_asc[_i - 1]
+
             for src_col, delta_col in delta_cols_map.items():
                 deltas = []
                 for _, r in df_summary.iterrows():
@@ -5406,8 +5414,8 @@ with _cours_ctx:
                         deltas.append("")
                         continue
                     yr = int(yr_str)
-                    prev_yr = yr - 1
-                    if prev_yr in year_data_map:
+                    prev_yr = _prev_selected_year.get(yr)
+                    if prev_yr is not None and prev_yr in year_data_map:
                         cur_val = r[src_col]
                         prev_val = year_data_map[prev_yr][src_col]
                         if src_col in _delta_decimal_cols:
@@ -5458,26 +5466,31 @@ with _cours_ctx:
         st.markdown("#### Évolution par indicateur")
 
         chart_indicators = [
-            (t('inscriptions'), "Inscriptions", "#3B82F6"),
-            (t('courses'), "Cours", "#8B5CF6"),
-            (t('student_hours'), "Heures-élèves", "#22C55E"),
-            (t('revenue'), "Recettes (€)", "#F59E0B"),
-            (t('students_per_course'), "Taux de remplissage", "#EF4444"),
-            (t('new_students'), "Nouveaux inscrits", "#06B6D4"),
-            (t('returning_students'), "Réinscrits", "#EC4899"),
+            (t('inscriptions'), "Inscriptions"),
+            (t('courses'), "Cours"),
+            (t('student_hours'), "Heures-élèves"),
+            (t('revenue'), "Recettes (€)"),
+            (t('students_per_course'), "Taux de remplissage"),
+            (t('new_students'), "Nouveaux inscrits"),
+            (t('returning_students'), "Réinscrits"),
         ]
+
+        # Year color palette (consistent across all charts)
+        _year_palette = ["#3B82F6", "#F59E0B", "#22C55E", "#EF4444", "#8B5CF6", "#06B6D4", "#EC4899", "#64748B"]
 
         # Build chart data from year_data_map (chronological order for charts)
         chart_years = sorted(year_data_map.keys())
+        _year_colors = {y: _year_palette[i % len(_year_palette)] for i, y in enumerate(chart_years)}
         if len(chart_years) >= 2:
             chart_cols = st.columns(2)
-            for idx, (col_key, label, color) in enumerate(chart_indicators):
+            for idx, (col_key, label) in enumerate(chart_indicators):
                 with chart_cols[idx % 2]:
                     vals = [year_data_map[y][col_key] for y in chart_years]
+                    bar_colors = [_year_colors[y] for y in chart_years]
                     fig = go.Figure(go.Bar(
                         x=[str(y) for y in chart_years],
                         y=vals,
-                        marker_color=color,
+                        marker_color=bar_colors,
                         text=[f"{v:,.0f}" if isinstance(v, (int, float)) and v > 100 else f"{v}" for v in vals],
                         textposition="outside",
                     ))
@@ -5490,8 +5503,8 @@ with _cours_ctx:
                     )
                     st.plotly_chart(fig, use_container_width=True)
 
-        # --- Part C: Répartition année (détail par secteurs) ---
-        st.markdown("#### Répartition année (détail par secteurs)")
+        # --- Part C: Répartition (détail par secteurs) ---
+        st.markdown("#### Répartition (détail par secteurs)")
 
         for year in years_desc:
             df_year_sector = df_synthese[df_synthese["Année"] == year].copy()
@@ -8352,23 +8365,29 @@ def _oscar_chatbot_fragment():
         display: none; flex-direction: column; overflow: hidden;
         font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
         opacity: 0;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-    }}
-    #oscar-chat-popup.oscar-fs {{
-        top: 50% !important; left: 50% !important; right: auto !important; bottom: auto !important;
-        transform: translate(-50%, -50%) scale(1) !important;
-        width: calc(100vw - 32px) !important; height: calc(100vh - 32px) !important;
-        max-height: none !important; border-radius: 12px;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.3s ease,
+                    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                    height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                    border-radius 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.35s ease;
     }}
     #oscar-chat-popup.oscar-open {{
         display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1);
+    }}
+    #oscar-chat-popup.oscar-open.oscar-fs {{
+        top: 50%; left: 50%; right: auto; bottom: auto;
+        transform: translate(-50%, -50%) scale(1);
+        width: calc(100vw - 32px); height: calc(100vh - 32px);
+        max-height: none; border-radius: 12px;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.35);
     }}
     .oscar-chat-hdr {{
         display: flex; align-items: center; justify-content: space-between;
         padding: 12px 16px; background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
         color: white; flex-shrink: 0; border-radius: 18px 18px 0 0;
     }}
-    #oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 12px 12px 0 0; }}
+    #oscar-chat-popup.oscar-open.oscar-fs .oscar-chat-hdr {{ border-radius: 12px 12px 0 0; }}
     .oscar-chat-hdr-left {{ display: flex; align-items: center; gap: 8px; }}
     .oscar-chat-hdr-title {{ font-weight: 700; font-size: 15px; }}
     .oscar-chat-hdr-btns {{ display: flex; gap: 6px; }}
@@ -8388,7 +8407,7 @@ def _oscar_chatbot_fragment():
         flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
         scroll-behavior: smooth; min-height: 200px;
     }}
-    #oscar-chat-popup.oscar-fs .oscar-chat-msgs {{ max-height: none; }}
+    #oscar-chat-popup.oscar-open.oscar-fs .oscar-chat-msgs {{ max-height: none; }}
     .oscar-msg {{ max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.55; word-wrap: break-word; overflow-wrap: break-word; }}
     .oscar-msg-user {{
         align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 4px;
@@ -8448,7 +8467,7 @@ def _oscar_chatbot_fragment():
         display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e2e8f0; flex-shrink: 0;
         background: #fafbfc; border-radius: 0 0 18px 18px;
     }}
-    #oscar-chat-popup.oscar-fs .oscar-chat-input-area {{ border-radius: 0 0 12px 12px; }}
+    #oscar-chat-popup.oscar-open.oscar-fs .oscar-chat-input-area {{ border-radius: 0 0 12px 12px; }}
     .oscar-chat-input-area input[type=text] {{
         flex: 1; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px;
         font-size: 14px; font-family: inherit; outline: none;
@@ -8493,14 +8512,14 @@ def _oscar_chatbot_fragment():
     /* ── Mobile responsive ── */
     @media (max-width: 768px) {{
         #oscar-chat-popup {{
-            width: calc(100vw - 24px) !important; height: 80vh !important;
+            width: calc(100vw - 24px); height: 80vh;
         }}
-        #oscar-chat-popup.oscar-fs {{
-            width: 100vw !important; height: 100vh !important;
-            border-radius: 0 !important;
+        #oscar-chat-popup.oscar-open.oscar-fs {{
+            width: 100vw; height: 100vh;
+            border-radius: 0;
         }}
-        #oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 0; }}
-        #oscar-chat-popup.oscar-fs .oscar-chat-input-area {{ border-radius: 0; }}
+        #oscar-chat-popup.oscar-open.oscar-fs .oscar-chat-hdr {{ border-radius: 0; }}
+        #oscar-chat-popup.oscar-open.oscar-fs .oscar-chat-input-area {{ border-radius: 0; }}
         .oscar-msg {{ max-width: 92%; font-size: 13px; }}
         .oscar-chat-hdr {{ padding: 10px 12px; }}
         .oscar-chat-msgs {{ padding: 12px; gap: 10px; }}
@@ -8771,8 +8790,11 @@ def _oscar_chatbot_fragment():
             }};
             // Fullscreen (client-side only)
             if (pFs) pFs.onclick = function() {{
-                pPopup.classList.toggle('oscar-fs');
-                // Icon stays the same SVG for fullscreen toggle
+                var isFs = pPopup.classList.toggle('oscar-fs');
+                if (isFs) {{
+                    pPopup.style.transform = 'translate(-50%, -50%) scale(1.015)';
+                    setTimeout(function() {{ pPopup.style.transform = ''; }}, 180);
+                }}
             }};
             // Clear → hidden form
             if (pClear) pClear.onclick = function() {{
