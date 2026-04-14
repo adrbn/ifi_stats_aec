@@ -384,7 +384,7 @@ TRANSLATIONS = {
         "recommended_format": "Format de nom recommandé",
         "load_files_sidebar": "Chargez vos fichiers AEC dans la barre latérale pour commencer l'analyse.",
         "overview": "Analyse des cours", "inscriptions": "Inscriptions", "courses": "Cours",
-        "student_hours": "Heures-élèves", "planned_hours": "Heures prévues", "revenue": "Recettes", "students_per_course": "Élèves/cours",
+        "student_hours": "Heures-élèves", "planned_hours": "Heures prévues", "revenue": "Recettes", "students_per_course": "Taux de remplissage",
         "tab_prova_stats": "Synthèse", "tab_by_sede": "Par antenne",
         "tab_by_sector": "Par secteurs", "tab_by_sous_secteur": "Par sous-secteurs", "tab_by_macro_category": "Par macro-catégories", "tab_by_category": "Par catégories", "tab_comparisons": "Comparaisons",
         "tab_graphs": "Graphiques", "tab_ai": "Aide rapide", "tab_export": "Export", "tab_config": "Configuration",
@@ -448,7 +448,7 @@ TRANSLATIONS = {
         "multi_year_evolution": "Évolution pluriannuelle", "need_multiple_years": "Chargez les données de plusieurs années pour voir l'évolution.",
         "arpi": "ARPI (€/inscr)", "total_years": "Années", "load_more_years": "Chargez plus d'années pour comparer",
         "default_year_help": "Utilisé si l'année n'est pas détectable dans le nom de fichier",
-        "total_all_years": "TOTAL (toutes années)", "breakdown_by_year": "Répartition par année",
+        "total_all_years": "TOTAL (toutes années)", "breakdown_by_year": "Tous secteurs confondus",
         "multi_year_warning": "Plusieurs années chargées", "showing_combined": "Données combinées de",
         "welcome": "Bienvenue sur OSCAR", "welcome_subtitle": "Outil de suivi des cours et d'analyse du réseau — Institut français Italia",
         "quick_start": "Démarrage rapide", "upload_here": "Déposez vos fichiers Excel ici",
@@ -484,7 +484,7 @@ TRANSLATIONS = {
         "fiches_cours_loaded": "Export fiches de cours détecté",
         "total_courses_fiches": "Nb total de cours",
         "online_courses": "Cours en ligne",
-        "avg_students_per_course": "Moy. élèves/cours",
+        "avg_students_per_course": "Moy. taux de remplissage",
         "total_hours_fiches": "Total heures",
         "total_sales": "Total ventes",
         "analysis_by_level": "Analyse par niveau",
@@ -629,7 +629,7 @@ def t(key):
 # =====================================================
 st.set_page_config(
     page_title="OSCAR",
-    page_icon=os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon_curves.png"),
+    page_icon=os.path.join(os.path.dirname(os.path.abspath(__file__)), "IFI_noir_logo.png"),
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -1373,7 +1373,7 @@ def aggregate_by_sector(df, group_cols=["Année", "Période", "Sede", "Secteur"]
         return pd.DataFrame()
     grouped = df.groupby(group_cols, as_index=False).agg(agg_dict)
     if "Nb. d'inscriptions" in grouped.columns and "Nb. de Cours" in grouped.columns:
-        grouped["N. élèves/cours"] = (grouped["Nb. d'inscriptions"] / grouped["Nb. de Cours"].replace(0, pd.NA)).round(2)
+        grouped["Taux de remplissage"] = (grouped["Nb. d'inscriptions"] / grouped["Nb. de Cours"].replace(0, pd.NA)).round(2)
     
     # Add total row if requested
     if add_total_row and not grouped.empty:
@@ -1383,7 +1383,7 @@ def aggregate_by_sector(df, group_cols=["Année", "Période", "Sede", "Secteur"]
                 total_row[col] = ""
             elif col == "Secteur":
                 total_row[col] = "TOTAL"
-            elif col == "N. élèves/cours":
+            elif col == "Taux de remplissage":
                 # Recalculate average
                 total_inscr = grouped["Nb. d'inscriptions"].sum() if "Nb. d'inscriptions" in grouped.columns else 0
                 total_cours = grouped["Nb. de Cours"].sum() if "Nb. de Cours" in grouped.columns else 0
@@ -1430,7 +1430,7 @@ def create_prova_stats_format(df, aggregate_year=False, add_total_row=False):
         "Année", "Période", "Sede", "Secteur", "Nb. de Cours", "Nb. d'inscriptions",
         "Nouveaux inscrits", "% nouveaux", "Réinscrits", "% réinscrits", "Nombre d'heures prévues",
         "Nombre d'heures-élèves", "Heures synchrones (h-élèves)", 
-        "Recettes", "Dépenses", "N. élèves/cours"
+        "Recettes", "Dépenses", "Taux de remplissage"
     ]
     final_cols = [c for c in desired_cols if c in agg.columns]
     result = agg[final_cols].copy()
@@ -1450,7 +1450,7 @@ def create_prova_stats_format(df, aggregate_year=False, add_total_row=False):
                 total_row[col] = ""
             elif col == "Secteur":
                 total_row[col] = "TOTAL"
-            elif col == "N. élèves/cours":
+            elif col == "Taux de remplissage":
                 # Recalculate average
                 total_inscr = result["Nb. d'inscriptions"].sum() if "Nb. d'inscriptions" in result.columns else 0
                 total_cours = result["Nb. de Cours"].sum() if "Nb. de Cours" in result.columns else 0
@@ -2004,10 +2004,10 @@ def render_fiches_tabs(df_fiches):
             agg_dict_sede["Ventes"] = ("Total des ventes", "sum")
         
         agg_sede = df_f.groupby(["Sede", "Semestre"]).agg(**agg_dict_sede).reset_index()
-        agg_sede["Élèves/Cours"] = (agg_sede["Participants"] / agg_sede["Nb_Cours"]).round(1)
+        agg_sede["Taux de remplissage"] = (agg_sede["Participants"] / agg_sede["Nb_Cours"]).round(1)
         agg_sede["Cours_En_Ligne"] = agg_sede["Cours_En_Ligne"].astype(int)
         
-        format_dict = {"Participants": "{:,.0f}", "Élèves/Cours": "{:.1f}", "Nb_Cours": "{:,.0f}", "Cours_En_Ligne": "{:,.0f}"}
+        format_dict = {"Participants": "{:,.0f}", "Taux de remplissage": "{:.1f}", "Nb_Cours": "{:,.0f}", "Cours_En_Ligne": "{:,.0f}"}
         if "Nouveaux" in agg_sede.columns:
             format_dict["Nouveaux"] = "{:,.0f}"
         if "Réinscrits" in agg_sede.columns:
@@ -2051,10 +2051,10 @@ def render_fiches_tabs(df_fiches):
             Participants=("Nb total de participants", "sum"),
             Heures=("Qté heures", "sum") if "Qté heures" in df_f.columns else ("Nb total de participants", "count"),
         ).reset_index().sort_values("Nb_Cours", ascending=False)
-        agg_cat["Élèves/Cours"] = (agg_cat["Participants"] / agg_cat["Nb_Cours"]).round(1)
+        agg_cat["Taux de remplissage"] = (agg_cat["Participants"] / agg_cat["Nb_Cours"]).round(1)
         
         st.dataframe(agg_cat.head(25).style.format({
-            "Participants": "{:,.0f}", "Heures": "{:,.0f}", "Élèves/Cours": "{:.1f}", "Nb_Cours": "{:,.0f}"
+            "Participants": "{:,.0f}", "Heures": "{:,.0f}", "Taux de remplissage": "{:.1f}", "Nb_Cours": "{:,.0f}"
         }), use_container_width=True)
         
         # Top 15 categories chart
@@ -2073,12 +2073,12 @@ def render_fiches_tabs(df_fiches):
                 Nb_Cours=("Centre", "count"),
                 Participants=("Nb total de participants", "sum"),
             ).reset_index().sort_values("Participants", ascending=False)
-            agg_secteur["Élèves/Cours"] = (agg_secteur["Participants"] / agg_secteur["Nb_Cours"]).round(1)
+            agg_secteur["Taux de remplissage"] = (agg_secteur["Participants"] / agg_secteur["Nb_Cours"]).round(1)
             
             col_s1, col_s2 = st.columns(2)
             with col_s1:
                 st.dataframe(agg_secteur.style.format({
-                    "Participants": "{:,.0f}", "Élèves/Cours": "{:.1f}", "Nb_Cours": "{:,.0f}"
+                    "Participants": "{:,.0f}", "Taux de remplissage": "{:.1f}", "Nb_Cours": "{:,.0f}"
                 }), use_container_width=True)
             with col_s2:
                 fig_sec = px.pie(agg_secteur, values="Nb_Cours", names="Secteur",
@@ -2103,9 +2103,9 @@ def render_fiches_tabs(df_fiches):
             
             agg_niveau = df_f.groupby("Niveau").agg(**agg_dict_niv).reset_index()
             agg_niveau = agg_niveau.sort_values("Participants", ascending=False)
-            agg_niveau["Élèves/Cours"] = (agg_niveau["Participants"] / agg_niveau["Nb_Cours"]).round(1)
+            agg_niveau["Taux de remplissage"] = (agg_niveau["Participants"] / agg_niveau["Nb_Cours"]).round(1)
             
-            fmt_niv = {"Participants": "{:,.0f}", "Élèves/Cours": "{:.1f}", "Nb_Cours": "{:,.0f}"}
+            fmt_niv = {"Participants": "{:,.0f}", "Taux de remplissage": "{:.1f}", "Nb_Cours": "{:,.0f}"}
             if "Nouveaux" in agg_niveau.columns:
                 fmt_niv["Nouveaux"] = "{:,.0f}"
             if "Réinscrits" in agg_niveau.columns:
@@ -2194,7 +2194,7 @@ def render_fiches_tabs(df_fiches):
         agg_monthly["Mois_Label"] = agg_monthly["Année_Mois"].apply(
             lambda x: MONTH_NUM_TO_FR.get(int(x.split("-")[1]), x.split("-")[1]) + " " + x.split("-")[0]
         )
-        agg_monthly["Élèves/Cours"] = (agg_monthly["Participants"] / agg_monthly["Nb_Cours"]).round(1)
+        agg_monthly["Taux de remplissage"] = (agg_monthly["Participants"] / agg_monthly["Nb_Cours"]).round(1)
         
         st.dataframe(agg_monthly, use_container_width=True)
         
@@ -2242,9 +2242,9 @@ def render_fiches_tabs(df_fiches):
         st.markdown(f"#### {t('fill_rate')} {t('monthly_evolution')}")
         fig_fill = go.Figure()
         fig_fill.add_trace(go.Scatter(
-            x=agg_monthly["Mois_Label"], y=agg_monthly["Élèves/Cours"],
+            x=agg_monthly["Mois_Label"], y=agg_monthly["Taux de remplissage"],
             mode="lines+markers+text", name=t('avg_students_per_course'),
-            text=agg_monthly["Élèves/Cours"].apply(lambda x: f"{x:.1f}"),
+            text=agg_monthly["Taux de remplissage"].apply(lambda x: f"{x:.1f}"),
             textposition="top center",
             line=dict(color="#8b5cf6", width=3)
         ))
@@ -2267,7 +2267,7 @@ def render_fiches_tabs(df_fiches):
             agg_dict_sem["Réinscrits"] = ("Réinscrits", "sum")
         
         agg_sem = df_f.groupby(["Année", "Semestre"]).agg(**agg_dict_sem).reset_index()
-        agg_sem["Élèves/Cours"] = (agg_sem["Participants"] / agg_sem["Nb_Cours"]).round(1)
+        agg_sem["Taux de remplissage"] = (agg_sem["Participants"] / agg_sem["Nb_Cours"]).round(1)
         st.dataframe(agg_sem, use_container_width=True)
 
     # ── Export CSV ──
@@ -2770,7 +2770,7 @@ _MALE_ENDING_A: set[str] = {
     "Battista", "Enea", "Cosma", "Evangelista",
 }
 
-def _infer_gender_from_prenom(name) -> str | None:
+def _infer_gender_from_prenom(name):
     """Return 'F' or 'M' from a first name, or None if unknown."""
     if pd.isna(name) or not str(name).strip():
         return None
@@ -3144,7 +3144,7 @@ def render_profils_tabs(df_profils):
             
             col_t1, col_t2 = st.columns(2)
             with col_t1:
-                st.dataframe(agg_tranche[["Tranche_Custom", "Nb_Clients", "Pct"]].style.format({"Pct": "{:.1f}%", "Nb_Clients": "{:,}"}), use_container_width=True)
+                st.dataframe(agg_tranche[["Tranche_Custom", "Nb_Clients", "Pct"]].style.format({"Pct": "{:.1f}%", "Nb_Clients": "{:,}"}), use_container_width=True, hide_index=True)
                 if nb_missing > 0:
                     st.caption(f"Âge non renseigné : {nb_missing} clients ({nb_missing / nb_clients * 100:.1f}%)")
             with col_t2:
@@ -3152,6 +3152,7 @@ def render_profils_tabs(df_profils):
                                      title=t('profils_age_groups'),
                                      category_orders={"Tranche_Custom": CUSTOM_AGE_BRACKET_ORDER})
                 fig_tranche.update_traces(sort=False)  # preserve bracket order
+                fig_tranche.update_layout(height=350)
                 st.plotly_chart(fig_tranche, use_container_width=True)
         
         # Course type summary (translated)
@@ -3163,10 +3164,11 @@ def render_profils_tabs(df_profils):
             
             col_ct1, col_ct2 = st.columns(2)
             with col_ct1:
-                st.dataframe(agg_type.style.format({"Pct": "{:.1f}%", "Nb_Clients": "{:,}"}), use_container_width=True)
+                st.dataframe(agg_type.style.format({"Pct": "{:.1f}%", "Nb_Clients": "{:,}"}), use_container_width=True, hide_index=True)
             with col_ct2:
                 fig_type = px.pie(agg_type, values="Nb_Clients", names="Type_Cours_FR",
                                   title=t('profils_by_course_type'))
+                fig_type.update_layout(height=350)
                 st.plotly_chart(fig_type, use_container_width=True)
         
         # Student type
@@ -3179,10 +3181,11 @@ def render_profils_tabs(df_profils):
                 agg_st["Pct"] = (agg_st["Nb_Clients"] / agg_st["Nb_Clients"].sum() * 100).round(1)
                 col_st1, col_st2 = st.columns(2)
                 with col_st1:
-                    st.dataframe(agg_st.style.format({"Pct": "{:.1f}%", "Nb_Clients": "{:,}"}), use_container_width=True)
+                    st.dataframe(agg_st.style.format({"Pct": "{:.1f}%", "Nb_Clients": "{:,}"}), use_container_width=True, hide_index=True)
                 with col_st2:
                     fig_st = px.pie(agg_st, values="Nb_Clients", names="Type d'élève",
                                     title=t('profils_student_types'))
+                    fig_st.update_layout(height=350)
                     st.plotly_chart(fig_st, use_container_width=True)
     
     # ════════════════════════════════════════════════════════
@@ -5252,28 +5255,51 @@ with _cours_ctx:
 
     # TAB 1: SYNTHESE (Main metrics + summary table)
     with tab1:
+        # --- 2-level analysis selector ---
+        synthese_level = st.radio(
+            "Niveau d'analyse",
+            ["Global IFI", "Par antenne"],
+            horizontal=True,
+            key="synthese_level",
+        )
+
+        # Antenna filter when "Par antenne" selected
+        df_synthese = df_filtered_years.copy()
+        if synthese_level == "Par antenne":
+            antenna_list = sorted(df_filtered_years["Sede"].unique().tolist())
+            selected_antenna = st.selectbox(t("filter_by_sede"), antenna_list, key="synthese_antenna_filter")
+            df_synthese = df_synthese[df_synthese["Sede"] == selected_antenna]
+
         # Main metrics - always show as 5 cards
+        _s_inscr = df_synthese[inscr_col].sum()
+        _s_courses = df_synthese["Nb. de Cours"].sum()
+        _s_hours = df_synthese["Nombre total d'heures vendues (heures-étudiants)"].sum() if "Nombre total d'heures vendues (heures-étudiants)" in df_synthese.columns else 0
+        _s_revenue = df_synthese["Recettes"].sum() if "Recettes" in df_synthese.columns else 0
+        _s_avg = round(_s_inscr / _s_courses, 1) if _s_courses > 0 else 0
+
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
-            st.metric(t('inscriptions'), f"{total_inscriptions:,.0f}")
+            st.metric(t('inscriptions'), f"{_s_inscr:,.0f}")
         with col2:
-            st.metric(t('courses'), f"{total_courses:,.0f}")
+            st.metric(t('courses'), f"{_s_courses:,.0f}")
         with col3:
-            st.metric(t('student_hours'), f"{total_hours:,.0f}")
+            st.metric(t('student_hours'), f"{_s_hours:,.0f}")
         with col4:
-            st.metric(t('revenue'), f"€{total_revenue:,.0f}")
+            st.metric(t('revenue'), f"€{_s_revenue:,.0f}")
         with col5:
-            st.metric(t('students_per_course'), f"{avg_per_course:.1f}")
+            st.metric(t('students_per_course'), f"{_s_avg:.1f}")
 
-        # Summary table - always show (national/IFI level)
-        st.markdown(f"#### {t('breakdown_by_year')} (national/IFI)")
+        # --- Part A: Tous secteurs confondus (year breakdown with deltas) ---
+        st.markdown(f"#### {t('breakdown_by_year')}")
+
+        years_desc = sorted(selected_years_list, reverse=True)
 
         # Build summary table data
         summary_metrics = []
+        year_data_map = {}  # for delta calculation
 
-        # Aggregate view by year only
-        for year in selected_years_list:
-            df_year = df_filtered_years[df_filtered_years["Année"] == year]
+        for year in years_desc:
+            df_year = df_synthese[df_synthese["Année"] == year]
             year_inscr = df_year[inscr_col].sum()
             year_courses = df_year["Nb. de Cours"].sum()
             year_planned_hours = df_year["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_year.columns else 0
@@ -5284,7 +5310,7 @@ with _cours_ctx:
             pct_new = round(year_new / year_inscr * 100 if year_inscr > 0 else 0, 1)
             pct_returning = round(year_returning / year_inscr * 100 if year_inscr > 0 else 0, 1)
 
-            summary_metrics.append({
+            row = {
                 t('year'): str(year),
                 t('inscriptions'): int(year_inscr),
                 t('new_students'): int(year_new),
@@ -5296,45 +5322,93 @@ with _cours_ctx:
                 t('student_hours'): int(year_hours),
                 t('revenue'): year_revenue,
                 t('students_per_course'): round(year_inscr / year_courses if year_courses > 0 else 0, 1),
-            })
+            }
+            summary_metrics.append(row)
+            year_data_map[year] = row
 
         # Add total row if multiple years
-        if len(selected_years_list) > 1:
-            total_new = df_filtered_years["Nouveaux inscrits"].sum() if "Nouveaux inscrits" in df_filtered_years.columns else 0
-            total_returning = df_filtered_years["Réinscrits"].sum() if "Réinscrits" in df_filtered_years.columns else 0
-            total_pct_new = round(total_new / total_inscriptions * 100 if total_inscriptions > 0 else 0, 1)
-            total_pct_returning = round(total_returning / total_inscriptions * 100 if total_inscriptions > 0 else 0, 1)
+        if len(years_desc) > 1:
+            _total_new = df_synthese["Nouveaux inscrits"].sum() if "Nouveaux inscrits" in df_synthese.columns else 0
+            _total_ret = df_synthese["Réinscrits"].sum() if "Réinscrits" in df_synthese.columns else 0
+            _total_pct_new = round(_total_new / _s_inscr * 100 if _s_inscr > 0 else 0, 1)
+            _total_pct_ret = round(_total_ret / _s_inscr * 100 if _s_inscr > 0 else 0, 1)
             summary_metrics.append({
                 t('year'): "TOTAL",
-                t('inscriptions'): int(total_inscriptions),
-                t('new_students'): int(total_new),
-                t('pct_new'): total_pct_new,
-                t('returning_students'): int(total_returning),
-                t('pct_returning'): total_pct_returning,
-                t('courses'): int(total_courses),
-                t('planned_hours'): int(df_filtered_years["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_filtered_years.columns else 0),
-                t('student_hours'): int(total_hours),
-                t('revenue'): total_revenue,
-                t('students_per_course'): round(avg_per_course, 1),
+                t('inscriptions'): int(_s_inscr),
+                t('new_students'): int(_total_new),
+                t('pct_new'): _total_pct_new,
+                t('returning_students'): int(_total_ret),
+                t('pct_returning'): _total_pct_ret,
+                t('courses'): int(_s_courses),
+                t('planned_hours'): int(df_synthese["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_synthese.columns else 0),
+                t('student_hours'): int(_s_hours),
+                t('revenue'): _s_revenue,
+                t('students_per_course'): round(_s_avg, 1),
             })
 
         if summary_metrics:
             df_summary = pd.DataFrame(summary_metrics)
 
-            # Format columns for display
-            df_display = df_summary.copy()
-            df_display[t('inscriptions')] = df_display[t('inscriptions')].apply(lambda x: f"{x:,}")
-            df_display[t('new_students')] = df_display[t('new_students')].apply(lambda x: f"{x:,}")
-            df_display[t('pct_new')] = df_display[t('pct_new')].apply(lambda x: f"{x:.1f}%")
-            df_display[t('returning_students')] = df_display[t('returning_students')].apply(lambda x: f"{x:,}")
-            df_display[t('pct_returning')] = df_display[t('pct_returning')].apply(lambda x: f"{x:.1f}%")
-            df_display[t('courses')] = df_display[t('courses')].apply(lambda x: f"{x:,}")
-            df_display[t('planned_hours')] = df_display[t('planned_hours')].apply(lambda x: f"{x:,}")
-            df_display[t('student_hours')] = df_display[t('student_hours')].apply(lambda x: f"{x:,}")
-            df_display[t('revenue')] = df_display[t('revenue')].apply(lambda x: f"€{x:,.0f}")
-            df_display[t('students_per_course')] = df_display[t('students_per_course')].apply(lambda x: f"{x:.1f}")
+            # --- Add delta columns (year n vs n-1) ---
+            delta_cols_map = {
+                t('inscriptions'): "Δ Inscr.",
+                t('new_students'): "Δ Nouv.",
+                t('courses'): "Δ Cours",
+                t('planned_hours'): "Δ H. prév.",
+                t('student_hours'): "Δ H-élèves",
+                t('revenue'): "Δ Recettes",
+                t('students_per_course'): "Δ Tx rempl.",
+            }
+            _delta_decimal_cols = {t('students_per_course')}
 
-            # Highlight total rows
+            for src_col, delta_col in delta_cols_map.items():
+                deltas = []
+                for _, r in df_summary.iterrows():
+                    yr_str = r[t('year')]
+                    if yr_str == "TOTAL":
+                        deltas.append("")
+                        continue
+                    yr = int(yr_str)
+                    prev_yr = yr - 1
+                    if prev_yr in year_data_map:
+                        cur_val = r[src_col]
+                        prev_val = year_data_map[prev_yr][src_col]
+                        if src_col in _delta_decimal_cols:
+                            diff = round(cur_val - prev_val, 2)
+                            deltas.append(f"{diff:+.2f}")
+                        elif prev_val != 0:
+                            pct = round((cur_val - prev_val) / prev_val * 100, 1)
+                            deltas.append(f"{pct:+.1f}%")
+                        else:
+                            deltas.append("")
+                    else:
+                        deltas.append("")
+                df_summary[delta_col] = deltas
+
+            # Reorder columns: after each source col, insert its delta
+            ordered_cols = []
+            for c in [t('year'), t('inscriptions'), t('new_students'), t('pct_new'),
+                       t('returning_students'), t('pct_returning'), t('courses'),
+                       t('planned_hours'), t('student_hours'), t('revenue'), t('students_per_course')]:
+                ordered_cols.append(c)
+                if c in delta_cols_map:
+                    ordered_cols.append(delta_cols_map[c])
+            df_summary = df_summary[[c for c in ordered_cols if c in df_summary.columns]]
+
+            # Format display
+            df_display = df_summary.copy()
+            for c in df_display.columns:
+                if c == t('year') or c.startswith("Δ"):
+                    continue
+                elif c == t('pct_new') or c == t('pct_returning'):
+                    df_display[c] = df_display[c].apply(lambda x: f"{x:.1f}%" if isinstance(x, (int, float)) else x)
+                elif c == t('students_per_course'):
+                    df_display[c] = df_display[c].apply(lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else x)
+                elif c == t('revenue'):
+                    df_display[c] = df_display[c].apply(lambda x: f"€{x:,.0f}" if isinstance(x, (int, float)) else x)
+                else:
+                    df_display[c] = df_display[c].apply(lambda x: f"{x:,}" if isinstance(x, (int, float)) else x)
+
             def highlight_totals(row):
                 if row[t('year')] == "TOTAL":
                     return ['background-color: #e2e8f0; font-weight: bold'] * len(row)
@@ -5343,81 +5417,94 @@ with _cours_ctx:
             styled_df = df_display.style.apply(highlight_totals, axis=1)
             st.dataframe(styled_df, hide_index=True, use_container_width=True)
 
-    # Day mode colors
-    text_color = "#1e293b"
-    bg_color = "rgba(0,0,0,0)"
+        # --- Part B: Évolution par indicateur (charts) ---
+        st.markdown("#### Évolution par indicateur")
 
-    # Continue TAB 1: PROVA STATS content
-    with tab1:
+        chart_indicators = [
+            (t('inscriptions'), "Inscriptions", "#3B82F6"),
+            (t('courses'), "Cours", "#8B5CF6"),
+            (t('student_hours'), "Heures-élèves", "#22C55E"),
+            (t('revenue'), "Recettes (€)", "#F59E0B"),
+            (t('students_per_course'), "Taux de remplissage", "#EF4444"),
+            (t('new_students'), "Nouveaux inscrits", "#06B6D4"),
+            (t('returning_students'), "Réinscrits", "#EC4899"),
+        ]
 
-        # Build period options with year aggregation
-        # Get available years and semesters
-        available_years = sorted(df_combined["Année"].unique())
-        available_periods = sorted(df_combined["Période"].unique())
+        # Build chart data from year_data_map (chronological order for charts)
+        chart_years = sorted(year_data_map.keys())
+        if len(chart_years) >= 2:
+            chart_cols = st.columns(2)
+            for idx, (col_key, label, color) in enumerate(chart_indicators):
+                with chart_cols[idx % 2]:
+                    vals = [year_data_map[y][col_key] for y in chart_years]
+                    fig = go.Figure(go.Bar(
+                        x=[str(y) for y in chart_years],
+                        y=vals,
+                        marker_color=color,
+                        text=[f"{v:,.0f}" if isinstance(v, (int, float)) and v > 100 else f"{v}" for v in vals],
+                        textposition="outside",
+                    ))
+                    fig.update_layout(
+                        title=label,
+                        height=300,
+                        margin=dict(l=20, r=20, t=40, b=20),
+                        yaxis_title=None,
+                        xaxis_title=None,
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
 
-        # Create hierarchical period options: Year (full) > Semester 1 > Semester 2
-        period_options = [t("all")]
-        for year in available_years:
-            year_str = str(year)
-            period_options.append(f"{year} (année complète)")
-            # Add semesters for this year
-            for period in available_periods:
-                if str(year) in period:
-                    period_options.append(f"    ↳ {period}")
+        # --- Part C: Répartition année (détail par secteurs) ---
+        st.markdown("#### Répartition année (détail par secteurs)")
 
-        col1, col2 = st.columns(2)
-        with col1:
-            sedi_list = [t("all")] + sorted(df_combined["Sede"].unique().tolist())
-            selected_sede = st.selectbox(t("filter_by_sede"), sedi_list, key="prova_sede")
-        with col2:
-            selected_period = st.selectbox(t("filter_by_period"), period_options, key="prova_period")
+        for year in years_desc:
+            df_year_sector = df_synthese[df_synthese["Année"] == year].copy()
+            st.markdown(f"##### {year}")
+            if synthese_level == "Global IFI":
+                df_year_sector["Sede"] = "IFI"
+            ifi_year = aggregate_by_sector(
+                df_year_sector,
+                group_cols=["Année", "Sede", "Secteur"],
+                add_total_row=True,
+            )
+            if not ifi_year.empty:
+                rename_map = {
+                    "Nombre total d'heures vendues (heures-étudiants)": "H-élèves",
+                    "Heures synchrones vendues (heures-étudiants)": "H. sync.",
+                    "Nombre d'heures prévues": "H. prévues",
+                    "Nb. d'inscriptions": "Inscriptions",
+                    "Nb. de Cours": "Cours",
+                }
+                ifi_display = ifi_year.rename(columns={k: v for k, v in rename_map.items() if k in ifi_year.columns})
+                for drop_col in ["Année", "Sede"]:
+                    if drop_col in ifi_display.columns:
+                        ifi_display = ifi_display.drop(columns=[drop_col])
+                if "Inscriptions" in ifi_display.columns:
+                    if "Nouveaux inscrits" in ifi_display.columns:
+                        ifi_display["% nouveaux"] = (ifi_display["Nouveaux inscrits"] / ifi_display["Inscriptions"].replace(0, pd.NA) * 100).round(1)
+                        ifi_display["% nouveaux"] = ifi_display["% nouveaux"].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
+                    if "Réinscrits" in ifi_display.columns:
+                        ifi_display["% réinscrits"] = (ifi_display["Réinscrits"] / ifi_display["Inscriptions"].replace(0, pd.NA) * 100).round(1)
+                        ifi_display["% réinscrits"] = ifi_display["% réinscrits"].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
 
-        # Determine if we need year aggregation
-        is_year_aggregate = "année complète" in selected_period or "anno completo" in selected_period
+                # Format numeric columns
+                for col in ifi_display.columns:
+                    if col in ["Secteur", "% nouveaux", "% réinscrits"]:
+                        continue
+                    elif col == "Taux de remplissage":
+                        ifi_display[col] = ifi_display[col].apply(lambda x: f"{x:.2f}" if isinstance(x, (int, float)) and pd.notna(x) else x)
+                    elif ifi_display[col].dtype in ['float64', 'float32']:
+                        ifi_display[col] = ifi_display[col].apply(lambda x: f"{int(x):,}" if isinstance(x, (int, float)) and pd.notna(x) else x)
 
-        # Determine if a single sede is selected (for total row)
-        is_single_sede = selected_sede != t("all")
+                def highlight_total_sector(row):
+                    if row.get("Secteur") == "TOTAL":
+                        return ['background-color: #e2e8f0; font-weight: bold'] * len(row)
+                    return [''] * len(row)
 
-        # Filter data first by sede if needed
-        df_filtered = df_combined.copy()
-        if is_single_sede:
-            df_filtered = df_filtered[df_filtered["Sede"] == selected_sede]
-
-        # Handle period filtering
-        if selected_period == t("all"):
-            prova_stats = create_prova_stats_format(df_filtered, add_total_row=is_single_sede)
-        elif is_year_aggregate:
-            # Extract year from selection like "2025 (année complète)"
-            year_match = re.search(r'(\d{4})', selected_period)
-            if year_match:
-                year = int(year_match.group(1))
-                df_filtered = df_filtered[df_filtered["Année"] == year]
-            prova_stats = create_prova_stats_format(df_filtered, aggregate_year=True, add_total_row=is_single_sede)
-        else:
-            # Specific semester selected (remove indent prefix)
-            period_clean = selected_period.replace("    ↳ ", "").strip()
-            df_filtered = df_filtered[df_filtered["Période"] == period_clean]
-            prova_stats = create_prova_stats_format(df_filtered, add_total_row=is_single_sede)
-
-        if not prova_stats.empty:
-            # Dynamic height: 35px per row + 40px header, min 100, max 600
-            dynamic_height = min(600, max(100, len(prova_stats) * 35 + 40))
-            st.dataframe(prova_stats, hide_index=True, use_container_width=True, height=dynamic_height)
-
-            # Show IFI totals (only when not single sede, since main table already has totals)
-            if not is_single_sede:
-                st.markdown(f"#### {t('ifi_totals')}")
-                df_ifi = df_filtered.copy()
-                df_ifi["Sede"] = "IFI"
-                if is_year_aggregate:
-                    ifi_totals = aggregate_by_sector(df_ifi, group_cols=["Année", "Sede", "Secteur"], add_total_row=True)
-                else:
-                    ifi_totals = aggregate_by_sector(df_ifi, add_total_row=True)
-                if not ifi_totals.empty:
-                    dynamic_height_ifi = min(600, max(100, len(ifi_totals) * 35 + 40))
-                    st.dataframe(ifi_totals, hide_index=True, use_container_width=True, height=dynamic_height_ifi)
-        else:
-            st.info("Aucune donnée pour cette sélection.")
+                styled_sector = ifi_display.style.apply(highlight_total_sector, axis=1)
+                dynamic_h = min(600, max(100, len(ifi_display) * 35 + 40))
+                st.dataframe(styled_sector, hide_index=True, use_container_width=True, height=dynamic_h)
+            else:
+                st.info(f"Aucune donnée pour {year}.")
 
     # TAB 2: PAR ANTENNE
     with tab2:
