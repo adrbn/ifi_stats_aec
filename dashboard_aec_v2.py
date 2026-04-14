@@ -8460,6 +8460,15 @@ def _oscar_chatbot_fragment():
         .oscar-chat-hdr-title {{ font-size: 13px; }}
         .oscar-suggestions {{ flex-direction: column; }}
     }}
+    .oscar-msg-actions {{
+        display: flex; gap: 6px; padding: 0 16px 8px 16px; justify-content: flex-start;
+    }}
+    .oscar-action-btn {{
+        background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px;
+        padding: 3px 10px; font-size: 11px; color: #475569; cursor: pointer;
+        transition: all 0.15s;
+    }}
+    .oscar-action-btn:hover {{ background: #e2e8f0; color: #1e293b; }}
     </style>
     """
 
@@ -8494,6 +8503,7 @@ def _oscar_chatbot_fragment():
             import base64 as _b64
             _b64_content = _b64.b64encode(_ai_content.encode('utf-8')).decode('ascii')
             _msgs_html_parts.append(f'<div class="oscar-msg oscar-msg-ai" data-md-b64="{_b64_content}"></div>')
+            _msgs_html_parts.append(f'<div class="oscar-msg-actions" data-raw-b64="{_b64_content}"><button class="oscar-action-btn oscar-copy-all" title="Copier">📋 Copier</button><button class="oscar-action-btn oscar-export-txt" title="Exporter en .txt">📄 .txt</button><button class="oscar-action-btn oscar-export-md" title="Exporter en .md">📝 .md</button></div>')
 
     _msgs_html = "\n".join(_msgs_html_parts)
 
@@ -8742,6 +8752,56 @@ def _oscar_chatbot_fragment():
             if (pRetry) pRetry.onclick = function() {{
                 oscarCmd({{ a: 'r' }});
             }};
+
+            // Helper: decode base64 UTF-8
+            function decodeB64(b64) {{
+                var raw = atob(b64);
+                return decodeURIComponent(Array.prototype.map.call(raw, function(c) {{
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }}).join(''));
+            }}
+
+            // Helper: trigger file download
+            function downloadFile(content, filename, mime) {{
+                var blob = new Blob([content], {{ type: mime }});
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }}
+
+            // Copy / Export buttons on AI messages
+            var actionDivs = root.querySelectorAll('.oscar-msg-actions');
+            for (var ai = 0; ai < actionDivs.length; ai++) {{
+                (function(div) {{
+                    var b64 = div.getAttribute('data-raw-b64');
+                    var copyBtn = div.querySelector('.oscar-copy-all');
+                    var txtBtn = div.querySelector('.oscar-export-txt');
+                    var mdBtn = div.querySelector('.oscar-export-md');
+
+                    if (copyBtn) copyBtn.onclick = function() {{
+                        var text = decodeB64(b64);
+                        if (navigator.clipboard) {{
+                            navigator.clipboard.writeText(text).then(function() {{
+                                copyBtn.textContent = '✓ Copié';
+                                setTimeout(function() {{ copyBtn.textContent = '📋 Copier'; }}, 1500);
+                            }});
+                        }}
+                    }};
+                    if (txtBtn) txtBtn.onclick = function() {{
+                        var text = decodeB64(b64);
+                        // Strip markdown for plain text
+                        var plain = text.replace(/#{1,6}\s/g, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '');
+                        downloadFile(plain, 'oscar_reponse.txt', 'text/plain;charset=utf-8');
+                    }};
+                    if (mdBtn) mdBtn.onclick = function() {{
+                        var text = decodeB64(b64);
+                        downloadFile(text, 'oscar_reponse.md', 'text/markdown;charset=utf-8');
+                    }};
+                }})(actionDivs[ai]);
+            }}
+
             // Scroll to bottom
             if (pMsgs) setTimeout(function() {{ pMsgs.scrollTop = pMsgs.scrollHeight; }}, 100);
         }})();
