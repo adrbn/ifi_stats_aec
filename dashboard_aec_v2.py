@@ -839,6 +839,43 @@ if 'stored_files' not in st.session_state or not st.session_state.get('stored_fi
         if _restored:
             st.session_state.stored_files = _restored
 
+# ── Auto-load preloaded data if authenticated but no data ──
+# (runs after auth token restore on page refresh)
+if (st.session_state.get('authenticated')
+    and ('stored_files' not in st.session_state or not st.session_state.get('stored_files'))
+    and not st.session_state.get('processed_data')):
+    import os as _al_os, zipfile as _al_zip
+    from io import BytesIO as _al_BytesIO
+    _al_script_dir = _al_os.path.dirname(_al_os.path.abspath(__file__))
+    _al_data_dir = _al_os.path.join(_al_script_dir, "data")
+    if _al_os.path.exists(_al_data_dir):
+        _al_files = []
+        for _fn in sorted(_al_os.listdir(_al_data_dir)):
+            _fp = _al_os.path.join(_al_data_dir, _fn)
+            if _fn.endswith('.zip') and 'exports_AEC_' in _fn:
+                try:
+                    with open(_fp, 'rb') as _f:
+                        with _al_zip.ZipFile(_al_BytesIO(_f.read()), 'r') as _zf:
+                            for _n in _zf.namelist():
+                                if _n.lower().endswith(('.xlsx', '.xls')) and not _n.startswith('__MACOSX'):
+                                    _al_files.append({'name': _n.split('/')[-1], 'data': _zf.read(_n)})
+                except Exception:
+                    pass
+            elif _fn.endswith('.csv') and 'clients' in _fn.lower():
+                try:
+                    with open(_fp, 'rb') as _f:
+                        _al_files.append({'name': _fn, 'data': _f.read()})
+                except Exception:
+                    pass
+            elif _fn.endswith('.xlsx') and 'produit' in _fn.lower():
+                try:
+                    with open(_fp, 'rb') as _f:
+                        _al_files.append({'name': _fn, 'data': _f.read()})
+                except Exception:
+                    pass
+        if _al_files:
+            st.session_state.stored_files = _al_files
+
 # =====================================================
 # CUSTOM CSS
 # =====================================================
@@ -8730,14 +8767,14 @@ def _oscar_chatbot_fragment():
                                 var decoded = decodeURIComponent(Array.prototype.map.call(raw, function(c) {{
                                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                                 }}).join(''));
-                                parts.push('**OSCAR AI :**\n' + decoded);
+                                parts.push('**OSCAR AI :** ' + String.fromCharCode(10) + decoded);
                             }} catch(e) {{ parts.push('**OSCAR AI :** ' + el.textContent.trim()); }}
                         }} else {{
                             parts.push((asMd ? '**OSCAR AI :** ' : 'OSCAR AI : ') + el.textContent.trim());
                         }}
                     }}
                 }}
-                return parts.join('\n\n');
+                return parts.join(String.fromCharCode(10) + String.fromCharCode(10));
             }}
             // Copy whole chat
             if (pCopy) pCopy.onclick = function() {{
