@@ -8522,6 +8522,8 @@ def _oscar_chatbot_fragment():
                 </select>
             </div>
             <div class="oscar-chat-hdr-btns">
+                <button id="oscar-chat-copy" title="Copier le chat">📋</button>
+                <button id="oscar-chat-dl" title="Télécharger (.md)">⬇</button>
                 <button id="oscar-chat-fs" title="Plein écran">{_fs_icon}</button>
                 <button id="oscar-chat-clear" title="Effacer">🗑</button>
                 <button id="oscar-chat-close" title="Fermer">✕</button>
@@ -8591,6 +8593,8 @@ def _oscar_chatbot_fragment():
             var pClose = document.getElementById('oscar-chat-close');
             var pFs = document.getElementById('oscar-chat-fs');
             var pClear = document.getElementById('oscar-chat-clear');
+            var pCopy = document.getElementById('oscar-chat-copy');
+            var pDl = document.getElementById('oscar-chat-dl');
             var pMsgs = document.getElementById('oscar-chat-msgs');
             var pModelSel = document.getElementById('oscar-model-sel');
             var pRetry = document.getElementById('oscar-retry-btn');
@@ -8708,6 +8712,54 @@ def _oscar_chatbot_fragment():
             // Clear → hidden form
             if (pClear) pClear.onclick = function() {{
                 oscarCmd({{ a: 'c' }});
+            }};
+            // Helper: extract chat as text
+            function getChatText(asMd) {{
+                if (!pMsgs) return '';
+                var parts = [];
+                var msgs = pMsgs.children;
+                for (var i = 0; i < msgs.length; i++) {{
+                    var el = msgs[i];
+                    if (el.classList.contains('oscar-msg-user')) {{
+                        parts.push((asMd ? '**Vous :** ' : 'Vous : ') + el.textContent.trim());
+                    }} else if (el.classList.contains('oscar-msg-ai')) {{
+                        var b64 = el.getAttribute('data-md-b64');
+                        if (b64 && asMd) {{
+                            try {{
+                                var raw = atob(b64);
+                                var decoded = decodeURIComponent(Array.prototype.map.call(raw, function(c) {{
+                                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                                }}).join(''));
+                                parts.push('**OSCAR AI :**\n' + decoded);
+                            }} catch(e) {{ parts.push('**OSCAR AI :** ' + el.textContent.trim()); }}
+                        }} else {{
+                            parts.push((asMd ? '**OSCAR AI :** ' : 'OSCAR AI : ') + el.textContent.trim());
+                        }}
+                    }}
+                }}
+                return parts.join('\n\n');
+            }}
+            // Copy whole chat
+            if (pCopy) pCopy.onclick = function() {{
+                var text = getChatText(false);
+                if (text && navigator.clipboard) {{
+                    navigator.clipboard.writeText(text).then(function() {{
+                        pCopy.textContent = '✓';
+                        setTimeout(function() {{ pCopy.textContent = '📋'; }}, 1500);
+                    }});
+                }}
+            }};
+            // Download chat as .md
+            if (pDl) pDl.onclick = function() {{
+                var md = getChatText(true);
+                if (md) {{
+                    var blob = new Blob([md], {{ type: 'text/markdown;charset=utf-8' }});
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'oscar_chat.md';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                }}
             }};
             // Model select → hidden form
             if (pModelSel) pModelSel.onchange = function() {{
