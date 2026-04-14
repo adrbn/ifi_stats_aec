@@ -8330,25 +8330,43 @@ def _oscar_chatbot_fragment():
         transition: transform 0.2s, box-shadow 0.2s;
     }}
     #oscar-chat-fab:hover {{ transform: scale(1.1); box-shadow: 0 6px 24px rgba(37,99,235,0.5); }}
+    /* Backdrop overlay */
+    #oscar-chat-backdrop {{
+        position: fixed; inset: 0; z-index: 10000000;
+        background: rgba(0,0,0,0);
+        backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+        pointer-events: none; opacity: 0;
+        transition: background 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease, opacity 0.35s ease;
+    }}
+    #oscar-chat-backdrop.oscar-open {{
+        background: rgba(15,23,42,0.45);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        pointer-events: auto; opacity: 1;
+    }}
     #oscar-chat-popup {{
-        position: fixed; bottom: 144px; right: 24px; z-index: 10000001;
-        width: 420px; max-height: 75vh;
-        background: #ffffff; border-radius: 16px;
-        box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+        position: fixed; z-index: 10000001;
+        top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.92);
+        width: 560px; height: 72vh;
+        background: #ffffff; border-radius: 18px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
         display: none; flex-direction: column; overflow: hidden;
         font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
-        transition: all 0.3s ease;
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
     }}
     #oscar-chat-popup.oscar-fs {{
-        top: 8px !important; left: 8px !important; right: 8px !important;
-        bottom: 8px !important; width: auto !important; max-height: none !important;
-        border-radius: 12px;
+        top: 50% !important; left: 50% !important; right: auto !important; bottom: auto !important;
+        transform: translate(-50%, -50%) scale(1) !important;
+        width: calc(100vw - 32px) !important; height: calc(100vh - 32px) !important;
+        max-height: none !important; border-radius: 12px;
     }}
-    #oscar-chat-popup.oscar-open {{ display: flex; }}
+    #oscar-chat-popup.oscar-open {{
+        display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1);
+    }}
     .oscar-chat-hdr {{
         display: flex; align-items: center; justify-content: space-between;
         padding: 12px 16px; background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-        color: white; flex-shrink: 0; border-radius: 16px 16px 0 0;
+        color: white; flex-shrink: 0; border-radius: 18px 18px 0 0;
     }}
     #oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 12px 12px 0 0; }}
     .oscar-chat-hdr-left {{ display: flex; align-items: center; gap: 8px; }}
@@ -8368,7 +8386,7 @@ def _oscar_chatbot_fragment():
     .oscar-model-select option {{ color: #1e293b; background: white; }}
     .oscar-chat-msgs {{
         flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
-        scroll-behavior: smooth; min-height: 200px; max-height: 55vh;
+        scroll-behavior: smooth; min-height: 200px;
     }}
     #oscar-chat-popup.oscar-fs .oscar-chat-msgs {{ max-height: none; }}
     .oscar-msg {{ max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.55; word-wrap: break-word; overflow-wrap: break-word; }}
@@ -8428,7 +8446,7 @@ def _oscar_chatbot_fragment():
     .oscar-retry-btn:hover {{ background: #b91c1c; }}
     .oscar-chat-input-area {{
         display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e2e8f0; flex-shrink: 0;
-        background: #fafbfc; border-radius: 0 0 16px 16px;
+        background: #fafbfc; border-radius: 0 0 18px 18px;
     }}
     #oscar-chat-popup.oscar-fs .oscar-chat-input-area {{ border-radius: 0 0 12px 12px; }}
     .oscar-chat-input-area input[type=text] {{
@@ -8475,13 +8493,11 @@ def _oscar_chatbot_fragment():
     /* ── Mobile responsive ── */
     @media (max-width: 768px) {{
         #oscar-chat-popup {{
-            left: 8px !important; right: 8px !important; bottom: 136px !important;
-            width: auto !important; max-height: 70vh !important;
-            border-radius: 12px !important;
+            width: calc(100vw - 24px) !important; height: 80vh !important;
         }}
         #oscar-chat-popup.oscar-fs {{
-            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-            border-radius: 0 !important; max-height: none !important;
+            width: 100vw !important; height: 100vh !important;
+            border-radius: 0 !important;
         }}
         #oscar-chat-popup.oscar-fs .oscar-chat-hdr {{ border-radius: 0; }}
         #oscar-chat-popup.oscar-fs .oscar-chat-input-area {{ border-radius: 0; }}
@@ -8544,6 +8560,7 @@ def _oscar_chatbot_fragment():
 
     _chatbot_html = f"""
     {_chat_css}
+    <div id="oscar-chat-backdrop"></div>
     <div id="oscar-chat-fab" title="Assistant OSCAR AI">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -8599,9 +8616,11 @@ def _oscar_chatbot_fragment():
             doc.head.appendChild(pStyle);
         }}
 
-        // Copy FAB + popup to parent
+        // Copy backdrop + FAB + popup to parent
+        var backdrop = document.getElementById('oscar-chat-backdrop');
         var fab = document.getElementById('oscar-chat-fab');
         var popup = document.getElementById('oscar-chat-popup');
+        if (backdrop) root.appendChild(backdrop.cloneNode(true));
         if (fab) root.appendChild(fab.cloneNode(true));
         if (popup) root.appendChild(popup.cloneNode(true));
         doc.body.appendChild(root);
@@ -8623,6 +8642,7 @@ def _oscar_chatbot_fragment():
         (function() {{
             var root = document.getElementById('oscar-chatbot-root');
             if (!root) return;
+            var pBackdrop = document.getElementById('oscar-chat-backdrop');
             var pFab = document.getElementById('oscar-chat-fab');
             var pPopup = document.getElementById('oscar-chat-popup');
             var pInput = document.getElementById('oscar-chat-input');
@@ -8735,11 +8755,18 @@ def _oscar_chatbot_fragment():
             // FAB toggle (client-side only)
             if (pFab) pFab.onclick = function() {{
                 pPopup.classList.toggle('oscar-open');
+                if (pBackdrop) pBackdrop.classList.toggle('oscar-open');
                 if (pPopup.classList.contains('oscar-open') && pInput) pInput.focus();
             }};
             // Close (client-side only)
             if (pClose) pClose.onclick = function() {{
                 pPopup.classList.remove('oscar-open');
+                if (pBackdrop) pBackdrop.classList.remove('oscar-open');
+            }};
+            // Close on backdrop click
+            if (pBackdrop) pBackdrop.onclick = function() {{
+                pPopup.classList.remove('oscar-open');
+                pBackdrop.classList.remove('oscar-open');
             }};
             // Fullscreen (client-side only)
             if (pFs) pFs.onclick = function() {{
