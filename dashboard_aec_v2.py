@@ -8792,7 +8792,7 @@ def _oscar_chatbot_fragment():
                     if (txtBtn) txtBtn.onclick = function() {{
                         var text = decodeB64(b64);
                         // Strip markdown for plain text
-                        var plain = text.replace(/#{1,6}\s/g, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '');
+                        var plain = text.replace(/^#{{1,6}} /gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '');
                         downloadFile(plain, 'oscar_reponse.txt', 'text/plain;charset=utf-8');
                     }};
                     if (mdBtn) mdBtn.onclick = function() {{
