@@ -8674,6 +8674,7 @@ def _oscar_chatbot_fragment():
                         }} else {{
                             mdDivs[i].textContent = 'Pas de réponse.';
                         }}
+                        mdDivs[i].setAttribute('data-md-raw', mdDivs[i].getAttribute('data-md-b64'));
                         mdDivs[i].removeAttribute('data-md-b64');
                     }} catch(e) {{ console.error('[OSCAR] MD render error:', e); }}
                 }}
@@ -8787,7 +8788,7 @@ def _oscar_chatbot_fragment():
                     if (el.classList.contains('oscar-msg-user')) {{
                         parts.push((asMd ? '**Vous :** ' : 'Vous : ') + el.textContent.trim());
                     }} else if (el.classList.contains('oscar-msg-ai')) {{
-                        var b64 = el.getAttribute('data-md-b64');
+                        var b64 = el.getAttribute('data-md-raw') || el.getAttribute('data-md-b64');
                         if (b64 && asMd) {{
                             try {{
                                 var raw = atob(b64);
