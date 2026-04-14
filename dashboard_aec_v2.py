@@ -8560,7 +8560,7 @@ def _oscar_chatbot_fragment():
 
     _chatbot_html = f"""
     {_chat_css}
-    <div id="oscar-chat-backdrop"></div>
+    <div id="oscar-chat-backdrop" class="{_open_class}"></div>
     <div id="oscar-chat-fab" title="Assistant OSCAR AI">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -8576,11 +8576,11 @@ def _oscar_chatbot_fragment():
                 </select>
             </div>
             <div class="oscar-chat-hdr-btns">
-                <button id="oscar-chat-copy" title="Copier le chat">📋</button>
-                <button id="oscar-chat-dl" title="Télécharger (.md)">⬇</button>
-                <button id="oscar-chat-fs" title="Plein écran">{_fs_icon}</button>
-                <button id="oscar-chat-clear" title="Effacer">🗑</button>
-                <button id="oscar-chat-close" title="Fermer">✕</button>
+                <button id="oscar-chat-copy" title="Copier le chat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+                <button id="oscar-chat-dl" title="Télécharger (.md)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+                <button id="oscar-chat-fs" title="Plein écran"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+                <button id="oscar-chat-clear" title="Effacer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                <button id="oscar-chat-close" title="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
         </div>
         <div class="oscar-chat-msgs" id="oscar-chat-msgs">
@@ -8771,7 +8771,7 @@ def _oscar_chatbot_fragment():
             // Fullscreen (client-side only)
             if (pFs) pFs.onclick = function() {{
                 pPopup.classList.toggle('oscar-fs');
-                pFs.textContent = pPopup.classList.contains('oscar-fs') ? '⊡' : '⛶';
+                // Icon stays the same SVG for fullscreen toggle
             }};
             // Clear → hidden form
             if (pClear) pClear.onclick = function() {{
@@ -8807,9 +8807,10 @@ def _oscar_chatbot_fragment():
             if (pCopy) pCopy.onclick = function() {{
                 var text = getChatText(false);
                 if (text && navigator.clipboard) {{
+                    var origHTML = pCopy.innerHTML;
                     navigator.clipboard.writeText(text).then(function() {{
-                        pCopy.textContent = '✓';
-                        setTimeout(function() {{ pCopy.textContent = '📋'; }}, 1500);
+                        pCopy.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+                        setTimeout(function() {{ pCopy.innerHTML = origHTML; }}, 1500);
                     }});
                 }}
             }};
