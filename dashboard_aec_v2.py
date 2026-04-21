@@ -5574,36 +5574,192 @@ with _cours_ctx:
     with tab2:
         st.markdown(f"### {t('analysis_by_sede')}")
 
-        # Year selector for this tab
-        tab2_years = sorted(df_combined["Année"].unique())
-        if len(tab2_years) > 1:
-            selected_year_tab2 = st.selectbox(
-                t("filter_by_period"), 
-                tab2_years, 
-                index=len(tab2_years)-1,  # Default to most recent year
-                key="sede_year_filter"
-            )
-            df_tab2 = df_combined[df_combined["Année"] == selected_year_tab2]
-        else:
-            df_tab2 = df_combined
+        # --- Antenna multi-toggle selector (same style as year buttons on top of page) ---
+        tab2_antennas_all = sorted(df_combined["Sede"].dropna().unique().tolist())
 
-        sede_summary = df_tab2.groupby("Sede").agg({inscr_col: "sum", "Nb. de Cours": "sum", "Recettes": "sum"}).reset_index()
-        col1, col2 = st.columns(2)
-        with col1:
-            fig = px.bar(sede_summary.sort_values(inscr_col, ascending=True), y="Sede", x=inscr_col, orientation='h',
-                        color="Sede", color_discrete_map=SEDE_COLORS, title=t('inscriptions_by_sede'),
-                        text=inscr_col)
-            fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-            fig.update_layout(showlegend=False, height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
-            st.plotly_chart(fig, use_container_width=True)
-        with col2:
-            fig = px.pie(sede_summary, values=inscr_col, names="Sede", color="Sede", color_discrete_map=SEDE_COLORS, title=t('distribution'))
-            fig.update_traces(textposition='inside', textinfo='percent+label+value')
-            fig.update_layout(height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
-            st.plotly_chart(fig, use_container_width=True)
-        st.markdown(f"#### {t('detail_by_sede')}")
-        sede_summary[t("students_per_course")] = (sede_summary[inscr_col] / sede_summary["Nb. de Cours"]).round(2)
-        st.dataframe(sede_summary, hide_index=True, use_container_width=True)
+        # Initialize in session state – all antennas selected by default
+        if "tab2_selected_antennas" not in st.session_state:
+            st.session_state.tab2_selected_antennas = {a: True for a in tab2_antennas_all}
+        for _a in tab2_antennas_all:
+            if _a not in st.session_state.tab2_selected_antennas:
+                st.session_state.tab2_selected_antennas[_a] = True
+
+        if len(tab2_antennas_all) > 1:
+            st.markdown(f"#### {t('filter_by_sede')}")
+            _ant_btn_cols = st.columns(len(tab2_antennas_all) + 1)
+            for _i, _a in enumerate(tab2_antennas_all):
+                with _ant_btn_cols[_i]:
+                    _is_sel = st.session_state.tab2_selected_antennas.get(_a, True)
+                    _btn_type = "primary" if _is_sel else "secondary"
+                    if st.button(_a, key=f"tab2_ant_btn_{_a}", use_container_width=True, type=_btn_type):
+                        st.session_state.tab2_selected_antennas[_a] = not _is_sel
+                        st.rerun()
+            with _ant_btn_cols[-1]:
+                _all_ant_sel = all(st.session_state.tab2_selected_antennas.get(_a, True) for _a in tab2_antennas_all)
+                _btn_type_all = "primary" if _all_ant_sel else "secondary"
+                if st.button(t("all"), key="tab2_ant_btn_all", use_container_width=True, type=_btn_type_all):
+                    _new_state = not _all_ant_sel
+                    for _a in tab2_antennas_all:
+                        st.session_state.tab2_selected_antennas[_a] = _new_state
+                    st.rerun()
+            st.markdown("---")
+
+        # Apply antenna + top-page year filters
+        _tab2_selected_ants = [a for a in tab2_antennas_all if st.session_state.tab2_selected_antennas.get(a, True)]
+        if not _tab2_selected_ants:
+            _tab2_selected_ants = tab2_antennas_all  # fallback
+        df_tab2 = df_combined[
+            df_combined["Année"].isin(selected_years_list)
+            & df_combined["Sede"].isin(_tab2_selected_ants)
+        ].copy()
+
+        if df_tab2.empty:
+            st.info("Aucune donnée pour la sélection courante.")
+        else:
+            # --- Aggregate all relevant indicators per antenna ---
+            _tab2_agg_cols = {
+                inscr_col: "sum",
+                "Nb. de Cours": "sum",
+                "Recettes": "sum",
+            }
+            if "Nombre d'heures prévues" in df_tab2.columns:
+                _tab2_agg_cols["Nombre d'heures prévues"] = "sum"
+            if "Nouveaux inscrits" in df_tab2.columns:
+                _tab2_agg_cols["Nouveaux inscrits"] = "sum"
+            if "Réinscrits" in df_tab2.columns:
+                _tab2_agg_cols["Réinscrits"] = "sum"
+            if "Nombre total d'heures vendues (heures-étudiants)" in df_tab2.columns:
+                _tab2_agg_cols["Nombre total d'heures vendues (heures-étudiants)"] = "sum"
+
+            sede_summary = df_tab2.groupby("Sede").agg(_tab2_agg_cols).reset_index()
+            # Derived column: filling rate
+            sede_summary[t("students_per_course")] = (
+                sede_summary[inscr_col] / sede_summary["Nb. de Cours"]
+            ).replace([float("inf"), float("-inf")], 0).fillna(0).round(2)
+
+            # --- Indicator list: (column_name, chart_title, is_currency) ---
+            _tab2_indicators = [
+                (inscr_col, t('inscriptions'), False),
+                ("Nb. de Cours", t('courses'), False),
+                ("Nombre d'heures prévues", t('planned_hours'), False),
+                ("Nouveaux inscrits", t('new_students'), False),
+                ("Réinscrits", t('returning_students'), False),
+                (t("students_per_course"), t('students_per_course'), False),
+                ("Nombre total d'heures vendues (heures-étudiants)", t('student_hours'), False),
+                ("Recettes", t('revenue'), True),
+            ]
+
+            for _col_name, _ind_label, _is_currency in _tab2_indicators:
+                if _col_name not in sede_summary.columns:
+                    continue
+
+                st.markdown(f"#### {_ind_label}")
+                _c1, _c2 = st.columns(2)
+                _text_fmt = '€%{text:,.0f}' if _is_currency else '%{text:,.0f}'
+
+                with _c1:
+                    _df_sorted = sede_summary.sort_values(_col_name, ascending=True)
+                    fig = px.bar(
+                        _df_sorted, y="Sede", x=_col_name, orientation='h',
+                        color="Sede", color_discrete_map=SEDE_COLORS,
+                        title=f"{_ind_label} par antenne",
+                        text=_col_name,
+                    )
+                    fig.update_traces(texttemplate=_text_fmt, textposition='outside')
+                    fig.update_layout(
+                        showlegend=False, height=350,
+                        paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                        font=dict(color=text_color),
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key=f"tab2_bar_{_col_name}")
+
+                with _c2:
+                    # Pie chart is nonsensical for a ratio (taux de remplissage) → use bar instead
+                    if _col_name == t("students_per_course"):
+                        fig = px.bar(
+                            sede_summary.sort_values(_col_name, ascending=False),
+                            x="Sede", y=_col_name,
+                            color="Sede", color_discrete_map=SEDE_COLORS,
+                            title=f"{_ind_label} (comparaison)",
+                            text=_col_name,
+                        )
+                        fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+                    else:
+                        fig = px.pie(
+                            sede_summary, values=_col_name, names="Sede",
+                            color="Sede", color_discrete_map=SEDE_COLORS,
+                            title=f"{t('distribution')} – {_ind_label}",
+                        )
+                        fig.update_traces(textposition='inside', textinfo='percent+label+value')
+                    fig.update_layout(
+                        height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                        font=dict(color=text_color), showlegend=(_col_name == t("students_per_course")) is False,
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key=f"tab2_pie_{_col_name}")
+
+                st.markdown("")  # spacing
+
+            # --- Detail table: all indicators per antenna ---
+            st.markdown(f"#### {t('detail_by_sede')}")
+
+            _tab2_detail = sede_summary.copy()
+            # Human-readable column renames
+            _rename_map = {
+                inscr_col: t('inscriptions'),
+                "Nb. de Cours": t('courses'),
+                "Nombre d'heures prévues": t('planned_hours'),
+                "Nouveaux inscrits": t('new_students'),
+                "Réinscrits": t('returning_students'),
+                "Nombre total d'heures vendues (heures-étudiants)": t('student_hours'),
+                "Recettes": t('revenue'),
+            }
+            _tab2_detail = _tab2_detail.rename(columns={k: v for k, v in _rename_map.items() if k in _tab2_detail.columns})
+
+            # Add TOTAL row
+            _total_row = {"Sede": "TOTAL IFI"}
+            for _c in _tab2_detail.columns:
+                if _c == "Sede":
+                    continue
+                elif _c == t("students_per_course"):
+                    _inscr_total = _tab2_detail[t('inscriptions')].sum() if t('inscriptions') in _tab2_detail.columns else 0
+                    _cours_total = _tab2_detail[t('courses')].sum() if t('courses') in _tab2_detail.columns else 0
+                    _total_row[_c] = round(_inscr_total / _cours_total, 2) if _cours_total > 0 else 0
+                else:
+                    _total_row[_c] = _tab2_detail[_c].sum()
+            _tab2_detail = pd.concat([_tab2_detail, pd.DataFrame([_total_row])], ignore_index=True)
+
+            # Sort antennas alphabetically (TOTAL IFI always last)
+            _regular = _tab2_detail[_tab2_detail["Sede"] != "TOTAL IFI"].sort_values("Sede")
+            _total = _tab2_detail[_tab2_detail["Sede"] == "TOTAL IFI"]
+            _tab2_detail = pd.concat([_regular, _total], ignore_index=True)
+
+            # Format numeric columns for display
+            _tab2_display = _tab2_detail.copy()
+            for _c in _tab2_display.columns:
+                if _c == "Sede":
+                    continue
+                elif _c == t("students_per_course"):
+                    _tab2_display[_c] = _tab2_display[_c].apply(
+                        lambda x: f"{x:.2f}" if isinstance(x, (int, float)) and pd.notna(x) else x
+                    )
+                elif _c == t('revenue'):
+                    _tab2_display[_c] = _tab2_display[_c].apply(
+                        lambda x: f"€{x:,.0f}" if isinstance(x, (int, float)) and pd.notna(x) else x
+                    )
+                else:
+                    _tab2_display[_c] = _tab2_display[_c].apply(
+                        lambda x: f"{int(x):,}" if isinstance(x, (int, float)) and pd.notna(x) else x
+                    )
+
+            def _highlight_total_tab2(row):
+                if row["Sede"] == "TOTAL IFI":
+                    return ['background-color: #e2e8f0; font-weight: bold'] * len(row)
+                return [''] * len(row)
+
+            st.dataframe(
+                _tab2_display.style.apply(_highlight_total_tab2, axis=1),
+                hide_index=True, use_container_width=True,
+            )
 
     # TAB 3: VUE SECTEURS
     with tab3:
