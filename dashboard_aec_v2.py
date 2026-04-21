@@ -5294,9 +5294,15 @@ with _cours_ctx:
     # TAB 1: SYNTHESE (Main metrics + summary table)
     with tab1:
         # --- 2-level analysis selector ---
+        _synth_options = ["Global IFI", "Par antenne"]
+        # Persist synthese_level across reruns (e.g. year-button clicks that call st.rerun()).
+        # Pre-seeding session_state BEFORE the widget is created ensures Streamlit picks
+        # it up as the widget's initial value via its key.
+        if "synthese_level" not in st.session_state:
+            st.session_state["synthese_level"] = _synth_options[0]
         synthese_level = st.radio(
             "Niveau d'analyse",
-            ["Global IFI", "Par antenne"],
+            _synth_options,
             horizontal=True,
             key="synthese_level",
         )
@@ -5305,8 +5311,18 @@ with _cours_ctx:
         df_synthese = df_filtered_years.copy()
         if synthese_level == "Par antenne":
             antenna_list = sorted(df_filtered_years["Sede"].unique().tolist())
-            selected_antenna = st.selectbox(t("filter_by_sede"), antenna_list, key="synthese_antenna_filter")
-            df_synthese = df_synthese[df_synthese["Sede"] == selected_antenna]
+            # If the previously-selected antenna disappeared from the list (shouldn't
+            # happen on year change but guard anyway), reset to first available.
+            _prev_ant = st.session_state.get("synthese_antenna_filter")
+            if antenna_list and (_prev_ant is None or _prev_ant not in antenna_list):
+                st.session_state["synthese_antenna_filter"] = antenna_list[0]
+            if antenna_list:
+                selected_antenna = st.selectbox(
+                    t("filter_by_sede"),
+                    antenna_list,
+                    key="synthese_antenna_filter",
+                )
+                df_synthese = df_synthese[df_synthese["Sede"] == selected_antenna]
 
         # Main metrics - always show as 5 cards
         _s_inscr = df_synthese[inscr_col].sum()
