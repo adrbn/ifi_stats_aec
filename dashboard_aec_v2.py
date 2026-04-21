@@ -7042,9 +7042,11 @@ with _cours_ctx:
             # ============================================
             # NIVEAU 2: ÉVOLUTION PLURIANNUELLE
             # ============================================
-            with st.expander("Évolution pluriannuelle", expanded=True if len(years) > 1 else False):
-                if len(years) < 2:
-                    st.info("Chargez les données de plusieurs années pour voir l'évolution.")
+            # Years scope = global year selection from top of page
+            _yoy_scope_years = [y for y in years if y in selected_years_list] or list(years)
+            with st.expander("Évolution pluriannuelle", expanded=True if len(_yoy_scope_years) > 1 else False):
+                if len(_yoy_scope_years) < 2:
+                    st.info("Sélectionnez au moins 2 années dans le filtre en haut de page pour voir l'évolution.")
                 else:
                     # Filters row
                     filter_col1, filter_col2, filter_col3, filter_col4, filter_col5 = st.columns(5)
@@ -7089,8 +7091,8 @@ with _cours_ctx:
                             key="yoy_cat_filter"
                         )
 
-                    # Apply filters
-                    df_yoy = df_combined.copy()
+                    # Apply filters — restrict to the years selected at the top of the page
+                    df_yoy = df_combined[df_combined["Année"].isin(_yoy_scope_years)].copy()
                     if selected_antenna_yoy != t("all"):
                         df_yoy = df_yoy[df_yoy["Sede"] == selected_antenna_yoy]
                     if selected_sector_yoy != t("all") and "Secteur" in df_yoy.columns:
@@ -7168,9 +7170,9 @@ with _cours_ctx:
             # ============================================
             # NIVEAU 3: VARIATIONS PAR ANTENNE
             # ============================================
-            with st.expander("Variations par antenne", expanded=True if len(years) > 1 else False):
-                if len(years) < 2:
-                    st.info("Chargez les données de plusieurs années pour voir les variations.")
+            with st.expander("Variations par antenne", expanded=True if len(_yoy_scope_years) > 1 else False):
+                if len(_yoy_scope_years) < 2:
+                    st.info("Sélectionnez au moins 2 années dans le filtre en haut de page pour voir les variations.")
                 else:
                     # Filters row (same as level 2)
                     var_filter_col1, var_filter_col2, var_filter_col3, var_filter_col4, var_filter_col5 = st.columns(5)
@@ -7215,8 +7217,8 @@ with _cours_ctx:
                             key="var_cat_filter"
                         )
 
-                    # Apply filters
-                    df_var = df_combined.copy()
+                    # Apply filters — restrict to the years selected at the top of the page
+                    df_var = df_combined[df_combined["Année"].isin(_yoy_scope_years)].copy()
                     if var_selected_antenna != t("all"):
                         df_var = df_var[df_var["Sede"] == var_selected_antenna]
                     if var_selected_sector != t("all") and "Secteur" in df_var.columns:
@@ -7257,27 +7259,29 @@ with _cours_ctx:
                         ordered_cols = [a for a in ANTENNA_ORDER if a in pivot_data.columns] + ["IFI (Total)"]
                         pivot_data = pivot_data[[c for c in ordered_cols if c in pivot_data.columns]]
 
-                        # Create variation rows between years
-                        years_list = sorted(pivot_data.index.tolist())
+                        # Build rows in descending order (most recent year first).
+                        # Deltas compare each year with the previous SELECTED year
+                        # (so they work even when selected years are not consecutive).
+                        years_desc = sorted(pivot_data.index.tolist(), reverse=True)
                         result_rows = []
 
-                        for i, year in enumerate(years_list):
-                            # Add year data row
+                        for i, year in enumerate(years_desc):
+                            # Year data row
                             row_data = {"Période": str(year)}
                             for col in pivot_data.columns:
                                 val = pivot_data.loc[year, col]
                                 row_data[col] = f"{val:,.0f}" if indicator_label != "Recettes (€)" else f"€{val:,.0f}"
                             result_rows.append(row_data)
 
-                            # Add variation row if not last year
-                            if i < len(years_list) - 1:
-                                next_year = years_list[i + 1]
-                                var_row = {"Période": f"Δ {year}→{next_year}"}
+                            # Delta row between this year (newer) and the previous selected year (older)
+                            if i < len(years_desc) - 1:
+                                older_year = years_desc[i + 1]
+                                var_row = {"Période": f"Δ {older_year}→{year}"}
                                 for col in pivot_data.columns:
-                                    prev_val = pivot_data.loc[year, col]
-                                    next_val = pivot_data.loc[next_year, col]
+                                    prev_val = pivot_data.loc[older_year, col]
+                                    cur_val = pivot_data.loc[year, col]
                                     if prev_val > 0:
-                                        pct_change = ((next_val - prev_val) / prev_val) * 100
+                                        pct_change = ((cur_val - prev_val) / prev_val) * 100
                                         var_row[col] = f"{pct_change:+.1f}%"
                                     else:
                                         var_row[col] = "N/A"
