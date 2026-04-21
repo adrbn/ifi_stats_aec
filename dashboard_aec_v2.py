@@ -6986,29 +6986,31 @@ with _cours_ctx:
                 col4, col5, col6 = st.columns(3)
                 col7, col8, col9 = st.columns(3)
 
+                # Row 1: Inscriptions – Cours – Heures prévues
                 with col1:
                     st.metric(t('inscriptions'), f"{_r_inscr:,.0f}")
                 with col2:
                     st.metric(t('courses'), f"{_r_courses:,.0f}")
                 with col3:
-                    st.metric(t('students_per_course'), f"{_r_fill:.1f}")
-                with col4:
-                    val = df_resume["Recettes"].sum() if "Recettes" in df_resume.columns else 0
-                    st.metric(t('revenue'), f"€{val:,.0f}")
-                with col5:
                     val = df_resume["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_resume.columns else 0
                     st.metric(t('planned_hours'), f"{val:,.0f}")
+                # Row 2: Nouveaux inscrits – Réinscrits – Taux de remplissage
+                with col4:
+                    val = df_resume["Nouveaux inscrits"].sum() if "Nouveaux inscrits" in df_resume.columns else 0
+                    st.metric(t('new_students'), f"{val:,.0f}")
+                with col5:
+                    val = df_resume["Réinscrits"].sum() if "Réinscrits" in df_resume.columns else 0
+                    st.metric(t('returning_students'), f"{val:,.0f}")
                 with col6:
-                    # ARPI
+                    st.metric(t('students_per_course'), f"{_r_fill:.1f}")
+                # Row 3: Recettes – ARPI – Heures-élèves
+                with col7:
+                    val = df_resume["Recettes"].sum() if "Recettes" in df_resume.columns else 0
+                    st.metric(t('revenue'), f"€{val:,.0f}")
+                with col8:
                     recettes = df_resume["Recettes"].sum() if "Recettes" in df_resume.columns else 0
                     arpi = recettes / _r_inscr if _r_inscr > 0 else 0
                     st.metric("ARPI (€/inscr)", f"€{arpi:.2f}")
-                with col7:
-                    val = df_resume["Nouveaux inscrits"].sum() if "Nouveaux inscrits" in df_resume.columns else 0
-                    st.metric(t('new_students'), f"{val:,.0f}")
-                with col8:
-                    val = df_resume["Réinscrits"].sum() if "Réinscrits" in df_resume.columns else 0
-                    st.metric(t('returning_students'), f"{val:,.0f}")
                 with col9:
                     val = df_resume["Nombre total d'heures vendues (heures-étudiants)"].sum() if "Nombre total d'heures vendues (heures-étudiants)" in df_resume.columns else 0
                     st.metric(t('student_hours'), f"{val:,.0f}")
