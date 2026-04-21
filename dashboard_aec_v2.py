@@ -6978,36 +6978,40 @@ with _cours_ctx:
                 st.markdown(f"#### Indicateurs {selected_year_resume}")
 
                 # Show metrics for selected year
-                col1, col2, col3, col4 = st.columns(4)
-                col5, col6, col7, col8 = st.columns(4)
+                _r_inscr = df_resume[inscr_col].sum() if inscr_col in df_resume.columns else 0
+                _r_courses = df_resume["Nb. de Cours"].sum() if "Nb. de Cours" in df_resume.columns else 0
+                _r_fill = round(_r_inscr / _r_courses, 1) if _r_courses > 0 else 0
+
+                col1, col2, col3 = st.columns(3)
+                col4, col5, col6 = st.columns(3)
+                col7, col8, col9 = st.columns(3)
 
                 with col1:
-                    val = df_resume[inscr_col].sum() if inscr_col in df_resume.columns else 0
-                    st.metric(t('inscriptions'), f"{val:,.0f}")
+                    st.metric(t('inscriptions'), f"{_r_inscr:,.0f}")
                 with col2:
-                    val = df_resume["Nb. de Cours"].sum() if "Nb. de Cours" in df_resume.columns else 0
-                    st.metric(t('courses'), f"{val:,.0f}")
+                    st.metric(t('courses'), f"{_r_courses:,.0f}")
                 with col3:
+                    st.metric(t('students_per_course'), f"{_r_fill:.1f}")
+                with col4:
                     val = df_resume["Recettes"].sum() if "Recettes" in df_resume.columns else 0
                     st.metric(t('revenue'), f"€{val:,.0f}")
-                with col4:
+                with col5:
                     val = df_resume["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_resume.columns else 0
                     st.metric(t('planned_hours'), f"{val:,.0f}")
-                with col5:
+                with col6:
+                    # ARPI
+                    recettes = df_resume["Recettes"].sum() if "Recettes" in df_resume.columns else 0
+                    arpi = recettes / _r_inscr if _r_inscr > 0 else 0
+                    st.metric("ARPI (€/inscr)", f"€{arpi:.2f}")
+                with col7:
                     val = df_resume["Nouveaux inscrits"].sum() if "Nouveaux inscrits" in df_resume.columns else 0
                     st.metric(t('new_students'), f"{val:,.0f}")
-                with col6:
+                with col8:
                     val = df_resume["Réinscrits"].sum() if "Réinscrits" in df_resume.columns else 0
                     st.metric(t('returning_students'), f"{val:,.0f}")
-                with col7:
+                with col9:
                     val = df_resume["Nombre total d'heures vendues (heures-étudiants)"].sum() if "Nombre total d'heures vendues (heures-étudiants)" in df_resume.columns else 0
                     st.metric(t('student_hours'), f"{val:,.0f}")
-                with col8:
-                    # ARPI
-                    inscr = df_resume[inscr_col].sum() if inscr_col in df_resume.columns else 0
-                    recettes = df_resume["Recettes"].sum() if "Recettes" in df_resume.columns else 0
-                    arpi = recettes / inscr if inscr > 0 else 0
-                    st.metric("ARPI (€/inscr)", f"€{arpi:.2f}")
 
                 # Répartition par antenne pour l'année sélectionnée
                 st.markdown(f"#### Répartition par antenne - {selected_year_resume}")
