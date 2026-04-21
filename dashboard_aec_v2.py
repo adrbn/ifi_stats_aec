@@ -5575,7 +5575,10 @@ with _cours_ctx:
         st.markdown(f"### {t('analysis_by_sede')}")
 
         # --- Antenna single-select toggle buttons (same style as year buttons on top of page) ---
-        tab2_antennas_all = sorted(df_combined["Sede"].dropna().unique().tolist())
+        _tab2_ant_order = ["IFM", "IFF", "IFN", "IFP"]
+        _tab2_ant_available = df_combined["Sede"].dropna().unique().tolist()
+        tab2_antennas_all = [a for a in _tab2_ant_order if a in _tab2_ant_available] + \
+            sorted([a for a in _tab2_ant_available if a not in _tab2_ant_order])
 
         # Initialize in session state – default to IFM if available, else first antenna
         if "tab2_selected_antenna" not in st.session_state:
