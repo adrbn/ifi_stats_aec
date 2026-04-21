@@ -5194,10 +5194,10 @@ _has_other_exports = any([
 
 if _has_other_exports:
     _top_labels = []
-    if df_profils is not None: _top_labels.append("Profils")
     _top_labels.append("Cours")
     if df_fiches is not None: _top_labels.append("Fiches de cours")
     if df_produits is not None: _top_labels.append("Produits")
+    if df_profils is not None: _top_labels.append("Profils")
     _top_tabs = st.tabs(_top_labels)
     _cours_ctx = _top_tabs[_top_labels.index("Cours")]
 else:
@@ -5327,7 +5327,7 @@ with _cours_ctx:
         # Main metrics - always show as 5 cards
         _s_inscr = df_synthese[inscr_col].sum()
         _s_courses = df_synthese["Nb. de Cours"].sum()
-        _s_hours = df_synthese["Nombre total d'heures vendues (heures-étudiants)"].sum() if "Nombre total d'heures vendues (heures-étudiants)" in df_synthese.columns else 0
+        _s_planned_hours = df_synthese["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_synthese.columns else 0
         _s_revenue = df_synthese["Recettes"].sum() if "Recettes" in df_synthese.columns else 0
         _s_avg = round(_s_inscr / _s_courses, 1) if _s_courses > 0 else 0
 
@@ -5337,7 +5337,7 @@ with _cours_ctx:
         with col2:
             st.metric(t('courses'), f"{_s_courses:,.0f}")
         with col3:
-            st.metric(t('student_hours'), f"{_s_hours:,.0f}")
+            st.metric(t('planned_hours'), f"{_s_planned_hours:,.0f}")
         with col4:
             st.metric(t('revenue'), f"€{_s_revenue:,.0f}")
         with col5:
@@ -5395,7 +5395,6 @@ with _cours_ctx:
                 t('pct_returning'): _total_pct_ret,
                 t('courses'): int(_s_courses),
                 t('planned_hours'): int(df_synthese["Nombre d'heures prévues"].sum() if "Nombre d'heures prévues" in df_synthese.columns else 0),
-                t('student_hours'): int(_s_hours),
                 t('revenue'): _s_revenue,
                 t('students_per_course'): round(_s_avg, 1),
             })
@@ -5409,7 +5408,6 @@ with _cours_ctx:
                 t('new_students'): "Δ Nouv.",
                 t('courses'): "Δ Cours",
                 t('planned_hours'): "Δ H. prév.",
-                t('student_hours'): "Δ H-élèves",
                 t('revenue'): "Δ Recettes",
                 t('students_per_course'): "Δ Tx rempl.",
             }
@@ -5450,7 +5448,7 @@ with _cours_ctx:
             ordered_cols = []
             for c in [t('year'), t('inscriptions'), t('new_students'), t('pct_new'),
                        t('returning_students'), t('pct_returning'), t('courses'),
-                       t('planned_hours'), t('student_hours'), t('revenue'), t('students_per_course')]:
+                       t('planned_hours'), t('revenue'), t('students_per_course')]:
                 ordered_cols.append(c)
                 if c in delta_cols_map:
                     ordered_cols.append(delta_cols_map[c])
@@ -5484,7 +5482,7 @@ with _cours_ctx:
         chart_indicators = [
             (t('inscriptions'), "Inscriptions"),
             (t('courses'), "Cours"),
-            (t('student_hours'), "Heures-élèves"),
+            (t('planned_hours'), "Heures prévues"),
             (t('revenue'), "Recettes (€)"),
             (t('students_per_course'), "Taux de remplissage"),
             (t('new_students'), "Nouveaux inscrits"),
@@ -7117,41 +7115,47 @@ with _cours_ctx:
                         st.markdown("#### Évolution des indicateurs")
 
                         indicators_yoy = [
-                            ("Inscriptions", "#6366f1"),
-                            ("Cours", "#10b981"),
-                            ("Recettes", "#f59e0b"),
-                            ("Heures prévues", "#ef4444"),
-                            ("Nouveaux", "#8b5cf6"),
-                            ("Réinscrits", "#ec4899"),
-                            ("Heures-élèves", "#14b8a6"),
+                            "Inscriptions",
+                            "Cours",
+                            "Recettes",
+                            "Heures prévues",
+                            "Nouveaux",
+                            "Réinscrits",
                         ]
 
-                        # 2 rows of histograms
-                        col1, col2, col3, col4 = st.columns(4)
-                        cols_row1 = [col1, col2, col3, col4]
+                        # Consistent color palette per year (same across all charts)
+                        _year_palette_yoy = ["#3B82F6", "#F59E0B", "#22C55E", "#EF4444", "#8B5CF6", "#06B6D4", "#EC4899", "#64748B"]
+                        _yoy_years_sorted = sorted(evolution_data["Année"].tolist())
+                        _year_colors_yoy = {y: _year_palette_yoy[i % len(_year_palette_yoy)] for i, y in enumerate(_yoy_years_sorted)}
+                        _bar_colors_yoy = [_year_colors_yoy[y] for y in evolution_data["Année"].tolist()]
 
-                        for i, (indicator, color) in enumerate(indicators_yoy[:4]):
+                        def _render_yoy_bar(indicator):
+                            fig = go.Figure(go.Bar(
+                                x=[str(y) for y in evolution_data["Année"].tolist()],
+                                y=evolution_data[indicator].tolist(),
+                                marker_color=_bar_colors_yoy,
+                                text=[f"{v:,.0f}" if isinstance(v, (int, float)) else str(v) for v in evolution_data[indicator].tolist()],
+                                textposition="outside",
+                            ))
+                            fig.update_layout(
+                                title=indicator, height=300, showlegend=False,
+                                paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                                font=dict(color=text_color), margin=dict(t=40, b=20),
+                                xaxis=dict(type="category"),
+                            )
+                            st.plotly_chart(fig, use_container_width=True, key=f"yoy_evol_{indicator}")
+
+                        # Row 1: first 3 indicators
+                        cols_row1 = st.columns(3)
+                        for i, indicator in enumerate(indicators_yoy[:3]):
                             with cols_row1[i]:
-                                fig = px.bar(evolution_data, x="Année", y=indicator, color_discrete_sequence=[color],
-                                            title=indicator, text=indicator)
-                                fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                                fig.update_layout(height=300, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                                font=dict(color=text_color), margin=dict(t=40, b=20))
-                                fig.update_xaxes(type='category')
-                                st.plotly_chart(fig, use_container_width=True, key=f"yoy_evol_{indicator}")
+                                _render_yoy_bar(indicator)
 
-                        col5, col6, col7, _ = st.columns(4)
-                        cols_row2 = [col5, col6, col7]
-
-                        for i, (indicator, color) in enumerate(indicators_yoy[4:7]):
+                        # Row 2: last 3 indicators
+                        cols_row2 = st.columns(3)
+                        for i, indicator in enumerate(indicators_yoy[3:6]):
                             with cols_row2[i]:
-                                fig = px.bar(evolution_data, x="Année", y=indicator, color_discrete_sequence=[color],
-                                            title=indicator, text=indicator)
-                                fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                                fig.update_layout(height=300, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                                font=dict(color=text_color), margin=dict(t=40, b=20))
-                                fig.update_xaxes(type='category')
-                                st.plotly_chart(fig, use_container_width=True, key=f"yoy_evol_{indicator}")
+                                _render_yoy_bar(indicator)
                     else:
                         st.warning("Données insuffisantes pour l'évolution pluriannuelle avec les filtres sélectionnés.")
 
