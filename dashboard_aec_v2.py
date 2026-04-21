@@ -5574,49 +5574,44 @@ with _cours_ctx:
     with tab2:
         st.markdown(f"### {t('analysis_by_sede')}")
 
-        # --- Antenna multi-toggle selector (same style as year buttons on top of page) ---
+        # --- Antenna single-select toggle buttons (same style as year buttons on top of page) ---
         tab2_antennas_all = sorted(df_combined["Sede"].dropna().unique().tolist())
 
-        # Initialize in session state – all antennas selected by default
-        if "tab2_selected_antennas" not in st.session_state:
-            st.session_state.tab2_selected_antennas = {a: True for a in tab2_antennas_all}
-        for _a in tab2_antennas_all:
-            if _a not in st.session_state.tab2_selected_antennas:
-                st.session_state.tab2_selected_antennas[_a] = True
+        # Initialize in session state – default to IFM if available, else first antenna
+        if "tab2_selected_antenna" not in st.session_state:
+            if "IFM" in tab2_antennas_all:
+                st.session_state.tab2_selected_antenna = "IFM"
+            elif tab2_antennas_all:
+                st.session_state.tab2_selected_antenna = tab2_antennas_all[0]
+            else:
+                st.session_state.tab2_selected_antenna = None
+        # Guard: if the stored antenna disappeared, fall back
+        if st.session_state.tab2_selected_antenna not in tab2_antennas_all and tab2_antennas_all:
+            st.session_state.tab2_selected_antenna = "IFM" if "IFM" in tab2_antennas_all else tab2_antennas_all[0]
 
-        if len(tab2_antennas_all) > 1:
+        if len(tab2_antennas_all) > 0:
             st.markdown(f"#### {t('filter_by_sede')}")
-            _ant_btn_cols = st.columns(len(tab2_antennas_all) + 1)
+            _ant_btn_cols = st.columns(len(tab2_antennas_all))
             for _i, _a in enumerate(tab2_antennas_all):
                 with _ant_btn_cols[_i]:
-                    _is_sel = st.session_state.tab2_selected_antennas.get(_a, True)
+                    _is_sel = st.session_state.tab2_selected_antenna == _a
                     _btn_type = "primary" if _is_sel else "secondary"
                     if st.button(_a, key=f"tab2_ant_btn_{_a}", use_container_width=True, type=_btn_type):
-                        st.session_state.tab2_selected_antennas[_a] = not _is_sel
+                        st.session_state.tab2_selected_antenna = _a
                         st.rerun()
-            with _ant_btn_cols[-1]:
-                _all_ant_sel = all(st.session_state.tab2_selected_antennas.get(_a, True) for _a in tab2_antennas_all)
-                _btn_type_all = "primary" if _all_ant_sel else "secondary"
-                if st.button(t("all"), key="tab2_ant_btn_all", use_container_width=True, type=_btn_type_all):
-                    _new_state = not _all_ant_sel
-                    for _a in tab2_antennas_all:
-                        st.session_state.tab2_selected_antennas[_a] = _new_state
-                    st.rerun()
             st.markdown("---")
 
         # Apply antenna + top-page year filters
-        _tab2_selected_ants = [a for a in tab2_antennas_all if st.session_state.tab2_selected_antennas.get(a, True)]
-        if not _tab2_selected_ants:
-            _tab2_selected_ants = tab2_antennas_all  # fallback
+        _tab2_sel_antenna = st.session_state.tab2_selected_antenna
         df_tab2 = df_combined[
             df_combined["Année"].isin(selected_years_list)
-            & df_combined["Sede"].isin(_tab2_selected_ants)
+            & (df_combined["Sede"] == _tab2_sel_antenna)
         ].copy()
 
         if df_tab2.empty:
             st.info("Aucune donnée pour la sélection courante.")
         else:
-            # --- Aggregate all relevant indicators per antenna ---
+            # --- Aggregate every indicator by SECTOR for the selected antenna ---
             _tab2_agg_cols = {
                 inscr_col: "sum",
                 "Nb. de Cours": "sum",
@@ -5631,10 +5626,10 @@ with _cours_ctx:
             if "Nombre total d'heures vendues (heures-étudiants)" in df_tab2.columns:
                 _tab2_agg_cols["Nombre total d'heures vendues (heures-étudiants)"] = "sum"
 
-            sede_summary = df_tab2.groupby("Sede").agg(_tab2_agg_cols).reset_index()
+            sector_summary = df_tab2.groupby("Secteur").agg(_tab2_agg_cols).reset_index()
             # Derived column: filling rate
-            sede_summary[t("students_per_course")] = (
-                sede_summary[inscr_col] / sede_summary["Nb. de Cours"]
+            sector_summary[t("students_per_course")] = (
+                sector_summary[inscr_col] / sector_summary["Nb. de Cours"]
             ).replace([float("inf"), float("-inf")], 0).fillna(0).round(2)
 
             # --- Indicator list: (column_name, chart_title, is_currency) ---
@@ -5650,19 +5645,19 @@ with _cours_ctx:
             ]
 
             for _col_name, _ind_label, _is_currency in _tab2_indicators:
-                if _col_name not in sede_summary.columns:
+                if _col_name not in sector_summary.columns:
                     continue
 
-                st.markdown(f"#### {_ind_label}")
+                st.markdown(f"#### {_ind_label} — {_tab2_sel_antenna}")
                 _c1, _c2 = st.columns(2)
                 _text_fmt = '€%{text:,.0f}' if _is_currency else '%{text:,.0f}'
 
                 with _c1:
-                    _df_sorted = sede_summary.sort_values(_col_name, ascending=True)
+                    _df_sorted = sector_summary.sort_values(_col_name, ascending=True)
                     fig = px.bar(
-                        _df_sorted, y="Sede", x=_col_name, orientation='h',
-                        color="Sede", color_discrete_map=SEDE_COLORS,
-                        title=f"{_ind_label} par antenne",
+                        _df_sorted, y="Secteur", x=_col_name, orientation='h',
+                        color="Secteur",
+                        title=f"{_ind_label} par secteur",
                         text=_col_name,
                     )
                     fig.update_traces(texttemplate=_text_fmt, textposition='outside')
@@ -5674,35 +5669,35 @@ with _cours_ctx:
                     st.plotly_chart(fig, use_container_width=True, key=f"tab2_bar_{_col_name}")
 
                 with _c2:
-                    # Pie chart is nonsensical for a ratio (taux de remplissage) → use bar instead
                     if _col_name == t("students_per_course"):
+                        # Filling rate is a ratio — pie makes no sense; use a comparison bar
                         fig = px.bar(
-                            sede_summary.sort_values(_col_name, ascending=False),
-                            x="Sede", y=_col_name,
-                            color="Sede", color_discrete_map=SEDE_COLORS,
+                            sector_summary.sort_values(_col_name, ascending=False),
+                            x="Secteur", y=_col_name,
+                            color="Secteur",
                             title=f"{_ind_label} (comparaison)",
                             text=_col_name,
                         )
                         fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+                        fig.update_layout(showlegend=False)
                     else:
                         fig = px.pie(
-                            sede_summary, values=_col_name, names="Sede",
-                            color="Sede", color_discrete_map=SEDE_COLORS,
+                            sector_summary, values=_col_name, names="Secteur",
                             title=f"{t('distribution')} – {_ind_label}",
                         )
                         fig.update_traces(textposition='inside', textinfo='percent+label+value')
                     fig.update_layout(
                         height=350, paper_bgcolor=bg_color, plot_bgcolor=bg_color,
-                        font=dict(color=text_color), showlegend=(_col_name == t("students_per_course")) is False,
+                        font=dict(color=text_color),
                     )
                     st.plotly_chart(fig, use_container_width=True, key=f"tab2_pie_{_col_name}")
 
                 st.markdown("")  # spacing
 
-            # --- Detail table: all indicators per antenna ---
-            st.markdown(f"#### {t('detail_by_sede')}")
+            # --- Detail table: all indicators per sector (for the selected antenna) ---
+            st.markdown(f"#### {t('detail_by_sede')} — {_tab2_sel_antenna}")
 
-            _tab2_detail = sede_summary.copy()
+            _tab2_detail = sector_summary.copy()
             # Human-readable column renames
             _rename_map = {
                 inscr_col: t('inscriptions'),
@@ -5715,10 +5710,11 @@ with _cours_ctx:
             }
             _tab2_detail = _tab2_detail.rename(columns={k: v for k, v in _rename_map.items() if k in _tab2_detail.columns})
 
-            # Add TOTAL row
-            _total_row = {"Sede": "TOTAL IFI"}
+            # Add TOTAL row (aggregated over all sectors)
+            _total_label = f"TOTAL {_tab2_sel_antenna}"
+            _total_row = {"Secteur": _total_label}
             for _c in _tab2_detail.columns:
-                if _c == "Sede":
+                if _c == "Secteur":
                     continue
                 elif _c == t("students_per_course"):
                     _inscr_total = _tab2_detail[t('inscriptions')].sum() if t('inscriptions') in _tab2_detail.columns else 0
@@ -5728,15 +5724,15 @@ with _cours_ctx:
                     _total_row[_c] = _tab2_detail[_c].sum()
             _tab2_detail = pd.concat([_tab2_detail, pd.DataFrame([_total_row])], ignore_index=True)
 
-            # Sort antennas alphabetically (TOTAL IFI always last)
-            _regular = _tab2_detail[_tab2_detail["Sede"] != "TOTAL IFI"].sort_values("Sede")
-            _total = _tab2_detail[_tab2_detail["Sede"] == "TOTAL IFI"]
+            # Sort sectors alphabetically, TOTAL row always last
+            _regular = _tab2_detail[_tab2_detail["Secteur"] != _total_label].sort_values("Secteur")
+            _total = _tab2_detail[_tab2_detail["Secteur"] == _total_label]
             _tab2_detail = pd.concat([_regular, _total], ignore_index=True)
 
             # Format numeric columns for display
             _tab2_display = _tab2_detail.copy()
             for _c in _tab2_display.columns:
-                if _c == "Sede":
+                if _c == "Secteur":
                     continue
                 elif _c == t("students_per_course"):
                     _tab2_display[_c] = _tab2_display[_c].apply(
@@ -5752,7 +5748,7 @@ with _cours_ctx:
                     )
 
             def _highlight_total_tab2(row):
-                if row["Sede"] == "TOTAL IFI":
+                if row["Secteur"] == _total_label:
                     return ['background-color: #e2e8f0; font-weight: bold'] * len(row)
                 return [''] * len(row)
 
