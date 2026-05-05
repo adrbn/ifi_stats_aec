@@ -370,6 +370,113 @@ def _sector_color_map(names: list) -> dict:
 # Standard heatmap colorscale used everywhere in OSCAR (yellow → red)
 HEATMAP_COLORSCALE = "YlOrRd"
 
+INSCR_COL = "Nb. d'inscriptions"
+COURSES_COL = "Nb. de Cours"
+
+
+def render_filling_rate_dim_view(df_base, df_filtered_for_antenna, dim_col, title_suffix, tab_key,
+                                  bg_color="rgba(0,0,0,0)", text_color="#1e293b", import_streamlit=None):
+    """Render a Taux-de-remplissage view (bar + comparison bar + heatmap + per-antenna details)
+    for a generic grouping dimension (Sous-secteur, Macro-catégorie, Catégorie de cours, ...).
+
+    df_base: full dataframe (top-of-page year-filtered) — for IFI section, heatmap (no antenna filter)
+    df_filtered_for_antenna: same possibly restricted to a chosen antenna — for the per-antenna details
+    """
+    import streamlit as _st
+    import plotly.express as _px
+    import plotly.graph_objects as _go
+    import pandas as _pd
+    from plotly.subplots import make_subplots as _ms
+
+    def _filling_rate_by(df, dim):
+        grp = df.groupby(dim).agg({INSCR_COL: "sum", COURSES_COL: "sum"}).reset_index()
+        grp["_fill"] = (grp[INSCR_COL] / grp[COURSES_COL]).replace([float("inf"), float("-inf")], 0).fillna(0).round(2)
+        return grp[[dim, "_fill"]].sort_values("_fill", ascending=False)
+
+    names = sorted(df_base[dim_col].dropna().unique().tolist())
+    color_map = _sector_color_map(names)
+
+    # ── IFI level (always full base, no antenna filter) ──
+    _st.markdown("#### IFI - total toutes antennes confondues")
+    summary = _filling_rate_by(df_base, dim_col)
+    c1, c2 = _st.columns(2)
+    with c1:
+        fig = _px.bar(summary.sort_values("_fill", ascending=True), y=dim_col, x="_fill", orientation="h",
+                      color=dim_col, color_discrete_map=color_map,
+                      title=f"{title_suffix} - Histogramme", text="_fill")
+        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
+        fig.update_layout(height=400, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
+        _st.plotly_chart(fig, use_container_width=True, key=f"fr_ifi_bar_{tab_key}")
+    with c2:
+        fig = _px.bar(summary, x=dim_col, y="_fill",
+                      color=dim_col, color_discrete_map=color_map,
+                      title=f"{title_suffix} - Comparaison", text="_fill")
+        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
+        fig.update_layout(height=400, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
+        _st.plotly_chart(fig, use_container_width=True, key=f"fr_ifi_pie_{tab_key}")
+    _st.markdown("---")
+
+    # ── Heatmap dim × antenne (filling rate per cell + IFI Total column) ──
+    _st.markdown(f"#### Heatmap - {title_suffix}")
+    _g_inscr = df_base.groupby([dim_col, "Sede"])[INSCR_COL].sum().unstack(fill_value=0)
+    _g_cours = df_base.groupby([dim_col, "Sede"])[COURSES_COL].sum().unstack(fill_value=0)
+    heat = (_g_inscr / _g_cours.replace(0, float("nan"))).fillna(0).round(2)
+    ifi_inscr = _g_inscr.sum(axis=1)
+    ifi_cours = _g_cours.sum(axis=1).replace(0, float("nan"))
+    heat["Total (IFI)"] = (ifi_inscr / ifi_cours).fillna(0).round(2)
+    ordered = [a for a in ["IFM", "IFF", "IFN", "IFP"] if a in heat.columns] + ["Total (IFI)"]
+    heat = heat[[c for c in ordered if c in heat.columns]]
+    antenna_cols = [c for c in heat.columns if c != "Total (IFI)"]
+    fig_hm = _ms(rows=1, cols=2, column_widths=[0.85, 0.15], horizontal_spacing=0.02)
+    z_main = heat[antenna_cols].values
+    fig_hm.add_trace(_go.Heatmap(
+        z=z_main, x=antenna_cols, y=heat.index.tolist(),
+        colorscale=HEATMAP_COLORSCALE, text=z_main, texttemplate="%{text:.2f}",
+        textfont=dict(size=14), showscale=True, colorbar=dict(title=title_suffix, x=0.82),
+    ), row=1, col=1)
+    z_total = heat["Total (IFI)"].values.reshape(-1, 1)
+    fig_hm.add_trace(_go.Heatmap(
+        z=[[1]] * len(z_total), x=["Total (IFI)"], y=heat.index.tolist(),
+        colorscale=[[0, "white"], [1, "white"]], text=z_total, texttemplate="<b>%{text:.2f}</b>",
+        textfont=dict(size=14, color="black"), showscale=False,
+    ), row=1, col=2)
+    fig_hm.update_layout(
+        height=500, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
+        xaxis=dict(side="top", tickfont=dict(size=14)),
+        xaxis2=dict(side="top", tickfont=dict(size=14, color="black")),
+        yaxis=dict(tickfont=dict(size=12)),
+        yaxis2=dict(showticklabels=False),
+    )
+    _st.plotly_chart(fig_hm, use_container_width=True, key=f"fr_hm_{tab_key}")
+    _st.markdown("---")
+
+    # ── Per-antenna detail (uses antenna-filtered df) ──
+    _st.markdown("#### Détails par antenne")
+    for antenna in ["IFM", "IFF", "IFN", "IFP"]:
+        sub = df_filtered_for_antenna[df_filtered_for_antenna["Sede"] == antenna]
+        if sub.empty:
+            continue
+        ant_summary = _filling_rate_by(sub, dim_col)
+        if ant_summary.empty:
+            continue
+        ac1, ac2 = _st.columns(2)
+        with ac1:
+            fig = _px.bar(ant_summary.sort_values("_fill", ascending=True), y=dim_col, x="_fill",
+                          orientation="h", color=dim_col, color_discrete_map=color_map,
+                          title=f"{title_suffix} - {antenna}", text="_fill")
+            fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
+            fig.update_layout(height=350, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                              font=dict(color=text_color), margin=dict(l=150))
+            _st.plotly_chart(fig, use_container_width=True, key=f"fr_ant_bar_{tab_key}_{antenna}")
+        with ac2:
+            fig = _px.bar(ant_summary, x=dim_col, y="_fill",
+                          color=dim_col, color_discrete_map=color_map,
+                          title=f"{title_suffix} - {antenna} (comparaison)", text="_fill")
+            fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
+            fig.update_layout(height=350, showlegend=False, paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                              font=dict(color=text_color))
+            _st.plotly_chart(fig, use_container_width=True, key=f"fr_ant_pie_{tab_key}_{antenna}")
+
 # Geographic coordinates for Italian cities (for map)
 SEDE_COORDS = {
     "IFM": {"lat": 45.4642, "lon": 9.1900, "city": "Milano"},
@@ -4601,12 +4708,19 @@ with st.sidebar:
 
     # ── Utilisateur + déconnexion ──
     st.markdown(f'<div class="oscar-sidebar-user"><span class="oscar-username">{st.session_state.user_name}</span></div>', unsafe_allow_html=True)
-    if os.environ.get("OSCAR_DESKTOP_MODE") != "1":
-        if st.button("Déconnexion", key="logout_btn", type="secondary"):
-            st.session_state.authenticated = False
-            st.session_state.user_name = ""
-            _clear_persistent_login()
+    _btn_cols_user = st.columns(2)
+    with _btn_cols_user[0]:
+        if st.button("🏠 Accueil", key="home_btn_sidebar", type="secondary", use_container_width=True,
+                     help="Retour à la page d'accueil"):
+            st.session_state["force_homepage"] = True
             st.rerun()
+    with _btn_cols_user[1]:
+        if os.environ.get("OSCAR_DESKTOP_MODE") != "1":
+            if st.button("Déconnexion", key="logout_btn", type="secondary", use_container_width=True):
+                st.session_state.authenticated = False
+                st.session_state.user_name = ""
+                _clear_persistent_login()
+                st.rerun()
 
     st.markdown("---")
 
@@ -4871,11 +4985,25 @@ default_year = 2025
 # Use files from sidebar uploader
 all_uploaded_files = uploaded_files if uploaded_files else []
 
-if not all_uploaded_files:
+# 'force_homepage' flag (set from the sidebar Home button) overrides automatic dashboard display
+_force_home = bool(st.session_state.get("force_homepage"))
+
+if (not all_uploaded_files) or _force_home:
     # Welcome screen
     st.markdown(f"## {t('welcome')}")
     st.markdown(f"*{t('welcome_subtitle')}*")
-    
+
+    # If data is already loaded, surface a "Go to Dashboard" CTA at the top of the homepage
+    if all_uploaded_files:
+        _cta_l, _cta_r = st.columns([1, 3])
+        with _cta_l:
+            if st.button("📊 Aller au dashboard", key="goto_dashboard_btn",
+                         type="primary", use_container_width=True):
+                st.session_state["force_homepage"] = False
+                st.rerun()
+        with _cta_r:
+            st.caption(f"✓ {len(all_uploaded_files)} fichier(s) déjà chargé(s) en mémoire")
+
     st.markdown("---")
     
     col_left, col_right = st.columns([3, 2])
@@ -6322,14 +6450,15 @@ with _cours_ctx:
 
             # Define indicator options
             ss_indicator_options = [
-                t('global_view'), 
-                t('inscriptions'), 
-                t('new_students'), 
-                t('returning_students'), 
-                t('courses'), 
-                t('planned_hours'), 
-                t('student_hours'), 
-                t('revenue')
+                t('global_view'),
+                t('inscriptions'),
+                t('new_students'),
+                t('returning_students'),
+                t('courses'),
+                t('planned_hours'),
+                t('student_hours'),
+                t('revenue'),
+                t('students_per_course'),
             ]
 
             # Use radio buttons with horizontal layout for persistent selection
@@ -6540,7 +6669,8 @@ with _cours_ctx:
                 ("Nb. de Cours", 'courses'),
                 ("Nombre d'heures prévues", 'planned_hours'),
                 ("Nombre total d'heures vendues (heures-étudiants)", 'student_hours'),
-                ("Recettes", 'revenue')
+                ("Recettes", 'revenue'),
+                ("__filling_rate__", 'students_per_course'),
             ]
 
             # Render content based on selected indicator (using session state)
@@ -6559,7 +6689,13 @@ with _cours_ctx:
             else:
                 # Render specific indicator
                 value_col, trans_key = indicator_configs_ss[selected_ss_idx]
-                if value_col in df_tab3_ss.columns:
+                if trans_key == 'students_per_course':
+                    render_filling_rate_dim_view(
+                        df_tab3_ss_base, df_tab3_ss, "Sous-secteur",
+                        t('students_per_course'), f"ss_fill_{selected_ss_idx}",
+                        bg_color=bg_color, text_color=text_color,
+                    )
+                elif value_col in df_tab3_ss.columns:
                     is_revenue = (trans_key == 'revenue')
                     render_sous_secteur_indicator_view(df_tab3_ss, value_col, t(trans_key), f"ss_{trans_key}_{selected_ss_idx}", is_revenue=is_revenue)
                 else:
@@ -6619,14 +6755,15 @@ with _cours_ctx:
 
             # Define indicator options
             mc_indicator_options = [
-                t('global_view'), 
-                t('inscriptions'), 
-                t('new_students'), 
-                t('returning_students'), 
-                t('courses'), 
-                t('planned_hours'), 
-                t('student_hours'), 
-                t('revenue')
+                t('global_view'),
+                t('inscriptions'),
+                t('new_students'),
+                t('returning_students'),
+                t('courses'),
+                t('planned_hours'),
+                t('student_hours'),
+                t('revenue'),
+                t('students_per_course'),
             ]
 
             # Use radio buttons with horizontal layout for persistent selection
@@ -6837,7 +6974,8 @@ with _cours_ctx:
                 ("Nb. de Cours", 'courses'),
                 ("Nombre d'heures prévues", 'planned_hours'),
                 ("Nombre total d'heures vendues (heures-étudiants)", 'student_hours'),
-                ("Recettes", 'revenue')
+                ("Recettes", 'revenue'),
+                ("__filling_rate__", 'students_per_course'),
             ]
 
             # Render content based on selected indicator (using session state)
@@ -6856,7 +6994,13 @@ with _cours_ctx:
             else:
                 # Render specific indicator
                 value_col, trans_key = indicator_configs_mc[selected_mc_idx]
-                if value_col in df_tab3_mc.columns:
+                if trans_key == 'students_per_course':
+                    render_filling_rate_dim_view(
+                        df_tab3_mc_base, df_tab3_mc, "Macro-catégorie",
+                        t('students_per_course'), f"mc_fill_{selected_mc_idx}",
+                        bg_color=bg_color, text_color=text_color,
+                    )
+                elif value_col in df_tab3_mc.columns:
                     is_revenue = (trans_key == 'revenue')
                     render_macro_category_indicator_view(df_tab3_mc, value_col, t(trans_key), f"mc_{trans_key}_{selected_mc_idx}", is_revenue=is_revenue)
                 else:
@@ -6917,14 +7061,15 @@ with _cours_ctx:
 
             # Define indicator options
             cat_indicator_options = [
-                t('global_view'), 
-                t('inscriptions'), 
-                t('new_students'), 
-                t('returning_students'), 
-                t('courses'), 
-                t('planned_hours'), 
-                t('student_hours'), 
-                t('revenue')
+                t('global_view'),
+                t('inscriptions'),
+                t('new_students'),
+                t('returning_students'),
+                t('courses'),
+                t('planned_hours'),
+                t('student_hours'),
+                t('revenue'),
+                t('students_per_course'),
             ]
 
             # Use radio buttons with horizontal layout for persistent selection
@@ -6949,7 +7094,8 @@ with _cours_ctx:
                 ("Nb. de Cours", 'courses'),
                 ("Nombre d'heures prévues", 'planned_hours'),
                 ("Nombre total d'heures vendues (heures-étudiants)", 'student_hours'),
-                ("Recettes", 'revenue')
+                ("Recettes", 'revenue'),
+                ("__filling_rate__", 'students_per_course'),
             ]
 
             # Function to create category graphs (IFI level - by category)
@@ -7158,10 +7304,16 @@ with _cours_ctx:
             else:
                 # Render specific indicator
                 value_col_cat, trans_key_cat = indicator_configs_cat[selected_cat_idx]
-                if value_col_cat in df_tab3b.columns:
+                if trans_key_cat == 'students_per_course':
+                    render_filling_rate_dim_view(
+                        df_tab3b_base, df_tab3b, "Catégorie de cours",
+                        t('students_per_course'), f"cat_fill_{selected_cat_idx}",
+                        bg_color=bg_color, text_color=text_color,
+                    )
+                elif value_col_cat in df_tab3b.columns:
                     is_revenue_cat = (trans_key_cat == 'revenue')
                     render_category_indicator_view(
-                        df_tab3b, value_col_cat, t(trans_key_cat), 
+                        df_tab3b, value_col_cat, t(trans_key_cat),
                         f"cat_{trans_key_cat}_{selected_cat_idx}",
                         is_revenue=is_revenue_cat
                     )
@@ -7636,7 +7788,8 @@ with _cours_ctx:
 
             _evo_idx = evo_indicator_labels.index(evo_selected_indicator)
             _ind_label, _ind_col, _ind_color, _ind_is_revenue, _ind_is_filling_rate = evo_indicator_options[_evo_idx]
-            _disable_overlay_for_revenue = (_ind_is_revenue or _ind_is_filling_rate)
+            # Only disable the overlay when the selected indicator IS Recettes itself
+            _disable_overlay_for_revenue = _ind_is_revenue
 
             def create_evolution_chart(df_data, title, chart_key):
                 # Aggregate per year
