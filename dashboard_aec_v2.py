@@ -343,6 +343,33 @@ SEDE_COLORS = {
     "IFP": "#EF4444", "IFI": "#3B82F6"
 }
 
+# Qualitative palette for sectors / sub-sectors / categories — distinct & accessible
+SECTOR_PALETTE = [
+    "#3B82F6",  # blue
+    "#F97316",  # orange
+    "#10B981",  # emerald
+    "#8B5CF6",  # purple
+    "#EF4444",  # red
+    "#14B8A6",  # teal
+    "#F59E0B",  # amber
+    "#EC4899",  # pink
+    "#6366F1",  # indigo
+    "#84CC16",  # lime
+    "#06B6D4",  # cyan
+    "#A855F7",  # violet
+    "#F43F5E",  # rose
+    "#22C55E",  # green
+    "#0EA5E9",  # sky
+    "#EAB308",  # yellow
+]
+
+def _sector_color_map(names: list) -> dict:
+    """Return a stable name→color map using SECTOR_PALETTE (cycled if needed)."""
+    return {n: SECTOR_PALETTE[i % len(SECTOR_PALETTE)] for i, n in enumerate(names)}
+
+# Standard heatmap colorscale used everywhere in OSCAR (yellow → red)
+HEATMAP_COLORSCALE = "YlOrRd"
+
 # Geographic coordinates for Italian cities (for map)
 SEDE_COORDS = {
     "IFM": {"lat": 45.4642, "lon": 9.1900, "city": "Milano"},
@@ -5764,47 +5791,40 @@ with _cours_ctx:
     with tab3:
         st.markdown(f"### {t('analysis_by_sector')}")
 
-        # Filters row: Year, Antenna, Sector
-        filter_col1, filter_col2, filter_col3 = st.columns(3)
+        # Year filter inherited from top-of-page year-button selection
+        df_tab3_base = df_combined[df_combined["Année"].isin(selected_years_list)].copy()
 
-        # Year selector
-        tab3_years = sorted(df_combined["Année"].unique())
-        with filter_col1:
-            if len(tab3_years) > 1:
-                selected_year_tab3 = st.selectbox(
-                    t("filter_by_period"), 
-                    tab3_years, 
-                    index=len(tab3_years)-1,
-                    key="sector_year_filter"
-                )
-                df_tab3_base = df_combined[df_combined["Année"] == selected_year_tab3]
-            else:
-                df_tab3_base = df_combined
+        # Filters row: Antenna, Sector
+        filter_col1, filter_col2 = st.columns(2)
 
         # Get list of antennas and sectors
         antennas_all = sorted(df_tab3_base["Sede"].unique().tolist())
-        sectors = sorted(df_tab3_base["Secteur"].unique().tolist())
+        sectors = sorted(df_tab3_base["Secteur"].dropna().unique().tolist())
 
         # Antenna filter
-        with filter_col2:
+        with filter_col1:
             antenna_options = [t("all")] + antennas_all
             selected_antenna_tab3 = st.selectbox(
-                t("filter_by_sede"), 
-                antenna_options, 
+                t("filter_by_sede"),
+                antenna_options,
                 key="sector_antenna_filter"
             )
 
         # Sector filter - multiselect
-        with filter_col3:
+        with filter_col2:
             selected_sectors_tab3 = st.multiselect(
-                "Filtrer par secteur", 
+                "Filtrer par secteur",
                 sectors,
                 default=[],
                 key="sector_sector_filter",
                 placeholder=t("all")
             )
 
-        # Apply antenna filter
+        # Stable sector color map (used by IFI graphs, comparison views, detail tables)
+        SECTOR_COLOR_MAP_TAB3 = _sector_color_map(sectors)
+
+        # Apply antenna filter (note: IFI section deliberately uses df_tab3_base, not df_tab3,
+        # so 'IFI - total toutes antennes confondues' is independent of the antenna filter)
         if selected_antenna_tab3 != t("all"):
             df_tab3 = df_tab3_base[df_tab3_base["Sede"] == selected_antenna_tab3]
         else:
@@ -5840,14 +5860,15 @@ with _cours_ctx:
 
         # Define indicator options
         indicator_options = [
-            t('global_view'), 
-            t('inscriptions'), 
-            t('new_students'), 
-            t('returning_students'), 
-            t('courses'), 
-            t('planned_hours'), 
-            t('student_hours'), 
-            t('revenue')
+            t('global_view'),
+            t('inscriptions'),
+            t('new_students'),
+            t('returning_students'),
+            t('courses'),
+            t('planned_hours'),
+            t('student_hours'),
+            t('revenue'),
+            t('students_per_course'),
         ]
 
         # Use radio buttons with horizontal layout for persistent selection
@@ -5864,131 +5885,173 @@ with _cours_ctx:
         st.session_state.sector_selected_indicator = indicator_options.index(selected_indicator)
 
         # Indicator configurations: (column_name, translation_key)
+        # Index 0 is the "global view" placeholder; subsequent entries match the radio order
         indicator_configs = [
-            (inscr_col, 'inscriptions'),
-            (inscr_col, 'inscriptions'),
-            ("Nouveaux inscrits", 'new_students'),
-            ("Réinscrits", 'returning_students'),
-            ("Nb. de Cours", 'courses'),
-            ("Nombre d'heures prévues", 'planned_hours'),
-            ("Nombre total d'heures vendues (heures-étudiants)", 'student_hours'),
-            ("Recettes", 'revenue')
+            (inscr_col, 'inscriptions'),                                          # 0 - global_view (placeholder)
+            (inscr_col, 'inscriptions'),                                          # 1 - inscriptions
+            ("Nouveaux inscrits", 'new_students'),                                # 2 - new_students
+            ("Réinscrits", 'returning_students'),                                 # 3 - returning_students
+            ("Nb. de Cours", 'courses'),                                          # 4 - courses
+            ("Nombre d'heures prévues", 'planned_hours'),                         # 5 - planned_hours
+            ("Nombre total d'heures vendues (heures-étudiants)", 'student_hours'), # 6 - student_hours
+            ("Recettes", 'revenue'),                                              # 7 - revenue
+            ("__filling_rate__", 'students_per_course'),                          # 8 - taux de remplissage (computed)
         ]
 
         # Function to create histogram + pie chart pair for IFI totals
-        def create_ifi_graphs(df_data, value_col, title_suffix, tab_key, single_sector=False):
-            """Create histogram + pie chart pair for IFI (all antennas combined)"""
-            ifi_summary = df_data.groupby("Secteur").agg({value_col: "sum"}).reset_index()
-            ifi_summary = ifi_summary.sort_values(value_col, ascending=False)
+        def create_ifi_graphs(df_data, value_col, title_suffix, tab_key, single_sector=False, is_filling_rate=False):
+            """Create histogram + pie chart pair for IFI (all antennas combined), using SECTOR color map."""
+            if is_filling_rate:
+                grp = df_data.groupby("Secteur").agg({inscr_col: "sum", "Nb. de Cours": "sum"}).reset_index()
+                grp[value_col] = (grp[inscr_col] / grp["Nb. de Cours"]).replace([float("inf"), float("-inf")], 0).fillna(0).round(2)
+                ifi_summary = grp[["Secteur", value_col]].sort_values(value_col, ascending=False)
+            else:
+                ifi_summary = df_data.groupby("Secteur").agg({value_col: "sum"}).reset_index()
+                ifi_summary = ifi_summary.sort_values(value_col, ascending=False)
 
-            # Larger height when sector filter is active
             chart_height = 500 if single_sector else 400
+            text_fmt = '%{text:.2f}' if is_filling_rate else '%{text:,.0f}'
 
             col1, col2 = st.columns(2)
             with col1:
-                # Histogram with darker blue scale
-                fig_bar = px.bar(ifi_summary, y="Secteur", x=value_col, orientation='h',
-                                color=value_col, color_continuous_scale=BLUE_SCALE_IFI,
-                                title=f"{title_suffix} - Histogramme",
-                                text=value_col)
-                fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig_bar.update_layout(height=chart_height, 
-                                     paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color))
+                fig_bar = px.bar(
+                    ifi_summary, y="Secteur", x=value_col, orientation='h',
+                    color="Secteur", color_discrete_map=SECTOR_COLOR_MAP_TAB3,
+                    title=f"{title_suffix} - Histogramme",
+                    text=value_col,
+                )
+                fig_bar.update_traces(texttemplate=text_fmt, textposition='outside')
+                fig_bar.update_layout(
+                    height=chart_height, showlegend=False,
+                    paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                    font=dict(color=text_color),
+                )
                 st.plotly_chart(fig_bar, use_container_width=True, key=f"ifi_bar_{tab_key}")
 
             with col2:
-                # Pie chart with high contrast blue shades
-                blue_colors = ['#0c1445', '#1e3a8a', '#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#c7d9f5', '#e8f0fc']
-                fig_pie = px.pie(ifi_summary, values=value_col, names="Secteur",
-                                title=f"{title_suffix} - Répartition",
-                                color_discrete_sequence=blue_colors)
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-                fig_pie.update_layout(height=chart_height, 
-                                     paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color))
+                if is_filling_rate:
+                    # Pie of a ratio is meaningless → use comparison bar
+                    fig_pie = px.bar(
+                        ifi_summary.sort_values(value_col, ascending=False),
+                        x="Secteur", y=value_col,
+                        color="Secteur", color_discrete_map=SECTOR_COLOR_MAP_TAB3,
+                        title=f"{title_suffix} - Comparaison",
+                        text=value_col,
+                    )
+                    fig_pie.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+                    fig_pie.update_layout(showlegend=False)
+                else:
+                    fig_pie = px.pie(
+                        ifi_summary, values=value_col, names="Secteur",
+                        title=f"{title_suffix} - Répartition",
+                        color="Secteur", color_discrete_map=SECTOR_COLOR_MAP_TAB3,
+                    )
+                    fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+                fig_pie.update_layout(
+                    height=chart_height,
+                    paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                    font=dict(color=text_color),
+                )
                 st.plotly_chart(fig_pie, use_container_width=True, key=f"ifi_pie_{tab_key}")
 
         # Function to create histogram + pie chart pair for a specific antenna
-        def create_antenna_graphs(df_data, value_col, antenna, title_suffix, tab_key):
-            """Create histogram + pie chart pair for a specific antenna with its own color"""
-            antenna_data = df_data[df_data["Sede"] == antenna].groupby("Secteur").agg({value_col: "sum"}).reset_index()
-            antenna_data = antenna_data.sort_values(value_col, ascending=False)
+        def create_antenna_graphs(df_data, value_col, antenna, title_suffix, tab_key, is_filling_rate=False):
+            """Create histogram + pie chart pair for a specific antenna, sectors coloured by SECTOR_COLOR_MAP_TAB3."""
+            sub = df_data[df_data["Sede"] == antenna]
+            if is_filling_rate:
+                grp = sub.groupby("Secteur").agg({inscr_col: "sum", "Nb. de Cours": "sum"}).reset_index()
+                grp[value_col] = (grp[inscr_col] / grp["Nb. de Cours"]).replace([float("inf"), float("-inf")], 0).fillna(0).round(2)
+                antenna_data = grp[["Secteur", value_col]].sort_values(value_col, ascending=False)
+            else:
+                antenna_data = sub.groupby("Secteur").agg({value_col: "sum"}).reset_index().sort_values(value_col, ascending=False)
 
             if antenna_data.empty:
                 st.info(f"Aucune donnée pour {antenna}")
                 return
 
-            antenna_color = SEDE_COLORS.get(antenna, "#888888")
-            # Create gradient for this antenna color
-            def hex_to_rgb(hex_color):
-                hex_color = hex_color.lstrip('#')
-                return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-
-            def rgb_to_hex(rgb):
-                return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
-
-            base_rgb = hex_to_rgb(antenna_color)
-            # Create color gradient from very dark to very light for better contrast
-            color_scale = []
-            for i in range(10):
-                factor = 0.15 + (i * 0.09)  # 0.15 to 0.96 - wider range for more contrast
-                new_rgb = tuple(min(255, int(c * factor + 255 * (1 - factor))) for c in base_rgb)
-                color_scale.append(rgb_to_hex(new_rgb))
-
-            # Larger height when sector filter is active
             chart_height = 400 if sector_filter_active else 350
+            text_fmt = '%{text:.2f}' if is_filling_rate else '%{text:,.0f}'
 
             col1, col2 = st.columns(2)
             with col1:
-                # Inverse scale: low values get medium color, high values get darker
-                fig_bar = px.bar(antenna_data, y="Secteur", x=value_col, orientation='h',
-                                color=value_col, 
-                                color_continuous_scale=[[0, color_scale[3]], [0.5, antenna_color], [1, color_scale[-1]]],
-                                title=f"{title_suffix} - {antenna}",
-                                text=value_col)
-                fig_bar.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig_bar.update_layout(height=chart_height, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color), coloraxis_showscale=False, margin=dict(l=150))
+                fig_bar = px.bar(
+                    antenna_data, y="Secteur", x=value_col, orientation='h',
+                    color="Secteur", color_discrete_map=SECTOR_COLOR_MAP_TAB3,
+                    title=f"{title_suffix} - {antenna}",
+                    text=value_col,
+                )
+                fig_bar.update_traces(texttemplate=text_fmt, textposition='outside')
+                fig_bar.update_layout(
+                    height=chart_height, showlegend=False,
+                    paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                    font=dict(color=text_color), margin=dict(l=150),
+                )
                 st.plotly_chart(fig_bar, use_container_width=True, key=f"antenna_bar_{antenna}_{tab_key}")
 
             with col2:
-                fig_pie = px.pie(antenna_data, values=value_col, names="Secteur",
-                                title=f"{title_suffix} - {antenna}",
-                                color_discrete_sequence=color_scale)
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-                fig_pie.update_layout(height=chart_height, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color))
+                if is_filling_rate:
+                    fig_pie = px.bar(
+                        antenna_data, x="Secteur", y=value_col,
+                        color="Secteur", color_discrete_map=SECTOR_COLOR_MAP_TAB3,
+                        title=f"{title_suffix} - {antenna} (comparaison)",
+                        text=value_col,
+                    )
+                    fig_pie.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+                    fig_pie.update_layout(showlegend=False)
+                else:
+                    fig_pie = px.pie(
+                        antenna_data, values=value_col, names="Secteur",
+                        title=f"{title_suffix} - {antenna}",
+                        color="Secteur", color_discrete_map=SECTOR_COLOR_MAP_TAB3,
+                    )
+                    fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+                fig_pie.update_layout(
+                    height=chart_height, paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                    font=dict(color=text_color),
+                )
                 st.plotly_chart(fig_pie, use_container_width=True, key=f"antenna_pie_{antenna}_{tab_key}")
 
         # Function to create heatmap with IFI column
-        def create_heatmap(df_data, value_col, title_suffix, tab_key, is_revenue=False):
+        def create_heatmap(df_data, value_col, title_suffix, tab_key, is_revenue=False, is_filling_rate=False):
             """Create heatmap with Total (IFI) column on the right"""
-            heatmap_base = df_data.groupby(["Secteur", "Sede"])[value_col].sum().unstack(fill_value=0)
-            # Add Total (IFI) column (sum of all antennas)
-            heatmap_base["Total (IFI)"] = heatmap_base.sum(axis=1)
+            if is_filling_rate:
+                # Filling rate = inscriptions / cours, so we aggregate sums and compute the ratio
+                grp_inscr = df_data.groupby(["Secteur", "Sede"])[inscr_col].sum().unstack(fill_value=0)
+                grp_cours = df_data.groupby(["Secteur", "Sede"])["Nb. de Cours"].sum().unstack(fill_value=0)
+                heatmap_base = (grp_inscr / grp_cours.replace(0, float("nan"))).fillna(0).round(2)
+                # IFI total filling rate = total inscriptions / total cours across all antennas
+                ifi_inscr = grp_inscr.sum(axis=1)
+                ifi_cours = grp_cours.sum(axis=1).replace(0, float("nan"))
+                heatmap_base["Total (IFI)"] = (ifi_inscr / ifi_cours).fillna(0).round(2)
+            else:
+                heatmap_base = df_data.groupby(["Secteur", "Sede"])[value_col].sum().unstack(fill_value=0)
+                heatmap_base["Total (IFI)"] = heatmap_base.sum(axis=1)
             # Reorder columns: antennas first, then Total (IFI) at the end
             ordered_cols = [a for a in ANTENNA_ORDER if a in heatmap_base.columns] + ["Total (IFI)"]
             heatmap_base = heatmap_base[[c for c in ordered_cols if c in heatmap_base.columns]]
 
-            # Create figure with go.Heatmap for more control
-            # Separate the Total column from colored data
             antenna_cols = [c for c in heatmap_base.columns if c != "Total (IFI)"]
 
             fig = make_subplots(rows=1, cols=2, column_widths=[0.85, 0.15], horizontal_spacing=0.02)
 
-            # Format template for values (euros or numbers)
-            text_template = "€%{text:,.0f}" if is_revenue else "%{text:.0f}"
-            total_template = "<b>€%{text:,.0f}</b>" if is_revenue else "<b>%{text:.0f}</b>"
+            # Format template for values
+            if is_filling_rate:
+                text_template = "%{text:.2f}"
+                total_template = "<b>%{text:.2f}</b>"
+            elif is_revenue:
+                text_template = "€%{text:,.0f}"
+                total_template = "<b>€%{text:,.0f}</b>"
+            else:
+                text_template = "%{text:.0f}"
+                total_template = "<b>%{text:.0f}</b>"
 
-            # Main heatmap (antennas only)
             z_main = heatmap_base[antenna_cols].values
             fig.add_trace(
                 go.Heatmap(
                     z=z_main,
                     x=antenna_cols,
                     y=heatmap_base.index.tolist(),
-                    colorscale="YlOrRd",
+                    colorscale=HEATMAP_COLORSCALE,
                     text=z_main,
                     texttemplate=text_template,
                     textfont=dict(size=14),
@@ -6031,83 +6094,118 @@ with _cours_ctx:
             st.plotly_chart(fig, use_container_width=True, key=f"heatmap_{tab_key}")
 
         # Function to create sector comparison histogram (when sector(s) are selected)
-        def create_sector_antenna_comparison(df_data, value_col, sector_names, title_suffix, tab_key, is_multi=False):
-            """Create histogram + pie chart comparing antennas for selected sector(s)"""
-            if isinstance(sector_names, str):
-                sector_names = [sector_names]
+        def _build_antenna_summary(df_subset, value_col, is_filling_rate):
+            if is_filling_rate:
+                _grp = df_subset.groupby("Sede").agg({inscr_col: "sum", "Nb. de Cours": "sum"}).reset_index()
+                _grp[value_col] = (_grp[inscr_col] / _grp["Nb. de Cours"]).replace([float("inf"), float("-inf")], 0).fillna(0).round(2)
+                return _grp[["Sede", value_col]]
+            return df_subset.groupby("Sede").agg({value_col: "sum"}).reset_index()
 
-            sector_data = df_data[df_data["Secteur"].isin(sector_names)].copy()
-            antenna_summary = sector_data.groupby("Sede").agg({value_col: "sum"}).reset_index()
-
-            # For histogram: include IFI total
-            ifi_total = sector_data[value_col].sum()
-            ifi_row = pd.DataFrame([{"Sede": "IFI", value_col: ifi_total}])
-            antenna_summary_with_ifi = pd.concat([ifi_row, antenna_summary], ignore_index=True)
-
-            # Reorder: IFI first, then IFM, IFF, IFN, IFP
-            sede_order = ["IFI"] + ANTENNA_ORDER
-            antenna_summary_with_ifi["Sede"] = pd.Categorical(antenna_summary_with_ifi["Sede"], categories=sede_order, ordered=True)
-            antenna_summary_with_ifi = antenna_summary_with_ifi.sort_values("Sede")
-
-            # Apply antenna colors
-            antenna_summary_with_ifi["color"] = antenna_summary_with_ifi["Sede"].map(lambda x: SEDE_COLORS.get(x, "#888888"))
-
-            # Title based on selection
-            if is_multi or len(sector_names) > 1:
-                title_label = f"Sélection multiple ({'/'.join(sector_names[:3])}{'...' if len(sector_names) > 3 else ''})"
-            else:
-                title_label = sector_names[0]
-
-            # Larger height when sector filter is active
+        def _draw_antenna_compare(antenna_summary, value_col, title, tab_key_suffix, is_filling_rate):
+            antenna_summary = antenna_summary.copy()
             chart_height = 450
+            text_fmt = '%{text:.2f}' if is_filling_rate else '%{text:,.0f}'
+
+            # Histogram with IFI as a leading bar (skip IFI for filling rate aggregations because
+            # ratio across an arbitrary subset isn't a meaningful "total")
+            if is_filling_rate:
+                summary_with_ifi = antenna_summary.copy()
+                summary_with_ifi["Sede"] = pd.Categorical(summary_with_ifi["Sede"], categories=ANTENNA_ORDER, ordered=True)
+                summary_with_ifi = summary_with_ifi.sort_values("Sede")
+            else:
+                ifi_total = antenna_summary[value_col].sum()
+                summary_with_ifi = pd.concat(
+                    [pd.DataFrame([{"Sede": "IFI", value_col: ifi_total}]), antenna_summary],
+                    ignore_index=True,
+                )
+                summary_with_ifi["Sede"] = pd.Categorical(summary_with_ifi["Sede"], categories=["IFI"] + ANTENNA_ORDER, ordered=True)
+                summary_with_ifi = summary_with_ifi.sort_values("Sede")
 
             col1, col2 = st.columns(2)
             with col1:
-                fig = px.bar(antenna_summary_with_ifi, x="Sede", y=value_col,
-                            color="Sede", color_discrete_map=SEDE_COLORS,
-                            title=f"{title_suffix} - {title_label} (Histogramme)",
-                            text=value_col)
-                fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-                fig.update_layout(height=chart_height, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                 font=dict(color=text_color), showlegend=False)
-                st.plotly_chart(fig, use_container_width=True, key=f"sector_compare_bar_{tab_key}")
-
+                fig = px.bar(
+                    summary_with_ifi, x="Sede", y=value_col,
+                    color="Sede", color_discrete_map=SEDE_COLORS,
+                    title=f"{title} (Histogramme)",
+                    text=value_col,
+                )
+                fig.update_traces(texttemplate=text_fmt, textposition='outside')
+                fig.update_layout(
+                    height=chart_height, paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                    font=dict(color=text_color), showlegend=False,
+                )
+                st.plotly_chart(fig, use_container_width=True, key=f"sector_compare_bar_{tab_key_suffix}")
             with col2:
-                # Pie chart WITHOUT IFI (only antennas, since IFI = sum of all)
-                # Reorder antenna_summary for pie chart
-                antenna_summary["Sede"] = pd.Categorical(antenna_summary["Sede"], categories=ANTENNA_ORDER, ordered=True)
-                antenna_summary = antenna_summary.sort_values("Sede")
+                if is_filling_rate:
+                    fig_pie = px.bar(
+                        antenna_summary, x="Sede", y=value_col,
+                        color="Sede", color_discrete_map=SEDE_COLORS,
+                        title=f"{title} (Comparaison)",
+                        text=value_col,
+                    )
+                    fig_pie.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+                    fig_pie.update_layout(showlegend=False)
+                else:
+                    antenna_summary_pie = antenna_summary.copy()
+                    antenna_summary_pie["Sede"] = pd.Categorical(antenna_summary_pie["Sede"], categories=ANTENNA_ORDER, ordered=True)
+                    antenna_summary_pie = antenna_summary_pie.sort_values("Sede")
+                    fig_pie = px.pie(
+                        antenna_summary_pie, values=value_col, names="Sede",
+                        title=f"{title} (Répartition)",
+                        color="Sede", color_discrete_map=SEDE_COLORS,
+                    )
+                    fig_pie.update_traces(textposition='inside', textinfo='percent+label+value')
+                fig_pie.update_layout(
+                    height=chart_height, paper_bgcolor=bg_color, plot_bgcolor=bg_color,
+                    font=dict(color=text_color),
+                )
+                st.plotly_chart(fig_pie, use_container_width=True, key=f"sector_compare_pie_{tab_key_suffix}")
 
-                fig_pie = px.pie(antenna_summary, values=value_col, names="Sede",
-                                title=f"{title_suffix} - {title_label} (Répartition)",
-                                color="Sede", color_discrete_map=SEDE_COLORS)
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label+value')
-                fig_pie.update_layout(height=chart_height, paper_bgcolor=bg_color, plot_bgcolor=bg_color, 
-                                     font=dict(color=text_color))
-                st.plotly_chart(fig_pie, use_container_width=True, key=f"sector_compare_pie_{tab_key}")
+        def create_sector_antenna_comparison(df_data, value_col, sector_names, title_suffix, tab_key, is_multi=False, is_filling_rate=False):
+            """Create histogram + pie chart comparing antennas for selected sector(s).
+            When several sectors are selected, additionally render one row per individual sector.
+            """
+            if isinstance(sector_names, str):
+                sector_names = [sector_names]
+            sector_data = df_data[df_data["Secteur"].isin(sector_names)].copy()
+
+            # ── Aggregated view: all selected sectors summed by antenna (kept – useful in some cases) ──
+            label_agg = (
+                f"Sélection multiple ({'/'.join(sector_names[:3])}{'...' if len(sector_names) > 3 else ''})"
+                if (is_multi or len(sector_names) > 1) else sector_names[0]
+            )
+            antenna_summary_agg = _build_antenna_summary(sector_data, value_col, is_filling_rate)
+            _draw_antenna_compare(antenna_summary_agg, value_col, f"{title_suffix} - {label_agg}", f"{tab_key}_agg", is_filling_rate)
+
+            # ── Per-sector breakdown rows (only when several sectors are selected) ──
+            if is_multi and len(sector_names) > 1:
+                st.markdown("##### Détail secteur par secteur")
+                for _idx, _sec in enumerate(sector_names):
+                    _df_one = df_data[df_data["Secteur"] == _sec]
+                    _antenna_one = _build_antenna_summary(_df_one, value_col, is_filling_rate)
+                    if _antenna_one.empty:
+                        continue
+                    st.markdown(f"**{_sec}**")
+                    _draw_antenna_compare(_antenna_one, value_col, f"{title_suffix} - {_sec}", f"{tab_key}_one_{_idx}", is_filling_rate)
+                    st.markdown("")
 
         # Function to render full view for an indicator (with proper order based on filter)
-        def render_indicator_view(df_data, value_col, title_suffix, tab_key, is_global_view=False, is_revenue=False):
+        def render_indicator_view(df_data, value_col, title_suffix, tab_key, is_global_view=False, is_revenue=False, is_filling_rate=False):
             """Render the full view for an indicator"""
-
-            # Chart height depends on sector filter
-            chart_height = 450 if sector_filter_active else 400
 
             # If sector(s) selected, show filtered content FIRST
             if sector_filter_active:
-                # SECTION 1: Filtered sector(s) graphs
                 df_filtered = df_data[df_data["Secteur"].isin(selected_sectors_tab3)]
-
                 filter_label = '/'.join(selected_sectors_tab3[:3]) + ('...' if len(selected_sectors_tab3) > 3 else '')
                 st.markdown(f"#### Sélection : {filter_label}")
 
                 # Filtered IFI graphs
-                create_ifi_graphs(df_filtered, value_col, title_suffix, f"{tab_key}_filtered", single_sector=True)
+                create_ifi_graphs(df_filtered, value_col, title_suffix, f"{tab_key}_filtered", single_sector=True, is_filling_rate=is_filling_rate)
                 st.markdown("---")
 
                 # Filtered heatmap
                 st.markdown(f"#### {t('heatmap_title')} - {filter_label}")
-                create_heatmap(df_filtered, value_col, title_suffix, f"{tab_key}_filtered_heatmap", is_revenue=is_revenue)
+                create_heatmap(df_filtered, value_col, title_suffix, f"{tab_key}_filtered_heatmap", is_revenue=is_revenue, is_filling_rate=is_filling_rate)
                 st.markdown("---")
 
                 # Comparison by antenna for selected sector(s)
@@ -6118,26 +6216,29 @@ with _cours_ctx:
                     comparison_title += selected_sectors_tab3[0]
                 st.markdown(f"<div id='comparison-section'></div>", unsafe_allow_html=True)
                 st.markdown(f"#### {comparison_title}")
-                create_sector_antenna_comparison(df_tab3_base, value_col, selected_sectors_tab3, title_suffix, f"{tab_key}_sector_cmp", is_multi=is_multi_sector)
+                create_sector_antenna_comparison(
+                    df_tab3_base, value_col, selected_sectors_tab3, title_suffix,
+                    f"{tab_key}_sector_cmp", is_multi=is_multi_sector, is_filling_rate=is_filling_rate,
+                )
                 st.markdown("---")
 
             # IFI - Total toutes antennes confondues
+            # IMPORTANT: this section ALWAYS uses df_tab3_base (all antennas), regardless of the
+            # antenna filter selected above — it's the IFI-wide reference.
             st.markdown(f"#### {t('ifi_all_antennas')}")
-            create_ifi_graphs(df_data, value_col, title_suffix, tab_key, single_sector=sector_filter_active)
+            create_ifi_graphs(df_tab3_base, value_col, title_suffix, tab_key, single_sector=sector_filter_active, is_filling_rate=is_filling_rate)
             st.markdown("---")
 
-            # Heatmap with dynamic title
+            # Heatmap (always full IFI view by antenna × sector)
             st.markdown(f"#### {t('heatmap_title')} - {title_suffix}")
-            create_heatmap(df_tab3_base, value_col, title_suffix, f"{tab_key}_heatmap", is_revenue=is_revenue)
+            create_heatmap(df_tab3_base, value_col, title_suffix, f"{tab_key}_heatmap", is_revenue=is_revenue, is_filling_rate=is_filling_rate)
             st.markdown("---")
 
-            # SECTION: Détails par antenne
+            # SECTION: Détails par antenne (respects antenna filter via df_data)
             st.markdown(f"#### {t('details_by_antenna')}")
-
-            # Display antennas in order: Milan, Florence, Naples, Palermo
             for antenna in ANTENNA_ORDER:
                 if antenna in df_data["Sede"].unique():
-                    create_antenna_graphs(df_data, value_col, antenna, title_suffix, f"{tab_key}_{antenna}")
+                    create_antenna_graphs(df_data, value_col, antenna, title_suffix, f"{tab_key}_{antenna}", is_filling_rate=is_filling_rate)
 
         # Render content based on selected indicator (using session state instead of tabs)
         selected_idx = st.session_state.sector_selected_indicator
@@ -6146,24 +6247,27 @@ with _cours_ctx:
             # Vue globale - Show all IFI graphs for all indicators
             st.markdown("#### Vue d'ensemble - Tous les indicateurs (IFI)")
 
-            # Skip index 0 (global_view itself) and index 1 (duplicate inscriptions)
             for i, (value_col, trans_key) in enumerate(indicator_configs[1:], start=1):
                 if i == 1:  # Skip duplicate inscriptions at index 1
                     continue
-                if value_col in df_tab3.columns:
+                _is_fill = (trans_key == 'students_per_course')
+                _ok = _is_fill or (value_col in df_tab3.columns)
+                if _ok:
                     st.markdown(f"##### {t(trans_key)}")
-                    create_ifi_graphs(df_tab3, value_col, t(trans_key), f"global_{trans_key}", single_sector=False)
+                    create_ifi_graphs(df_tab3_base, value_col, t(trans_key), f"global_{trans_key}", single_sector=False, is_filling_rate=_is_fill)
                     st.markdown("---")
         else:
             # Render specific indicator
             value_col, trans_key = indicator_configs[selected_idx]
-            if value_col in df_tab3.columns:
-                # Check if this is revenue for euro formatting
-                is_revenue = (trans_key == 'revenue')
+            is_revenue = (trans_key == 'revenue')
+            is_filling_rate = (trans_key == 'students_per_course')
+            _ok = is_filling_rate or (value_col in df_tab3.columns)
+            if _ok:
                 render_indicator_view(
-                    df_tab3, value_col, t(trans_key), 
+                    df_tab3, value_col, t(trans_key),
                     f"{trans_key}_{selected_idx}",
-                    is_revenue=is_revenue
+                    is_revenue=is_revenue,
+                    is_filling_rate=is_filling_rate,
                 )
             else:
                 st.warning(f"Colonne '{value_col}' non disponible")
@@ -6172,29 +6276,16 @@ with _cours_ctx:
     with tab3_ss:
         st.markdown(f"### {t('analysis_by_sous_secteur')}")
 
-        # Filters row: Year, Antenna, Sous-secteur
-        filter_col1_ss, filter_col2_ss, filter_col3_ss = st.columns(3)
+        # Year filter inherited from top-of-page
+        df_tab3_ss_base = df_combined[df_combined["Année"].isin(selected_years_list)].copy()
 
-        # Year selector
-        tab3_ss_years = sorted(df_combined["Année"].unique())
-        with filter_col1_ss:
-            if len(tab3_ss_years) > 1:
-                selected_year_tab3_ss = st.selectbox(
-                    t("filter_by_period"), 
-                    tab3_ss_years, 
-                    index=len(tab3_ss_years)-1,
-                    key="sous_secteur_year_filter"
-                )
-                df_tab3_ss_base = df_combined[df_combined["Année"] == selected_year_tab3_ss]
-            else:
-                df_tab3_ss_base = df_combined
+        # Filters row: Antenna, Sous-secteur
+        filter_col2_ss, filter_col3_ss = st.columns(2)
 
         if "Sous-secteur" in df_tab3_ss_base.columns:
-            # Get list of antennas and sous-secteurs
             antennas_all_ss = sorted(df_tab3_ss_base["Sede"].unique().tolist())
             sous_secteurs = sorted(df_tab3_ss_base["Sous-secteur"].dropna().unique().tolist())
 
-            # Antenna filter
             with filter_col2_ss:
                 antenna_options_ss = [t("all")] + antennas_all_ss
                 selected_antenna_ss = st.selectbox(
@@ -6295,8 +6386,8 @@ with _cours_ctx:
 
                 text_template = "€%{text:,.0f}" if is_revenue else "%{text:.0f}"
 
-                fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Sous-secteur", color=title_suffix), 
-                               aspect="auto", color_continuous_scale=[[0, "#d9f99d"], [0.25, "#a3e635"], [0.5, "#65a30d"], [0.75, "#4d7c0f"], [1, "#3f6212"]], text_auto=True)
+                fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Sous-secteur", color=title_suffix),
+                               aspect="auto", color_continuous_scale=HEATMAP_COLORSCALE, text_auto=True)
                 fig.update_layout(height=600, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                                  title=f"Heatmap - {title_suffix}",
                                  xaxis=dict(side="top", tickfont=dict(size=14)),
@@ -6480,22 +6571,11 @@ with _cours_ctx:
     with tab3_mc:
         st.markdown(f"### {t('analysis_by_macro_category')}")
 
-        # Filters row: Year, Antenna, Macro-catégorie
-        filter_col1_mc, filter_col2_mc, filter_col3_mc = st.columns(3)
+        # Year filter inherited from top-of-page
+        df_tab3_mc_base = df_combined[df_combined["Année"].isin(selected_years_list)].copy()
 
-        # Year selector
-        tab3_mc_years = sorted(df_combined["Année"].unique())
-        with filter_col1_mc:
-            if len(tab3_mc_years) > 1:
-                selected_year_tab3_mc = st.selectbox(
-                    t("filter_by_period"), 
-                    tab3_mc_years, 
-                    index=len(tab3_mc_years)-1,
-                    key="macro_category_year_filter"
-                )
-                df_tab3_mc_base = df_combined[df_combined["Année"] == selected_year_tab3_mc]
-            else:
-                df_tab3_mc_base = df_combined
+        # Filters row: Antenna, Macro-catégorie
+        filter_col2_mc, filter_col3_mc = st.columns(2)
 
         if "Macro-catégorie" in df_tab3_mc_base.columns:
             # Get list of antennas and macro-catégories
@@ -6603,8 +6683,8 @@ with _cours_ctx:
 
                 text_template = "€%{text:,.0f}" if is_revenue else "%{text:.0f}"
 
-                fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Macro-catégorie", color=title_suffix), 
-                               aspect="auto", color_continuous_scale=[[0, "#fbcfe8"], [0.25, "#f472b6"], [0.5, "#db2777"], [0.75, "#be185d"], [1, "#9d174d"]], text_auto=True)
+                fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Macro-catégorie", color=title_suffix),
+                               aspect="auto", color_continuous_scale=HEATMAP_COLORSCALE, text_auto=True)
                 fig.update_layout(height=600, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                                  title=f"Heatmap - {title_suffix}",
                                  xaxis=dict(side="top", tickfont=dict(size=14)),
@@ -6788,24 +6868,12 @@ with _cours_ctx:
     with tab3b:
         st.markdown(f"### {t('analysis_by_category')}")
 
-        # Filters row: Year, Antenna, Category
-        filter_col1_cat, filter_col2_cat, filter_col3_cat = st.columns(3)
+        # Year filter inherited from top-of-page
+        df_tab3b_base = df_combined[df_combined["Année"].isin(selected_years_list)].copy()
 
-        # Year selector
-        tab3b_years = sorted(df_combined["Année"].unique())
-        with filter_col1_cat:
-            if len(tab3b_years) > 1:
-                selected_year_tab3b = st.selectbox(
-                    t("filter_by_period"), 
-                    tab3b_years, 
-                    index=len(tab3b_years)-1,
-                    key="category_year_filter"
-                )
-                df_tab3b_base = df_combined[df_combined["Année"] == selected_year_tab3b]
-            else:
-                df_tab3b_base = df_combined
+        # Filters row: Antenna, Category
+        filter_col2_cat, filter_col3_cat = st.columns(2)
 
-        # Check if "Catégorie de cours" column exists
         if "Catégorie de cours" in df_tab3b_base.columns:
             # Get list of antennas and categories
             antennas_all_cat = sorted(df_tab3b_base["Sede"].unique().tolist())
@@ -6929,8 +6997,8 @@ with _cours_ctx:
                 # Format template
                 text_template = "€%{text:,.0f}" if is_revenue else "%{text:.0f}"
 
-                fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Catégorie", color=title_suffix), 
-                               aspect="auto", color_continuous_scale=[[0, "#fef3c7"], [0.25, "#fcd34d"], [0.5, "#f97316"], [0.75, "#ea580c"], [1, "#c2410c"]], text_auto=True)
+                fig = px.imshow(heatmap_data, labels=dict(x="Sede", y="Catégorie", color=title_suffix),
+                               aspect="auto", color_continuous_scale=HEATMAP_COLORSCALE, text_auto=True)
                 fig.update_layout(height=600, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color),
                                  xaxis=dict(side="top", tickfont=dict(size=14)),
                                  yaxis=dict(tickfont=dict(size=10)))
@@ -7467,12 +7535,13 @@ with _cours_ctx:
 
                         st.markdown("---")
 
-    # TAB EVOLUTIONS: Multi-indicator evolution curves
+    # TAB EVOLUTIONS: Per-indicator evolution curves with optional Recettes overlay
     with tab_evo:
         st.markdown(f"### {t('evolution_title')}")
 
-        # Check if we have multiple years
-        evo_years = sorted(df_combined["Année"].unique())
+        # Year filter inherited from top-of-page selection
+        df_evo_base = df_combined[df_combined["Année"].isin(selected_years_list)].copy()
+        evo_years = sorted(df_evo_base["Année"].unique())
 
         if len(evo_years) < 2:
             st.warning(t('need_multiple_years'))
@@ -7482,38 +7551,38 @@ with _cours_ctx:
             filter_cols = st.columns(4)
 
             with filter_cols[0]:
-                evo_sectors = [t("all")] + sorted(df_combined["Secteur"].dropna().unique().tolist())
+                evo_sectors = [t("all")] + sorted(df_evo_base["Secteur"].dropna().unique().tolist())
                 evo_selected_sector = st.selectbox(t("filter_by_sector"), evo_sectors, key="evo_sector_filter")
 
             with filter_cols[1]:
                 if evo_selected_sector != t("all"):
-                    evo_ss_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Sous-secteur"].dropna().unique().tolist())
+                    evo_ss_options = [t("all")] + sorted(df_evo_base[df_evo_base["Secteur"] == evo_selected_sector]["Sous-secteur"].dropna().unique().tolist())
                 else:
-                    evo_ss_options = [t("all")] + sorted(df_combined["Sous-secteur"].dropna().unique().tolist())
+                    evo_ss_options = [t("all")] + sorted(df_evo_base["Sous-secteur"].dropna().unique().tolist())
                 evo_selected_ss = st.selectbox(t("filter_by_sous_secteur"), evo_ss_options, key="evo_ss_filter")
 
             with filter_cols[2]:
                 if evo_selected_ss != t("all"):
-                    evo_mc_options = [t("all")] + sorted(df_combined[df_combined["Sous-secteur"] == evo_selected_ss]["Macro-catégorie"].dropna().unique().tolist())
+                    evo_mc_options = [t("all")] + sorted(df_evo_base[df_evo_base["Sous-secteur"] == evo_selected_ss]["Macro-catégorie"].dropna().unique().tolist())
                 elif evo_selected_sector != t("all"):
-                    evo_mc_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Macro-catégorie"].dropna().unique().tolist())
+                    evo_mc_options = [t("all")] + sorted(df_evo_base[df_evo_base["Secteur"] == evo_selected_sector]["Macro-catégorie"].dropna().unique().tolist())
                 else:
-                    evo_mc_options = [t("all")] + sorted(df_combined["Macro-catégorie"].dropna().unique().tolist())
+                    evo_mc_options = [t("all")] + sorted(df_evo_base["Macro-catégorie"].dropna().unique().tolist())
                 evo_selected_mc = st.selectbox(t("filter_by_macro_category"), evo_mc_options, key="evo_mc_filter")
 
             with filter_cols[3]:
                 if evo_selected_mc != t("all"):
-                    evo_cat_options = [t("all")] + sorted(df_combined[df_combined["Macro-catégorie"] == evo_selected_mc]["Catégorie de cours"].dropna().unique().tolist())
+                    evo_cat_options = [t("all")] + sorted(df_evo_base[df_evo_base["Macro-catégorie"] == evo_selected_mc]["Catégorie de cours"].dropna().unique().tolist())
                 elif evo_selected_ss != t("all"):
-                    evo_cat_options = [t("all")] + sorted(df_combined[df_combined["Sous-secteur"] == evo_selected_ss]["Catégorie de cours"].dropna().unique().tolist())
+                    evo_cat_options = [t("all")] + sorted(df_evo_base[df_evo_base["Sous-secteur"] == evo_selected_ss]["Catégorie de cours"].dropna().unique().tolist())
                 elif evo_selected_sector != t("all"):
-                    evo_cat_options = [t("all")] + sorted(df_combined[df_combined["Secteur"] == evo_selected_sector]["Catégorie de cours"].dropna().unique().tolist())
+                    evo_cat_options = [t("all")] + sorted(df_evo_base[df_evo_base["Secteur"] == evo_selected_sector]["Catégorie de cours"].dropna().unique().tolist())
                 else:
-                    evo_cat_options = [t("all")] + sorted(df_combined["Catégorie de cours"].dropna().unique().tolist())
+                    evo_cat_options = [t("all")] + sorted(df_evo_base["Catégorie de cours"].dropna().unique().tolist())
                 evo_selected_cat = st.selectbox(t("filter_by_category"), evo_cat_options, key="evo_cat_filter")
 
             # Apply filters
-            df_evo = df_combined.copy()
+            df_evo = df_evo_base.copy()
             if evo_selected_sector != t("all"):
                 df_evo = df_evo[df_evo["Secteur"] == evo_selected_sector]
             if evo_selected_ss != t("all"):
@@ -7536,59 +7605,87 @@ with _cours_ctx:
             if active_filters:
                 st.info(f"Filtres actifs: {' | '.join(active_filters)}")
 
-            # Define colors for indicators
-            EVO_COLORS = {
-                "Inscriptions": "#6366f1",  # Indigo
-                "Heures": "#10b981",  # Green
-                "Recettes": "#f59e0b"  # Orange
-            }
+            # ── Per-indicator radio (one chart per indicator instead of three squashed together) ──
+            evo_indicator_options = [
+                ("Inscriptions",        inscr_col,                                              "#6366F1", False, False),
+                ("Cours",               "Nb. de Cours",                                         "#10B981", False, False),
+                ("Heures prévues",      "Nombre d'heures prévues",                              "#22C55E", False, False),
+                ("Heures-élèves",       "Nombre total d'heures vendues (heures-étudiants)",     "#14B8A6", False, False),
+                ("Nouveaux inscrits",   "Nouveaux inscrits",                                    "#06B6D4", False, False),
+                ("Réinscrits",          "Réinscrits",                                           "#EC4899", False, False),
+                ("Taux de remplissage", "__filling_rate__",                                     "#F43F5E", False, True),
+                ("Recettes",            "Recettes",                                             "#F59E0B", True,  False),
+            ]
+            evo_indicator_labels = [opt[0] for opt in evo_indicator_options]
 
-            # Function to create evolution chart
+            ctrl_left, ctrl_right = st.columns([3, 1])
+            with ctrl_left:
+                evo_selected_indicator = st.radio(
+                    "Indicateur",
+                    evo_indicator_labels,
+                    horizontal=True,
+                    key="evo_indicator_radio",
+                )
+            with ctrl_right:
+                evo_show_revenue = st.checkbox(
+                    "Superposer Recettes (corrélation)",
+                    value=True,
+                    key="evo_show_revenue_overlay",
+                    help="Affiche la courbe Recettes en superposition sur un axe secondaire pour repérer les corrélations.",
+                )
+
+            _evo_idx = evo_indicator_labels.index(evo_selected_indicator)
+            _ind_label, _ind_col, _ind_color, _ind_is_revenue, _ind_is_filling_rate = evo_indicator_options[_evo_idx]
+            _disable_overlay_for_revenue = (_ind_is_revenue or _ind_is_filling_rate)
+
             def create_evolution_chart(df_data, title, chart_key):
-                # Group by year
-                yearly_data = df_data.groupby("Année").agg({
-                    inscr_col: "sum",
-                    "Nombre d'heures prévues": "sum",
-                    "Recettes": "sum"
-                }).reset_index()
-                yearly_data.columns = ["Année", "Inscriptions", "Heures", "Recettes"]
-                yearly_data = yearly_data.sort_values("Année")
+                # Aggregate per year
+                _agg = {inscr_col: "sum", "Nb. de Cours": "sum"}
+                if _ind_col not in ("__filling_rate__",) and _ind_col not in _agg:
+                    _agg[_ind_col] = "sum"
+                if "Recettes" in df_data.columns:
+                    _agg["Recettes"] = "sum"
+                yearly_data = df_data.groupby("Année").agg(_agg).reset_index().sort_values("Année")
 
-                # Create figure with secondary y-axis
+                # Compute the indicator's series
+                if _ind_is_filling_rate:
+                    yearly_data["_y"] = (yearly_data[inscr_col] / yearly_data["Nb. de Cours"]).replace([float("inf"), float("-inf")], 0).fillna(0).round(2)
+                    _y_text = yearly_data["_y"].apply(lambda x: f"{x:.2f}")
+                elif _ind_is_revenue:
+                    yearly_data["_y"] = yearly_data["Recettes"]
+                    _y_text = yearly_data["_y"].apply(lambda x: f"€{x:,.0f}")
+                else:
+                    yearly_data["_y"] = yearly_data[_ind_col]
+                    _y_text = yearly_data["_y"].apply(lambda x: f"{x:,.0f}")
+
                 fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-                # Add traces
                 fig.add_trace(
-                    go.Scatter(x=yearly_data["Année"].astype(str), y=yearly_data["Inscriptions"], 
-                              name="Inscriptions", mode="lines+markers+text",
-                              line=dict(color=EVO_COLORS["Inscriptions"], width=3),
-                              marker=dict(size=10),
-                              text=yearly_data["Inscriptions"].apply(lambda x: f"{x:,.0f}"),
-                              textposition="top center"),
-                    secondary_y=False
+                    go.Scatter(
+                        x=yearly_data["Année"].astype(str), y=yearly_data["_y"],
+                        name=_ind_label, mode="lines+markers+text",
+                        line=dict(color=_ind_color, width=3),
+                        marker=dict(size=10),
+                        text=_y_text, textposition="top center",
+                    ),
+                    secondary_y=False,
                 )
 
-                fig.add_trace(
-                    go.Scatter(x=yearly_data["Année"].astype(str), y=yearly_data["Heures"], 
-                              name="Heures", mode="lines+markers+text",
-                              line=dict(color=EVO_COLORS["Heures"], width=3),
-                              marker=dict(size=10),
-                              text=yearly_data["Heures"].apply(lambda x: f"{x:,.0f}"),
-                              textposition="top center"),
-                    secondary_y=False
-                )
+                # Recettes overlay (skipped if the indicator IS already revenue/filling-rate-on-revenue)
+                if evo_show_revenue and not _disable_overlay_for_revenue and "Recettes" in yearly_data.columns:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=yearly_data["Année"].astype(str), y=yearly_data["Recettes"],
+                            name="Recettes (€)", mode="lines+markers+text",
+                            line=dict(color="#F59E0B", width=2, dash="dash"),
+                            marker=dict(size=8),
+                            text=yearly_data["Recettes"].apply(lambda x: f"€{x:,.0f}"),
+                            textposition="bottom center",
+                            opacity=0.85,
+                        ),
+                        secondary_y=True,
+                    )
 
-                fig.add_trace(
-                    go.Scatter(x=yearly_data["Année"].astype(str), y=yearly_data["Recettes"], 
-                              name="Recettes (€)", mode="lines+markers+text",
-                              line=dict(color=EVO_COLORS["Recettes"], width=3, dash="dash"),
-                              marker=dict(size=10),
-                              text=yearly_data["Recettes"].apply(lambda x: f"€{x:,.0f}"),
-                              textposition="top center"),
-                    secondary_y=True
-                )
-
-                # Update layout
                 fig.update_layout(
                     title=dict(text=title, font=dict(size=16)),
                     height=400,
@@ -7597,21 +7694,23 @@ with _cours_ctx:
                     font=dict(color=text_color),
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
                     margin=dict(t=80, b=40, l=60, r=60),
-                    hovermode="x unified"
+                    hovermode="x unified",
                 )
-
                 fig.update_xaxes(title_text="Année", tickmode="linear")
-                fig.update_yaxes(title_text="Inscriptions / Heures", secondary_y=False)
-                fig.update_yaxes(title_text="Recettes (€)", secondary_y=True)
+                fig.update_yaxes(title_text=_ind_label, secondary_y=False)
+                if evo_show_revenue and not _disable_overlay_for_revenue:
+                    fig.update_yaxes(title_text="Recettes (€)", secondary_y=True)
+                else:
+                    fig.update_yaxes(showticklabels=False, secondary_y=True)
 
                 st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
             # LEVEL 1: IFI Total
-            with st.expander(f"{t('evolution_ifi')}", expanded=True):
-                create_evolution_chart(df_evo, t('evolution_ifi'), "evo_ifi_chart")
+            with st.expander(f"{t('evolution_ifi')} — {_ind_label}", expanded=True):
+                create_evolution_chart(df_evo, f"{t('evolution_ifi')} — {_ind_label}", "evo_ifi_chart")
 
             # LEVEL 2: By Antenna
-            with st.expander(f"{t('evolution_by_antenna')}", expanded=True):
+            with st.expander(f"{t('evolution_by_antenna')} — {_ind_label}", expanded=True):
                 antenna_cols = st.columns(2)
                 for idx, antenna in enumerate(ANTENNA_ORDER):
                     df_antenna = df_evo[df_evo["Sede"] == antenna]
@@ -7624,18 +7723,8 @@ with _cours_ctx:
         st.markdown(f"### {t('profitability')}")
         st.markdown(f"*{t('revenue_per_inscr')} = ARPI (Average Revenue Per Inscription)*")
 
-        # Year selector for this tab
-        tab5_years = sorted(df_combined["Année"].unique())
-        if len(tab5_years) > 1:
-            selected_year_tab5 = st.selectbox(
-                t("filter_by_period"), 
-                tab5_years, 
-                index=len(tab5_years)-1,  # Default to most recent year
-                key="profit_year_filter"
-            )
-            df_tab5 = df_combined[df_combined["Année"] == selected_year_tab5]
-        else:
-            df_tab5 = df_combined
+        # Year filter inherited from top-of-page year-button selection
+        df_tab5 = df_combined[df_combined["Année"].isin(selected_years_list)].copy()
 
         by_sector, by_sede, by_sector_sede = calculate_profitability(df_tab5)
 
@@ -7697,10 +7786,10 @@ with _cours_ctx:
         st.markdown(f"#### Heatmap ARPI: Secteur × Sede")
         arpi_pivot = by_sector_sede.pivot(index="Secteur", columns="Sede", values="ARPI").fillna(0)
         fig = px.imshow(
-            arpi_pivot, 
+            arpi_pivot,
             labels=dict(x="Sede", y="Secteur", color="€/inscr"),
-            aspect="auto", 
-            color_continuous_scale="Greens",
+            aspect="auto",
+            color_continuous_scale=HEATMAP_COLORSCALE,
             text_auto=".2f"
         )
         fig.update_layout(height=500, paper_bgcolor=bg_color, plot_bgcolor=bg_color, font=dict(color=text_color))
