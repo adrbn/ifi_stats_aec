@@ -4793,62 +4793,31 @@ with st.sidebar:
         if HAS_PRELOADED_DATA:
             st.markdown(f"**📦 {t('preloaded_files')}**")
 
-            # --- Cours : choix Ancien vs Nouveau format ---
-            load_categories = False           # legacy preloaded enabled?
-            load_new_cours_server = False     # new-format preloaded enabled?
+            # --- Cours : un seul toggle, format auto-détecté ---
+            # If both old and new server-side data exist, NEW takes precedence
+            # (avoids silent double-counting and aligns with auto-load behavior).
+            load_categories = False           # legacy ZIPs enabled?
+            load_new_cours_server = False     # new-format files enabled?
             selected_years = []
             selected_new_cours_paths = []
             if PRELOADED_FILES or PRELOADED_NEW_COURS:
-                st.markdown("**📚 Cours**")
-                # Default to "Nouveau" when available, otherwise fall back to "Ancien"
-                _src_default = "Nouveau (recommandé)" if PRELOADED_NEW_COURS else "Ancien (legacy)"
-                _src_options = []
-                if PRELOADED_FILES:
-                    _src_options.append("Ancien (legacy)")
                 if PRELOADED_NEW_COURS:
-                    _src_options.append("Nouveau (recommandé)")
-                _src = st.radio(
-                    "Source",
-                    _src_options,
-                    index=_src_options.index(_src_default) if _src_default in _src_options else 0,
-                    key="cours_source_choice",
-                    horizontal=False,
-                    label_visibility="collapsed",
-                    help="Ancien = exports 'Rapport par catégories'. Nouveau = exports 'Tous les cours'.",
-                )
-
-                if _src == "Ancien (legacy)" and PRELOADED_FILES:
-                    available_years = sorted(PRELOADED_FILES.keys(), reverse=True)
-                    years_label = ", ".join(str(y) for y in available_years)
-                    load_categories = st.checkbox(
-                        f"Charger ancien format ({years_label})",
-                        key="check_categories", value=True,
-                        help=f"{len(available_years)} année(s) — agrégé par catégorie",
-                    )
-                    selected_years = available_years if load_categories else []
-                elif _src == "Nouveau (recommandé)" and PRELOADED_NEW_COURS:
-                    # Peek into each new-format file to show its years
                     _file_years = _peek_new_cours_years(tuple(PRELOADED_NEW_COURS))
-                    _all_new_years = sorted({y for ys in _file_years.values() for y in ys}, reverse=True)
-                    _years_label_new = ", ".join(str(y) for y in _all_new_years) if _all_new_years else "—"
-                    st.caption(f"💾 {len(PRELOADED_NEW_COURS)} fichier(s) sur le serveur — années couvertes : **{_years_label_new}**")
-                    load_new_cours_server = st.checkbox(
-                        "Charger les fichiers serveur",
-                        key="check_new_cours_server", value=True,
-                        help="Fichiers présents dans data/new_cours/ — format 'Tous les cours'",
-                    )
-                    selected_new_cours_paths = PRELOADED_NEW_COURS if load_new_cours_server else []
-                    # List individual files for clarity
-                    if load_new_cours_server:
-                        with st.expander(f"📄 Détail ({len(PRELOADED_NEW_COURS)} fichier(s))", expanded=False):
-                            for _fp in PRELOADED_NEW_COURS:
-                                _yrs = _file_years.get(_fp, [])
-                                _yrs_str = ", ".join(map(str, _yrs)) if _yrs else "—"
-                                st.caption(f"• `{os.path.basename(_fp)}` ({_yrs_str})")
-                    st.caption(
-                        "Tu peux ajouter des fichiers récents via le drag-and-drop plus bas. "
-                        "Pour les pousser sur le serveur de façon permanente, vois le bouton 📤 sous la zone d'upload."
-                    )
+                    _years = sorted({y for ys in _file_years.values() for y in ys}, reverse=True)
+                else:
+                    _years = sorted(PRELOADED_FILES.keys(), reverse=True) if PRELOADED_FILES else []
+                _years_label = ", ".join(map(str, _years)) if _years else "—"
+                _toggle_on = st.checkbox(
+                    f"Cours ({_years_label})", key="check_cours_unified", value=True,
+                    help=f"{len(_years)} année(s) sur le serveur",
+                )
+                if _toggle_on:
+                    if PRELOADED_NEW_COURS:
+                        selected_new_cours_paths = PRELOADED_NEW_COURS
+                        load_new_cours_server = True
+                    elif PRELOADED_FILES:
+                        selected_years = list(PRELOADED_FILES.keys())
+                        load_categories = True
 
             # --- Clients ---
             load_clients = False
@@ -5094,68 +5063,6 @@ with st.sidebar:
             if not raw_uploaded_files:
                 st.info(f" {len(uploaded_files)} fichiers restaurés depuis la session")
         
-        # ── Save user-uploaded new-format files to data/new_cours/ for permanent server use ──
-        _new_format_user_files = []
-        for _sf in st.session_state.get("stored_files", []):
-            if _sf.get("source") != "uploaded":
-                continue
-            _fname_low = _sf.get("name", "").lower()
-            # Heuristic: only the new "Tous les cours" exports — exclude profils/produits
-            if (_fname_low.endswith(('.xlsx', '.xls'))
-                    and 'clients' not in _fname_low
-                    and 'produits' not in _fname_low):
-                _new_format_user_files.append(_sf)
-
-        if _new_format_user_files:
-            _can_write_locally = os.access(DATA_DIR, os.W_OK) if os.path.exists(DATA_DIR) else False
-            with st.expander(f"📤 Sauvegarder {len(_new_format_user_files)} fichier(s) sur le serveur", expanded=False):
-                st.caption(
-                    "Les fichiers chargés via drag-and-drop sont **temporaires** (uniquement dans ta session). "
-                    "Cette action les **copie dans `data/new_cours/`** pour qu'ils soient disponibles à tout "
-                    "utilisateur lors de prochaines visites."
-                )
-                if _can_write_locally:
-                    if st.button("📥 Copier vers data/new_cours/ (local)", key="save_to_server_local", use_container_width=True):
-                        os.makedirs(NEW_COURS_DIR, exist_ok=True)
-                        _saved = []
-                        for _sf in _new_format_user_files:
-                            try:
-                                _target = os.path.join(NEW_COURS_DIR, _sf["name"])
-                                with open(_target, "wb") as _out:
-                                    _out.write(_sf["data"])
-                                _saved.append(_sf["name"])
-                            except Exception as e:
-                                st.error(f"Erreur sauvegarde {_sf['name']}: {e}")
-                        if _saved:
-                            st.success(f"✅ {len(_saved)} fichier(s) copié(s) dans `data/new_cours/`.")
-                            st.info(
-                                "📌 **Pour les déployer en production**, il reste à les commit + push :\n"
-                                "```bash\n"
-                                "cd stats_aec_app\n"
-                                "git add data/new_cours/\n"
-                                "git commit -m 'data: nouveaux exports AEC'\n"
-                                "git push\n"
-                                "```"
-                            )
-                else:
-                    st.warning(
-                        "🔒 L'environnement (Streamlit Cloud) ne permet pas d'écrire dans `data/`. "
-                        "Télécharge les fichiers et commit-les manuellement dans `data/new_cours/`."
-                    )
-                    # Offer download as a ZIP so user can grab them and commit
-                    _zip_buf = BytesIO()
-                    with zipfile.ZipFile(_zip_buf, "w", zipfile.ZIP_DEFLATED) as _zf:
-                        for _sf in _new_format_user_files:
-                            _zf.writestr(_sf["name"], _sf["data"])
-                    st.download_button(
-                        "📦 Télécharger en ZIP",
-                        data=_zip_buf.getvalue(),
-                        file_name="new_cours_to_commit.zip",
-                        mime="application/zip",
-                        use_container_width=True,
-                        help="Décompresse dans stats_aec_app/data/new_cours/ puis git push.",
-                    )
-
         # Button to clear stored data
         if 'stored_files' in st.session_state and st.session_state.stored_files:
             if st.button(" Effacer les données en cache", key="clear_cache"):
