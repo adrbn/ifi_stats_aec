@@ -5913,14 +5913,14 @@ with _cours_ctx:
 
             if _cmp.get("cats_old_only"):
                 st.warning(
-                    f"⚠️ Ces catégories existent dans l'ancien format mais pas dans le nouveau : "
+                    f"Ces catégories existent dans l'ancien format mais pas dans le nouveau : "
                     f"**{', '.join(_cmp['cats_old_only'])}** — si tu choisis 'Préférer nouveau' "
                     f"ces données disparaîtront des totaux.",
                     icon="⚠️",
                 )
             if _cmp.get("cats_new_only"):
                 st.info(
-                    f"ℹ️ Ces catégories existent uniquement dans le nouveau format : "
+                    f"Ces catégories existent uniquement dans le nouveau format : "
                     f"**{', '.join(_cmp['cats_new_only'])}**.",
                     icon="ℹ️",
                 )
@@ -6005,19 +6005,19 @@ with _cours_ctx:
     _new_shown = [y for y in _new_yrs_all if y in _sel]
     if _legacy_shown and _new_shown:
         st.info(
-            f"🔀 **Sources mixtes**  \n"
-            f"• 🆕 **Nouveau format** (Tous les cours) — années {', '.join(map(str, _new_shown))}  \n"
-            f"• 🗂️ **Ancien format** (Rapport par catégories) — années {', '.join(map(str, _legacy_shown))}",
+            f"**Sources mixtes**  \n"
+            f"• **Nouveau format** (Tous les cours) — années {', '.join(map(str, _new_shown))}  \n"
+            f"• **Ancien format** (Rapport par catégories) — années {', '.join(map(str, _legacy_shown))}",
             icon="🔀",
         )
     elif _new_shown:
         st.success(
-            f"🆕 **Source** : Nouveau format AEC (Tous les cours) — années {', '.join(map(str, _new_shown))}",
+            f"**Source** : Nouveau format AEC (Tous les cours) — années {', '.join(map(str, _new_shown))}",
             icon="🆕",
         )
     elif _legacy_shown:
         st.info(
-            f"🗂️ **Source** : Ancien format AEC (Rapport par catégories) — années {', '.join(map(str, _legacy_shown))}",
+            f"**Source** : Ancien format AEC (Rapport par catégories) — années {', '.join(map(str, _legacy_shown))}",
             icon="🗂️",
         )
 
