@@ -5328,6 +5328,29 @@ _cache_hit = (
     and st.session_state.get('processed_data') is not None
 )
 
+def _compute_source_years(infos):
+    """Bucket years by Type so the source badge / overlap alert always reflects
+    the file_info we have right now — works on both cache hits and full
+    processing runs."""
+    out = {}
+    for f in infos:
+        t = f.get("Type", "Rapport par catégories")
+        yrs_field = f.get("Années") or f.get("Année")
+        if yrs_field is None:
+            continue
+        if isinstance(yrs_field, str):
+            yrs = {int(y.strip()) for y in yrs_field.split(",") if y.strip().isdigit()}
+        else:
+            try:
+                yrs = {int(yrs_field)}
+            except (TypeError, ValueError):
+                yrs = set()
+        out.setdefault(t, set()).update(yrs)
+    legacy = out.get("Rapport par catégories", set())
+    new = out.get("Tous les cours", set())
+    return sorted(legacy), sorted(new), sorted(legacy & new)
+
+
 if _cache_hit:
     # Restore from cache — skip file parsing
     df_combined = st.session_state.processed_data
@@ -5340,6 +5363,12 @@ if _cache_hit:
     profils_info = st.session_state.get('profils_file_info', [])
     produits_info = st.session_state.get('produits_file_info', [])
     activite_info = st.session_state.get('activite_file_info', [])
+    # Refresh source-year tracking from cached file_info every run so the badge
+    # works for users whose session predates this code path.
+    _lg, _nw, _ov = _compute_source_years(file_info)
+    st.session_state["_cours_source_legacy_years"] = _lg
+    st.session_state["_cours_source_new_years"] = _nw
+    st.session_state["_cours_source_overlap_years"] = _ov
 else:
     # Full processing
     all_data, all_fiches, all_profils, all_produits, all_activite = [], [], [], [], []
@@ -5495,33 +5524,11 @@ else:
     st.session_state.activite_file_info = activite_info
     st.session_state._files_hash = _file_names_hash
 
-    # ── Double-source overlap detection ──
-    # Cours data can come from TWO sources:
-    #   1. "Rapport par catégories" (legacy AEC export, one row per category)
-    #   2. "Tous les cours" (new AEC export, one row per course → parsed by aec_parser_v3)
-    # If both formats cover the same year(s), the totals will be double-counted
-    # because they're concat'd into df_combined. Detect and warn the user.
-    def _years_per_type(infos):
-        out = {}
-        for f in infos:
-            t = f.get("Type", "Rapport par catégories")
-            yrs_field = f.get("Années") or f.get("Année")
-            if yrs_field is None:
-                continue
-            if isinstance(yrs_field, str):
-                yrs = {int(y.strip()) for y in yrs_field.split(",") if y.strip().isdigit()}
-            else:
-                yrs = {int(yrs_field)}
-            out.setdefault(t, set()).update(yrs)
-        return out
-
-    _src_years = _years_per_type(file_info)
-    _legacy_years = _src_years.get("Rapport par catégories", set())
-    _new_years = _src_years.get("Tous les cours", set())
-    _overlap_years = sorted(_legacy_years & _new_years)
-    st.session_state["_cours_source_overlap_years"] = _overlap_years
-    st.session_state["_cours_source_legacy_years"] = sorted(_legacy_years)
-    st.session_state["_cours_source_new_years"] = sorted(_new_years)
+    # Source-year tracking (same helper as cache-hit branch)
+    _lg, _nw, _ov = _compute_source_years(file_info)
+    st.session_state["_cours_source_legacy_years"] = _lg
+    st.session_state["_cours_source_new_years"] = _nw
+    st.session_state["_cours_source_overlap_years"] = _ov
 
     # Show detection toasts (bottom-right, auto-dismiss)
     _toast_msgs = []
@@ -5709,21 +5716,30 @@ with _cours_ctx:
     # ── Active data-source badge (which export format is feeding the dashboard?) ──
     # Always visible so the user knows whether numbers come from the legacy
     # "Rapport par catégories" or the new "Tous les cours" export — and which
-    # years come from which source when both are loaded.
+    # years come from which source when both are loaded. Rendered as a
+    # colored info banner (not a grey caption) so it can't be missed.
     _legacy_yrs_all = sorted(st.session_state.get("_cours_source_legacy_years", []), reverse=True)
     _new_yrs_all = sorted(st.session_state.get("_cours_source_new_years", []), reverse=True)
     _sel = set(selected_years_list)
     _legacy_shown = [y for y in _legacy_yrs_all if y in _sel]
     _new_shown = [y for y in _new_yrs_all if y in _sel]
     if _legacy_shown and _new_shown:
-        st.caption(
-            f"🔀 **Sources** : 🆕 Nouveau format (Tous les cours) — {', '.join(map(str, _new_shown))}  •  "
-            f"🗂️ Ancien format (Rapport par catégories) — {', '.join(map(str, _legacy_shown))}"
+        st.info(
+            f"🔀 **Sources mixtes**  \n"
+            f"• 🆕 **Nouveau format** (Tous les cours) — années {', '.join(map(str, _new_shown))}  \n"
+            f"• 🗂️ **Ancien format** (Rapport par catégories) — années {', '.join(map(str, _legacy_shown))}",
+            icon="🔀",
         )
     elif _new_shown:
-        st.caption(f"🆕 **Source** : Nouveau format (Tous les cours) — {', '.join(map(str, _new_shown))}")
+        st.success(
+            f"🆕 **Source** : Nouveau format AEC (Tous les cours) — années {', '.join(map(str, _new_shown))}",
+            icon="🆕",
+        )
     elif _legacy_shown:
-        st.caption(f"🗂️ **Source** : Ancien format (Rapport par catégories) — {', '.join(map(str, _legacy_shown))}")
+        st.info(
+            f"🗂️ **Source** : Ancien format AEC (Rapport par catégories) — années {', '.join(map(str, _legacy_shown))}",
+            icon="🗂️",
+        )
 
     # =====================================================
     # TABS - Right after year selection
