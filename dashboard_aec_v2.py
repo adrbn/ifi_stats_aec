@@ -992,19 +992,19 @@ if (st.session_state.get('authenticated')
                         with _al_zip.ZipFile(_al_BytesIO(_f.read()), 'r') as _zf:
                             for _n in _zf.namelist():
                                 if _n.lower().endswith(('.xlsx', '.xls')) and not _n.startswith('__MACOSX'):
-                                    _al_files.append({'name': _n.split('/')[-1], 'data': _zf.read(_n)})
+                                    _al_files.append({'name': _n.split('/')[-1], 'data': _zf.read(_n), 'source': 'preloaded'})
                 except Exception:
                     pass
             elif _fn.endswith('.csv') and 'clients' in _fn.lower():
                 try:
                     with open(_fp, 'rb') as _f:
-                        _al_files.append({'name': _fn, 'data': _f.read()})
+                        _al_files.append({'name': _fn, 'data': _f.read(), 'source': 'preloaded'})
                 except Exception:
                     pass
             elif _fn.endswith('.xlsx') and 'produit' in _fn.lower():
                 try:
                     with open(_fp, 'rb') as _f:
-                        _al_files.append({'name': _fn, 'data': _f.read()})
+                        _al_files.append({'name': _fn, 'data': _f.read(), 'source': 'preloaded'})
                 except Exception:
                     pass
         if _al_files:
@@ -4767,11 +4767,45 @@ with st.sidebar:
                 load_produits = st.checkbox("Catalogue produits", key="check_produits", value=True,
                                             help=f"{len(PRELOADED_PRODUITS)} fichier(s) — IFM, IFF, IFN, IFP")
 
-            # Single load button
+            # Detect mismatch between checkbox state and what's actually in memory.
+            # Filenames in stored_files tagged with source='preloaded' reveal which
+            # preloaded categories are currently active.
+            _stored = st.session_state.get("stored_files", [])
+            _preloaded_in_mem = [sf for sf in _stored if sf.get("source") == "preloaded"]
+            _has_pre_cours = any(_n.endswith(('.xlsx', '.xls')) and 'clients' not in _n.lower() and 'produit' not in _n.lower()
+                                 for _n in (sf.get('name', '') for sf in _preloaded_in_mem))
+            _has_pre_clients = any('clients' in sf.get('name', '').lower() for sf in _preloaded_in_mem)
+            _has_pre_produits = any('produit' in sf.get('name', '').lower() for sf in _preloaded_in_mem)
+            _mismatch = (
+                (load_categories != _has_pre_cours and PRELOADED_FILES)
+                or (load_clients != _has_pre_clients and PRELOADED_CLIENTS)
+                or (load_produits != _has_pre_produits and PRELOADED_PRODUITS)
+            )
+            if _mismatch:
+                st.warning(
+                    "⚠️ Les cases ne correspondent pas aux données chargées. "
+                    "Clique sur le bouton ci-dessous pour appliquer.",
+                    icon="⚠️",
+                )
+
+            # Single load/apply button. The button is ALWAYS shown so the user can
+            # apply their checkbox selection (even when unchecking everything to
+            # clear preloaded data).
             anything_selected = (PRELOADED_FILES and load_categories) or (PRELOADED_CLIENTS and load_clients) or (PRELOADED_PRODUITS and load_produits)
-            if anything_selected:
-                if st.button("🚀 Charger les données sélectionnées", key="load_all_preloaded", use_container_width=True, type="primary"):
-                    st.session_state.stored_files = []
+            if _mismatch:
+                _btn_label = "🔄 Appliquer la sélection"
+                _btn_help = "L'état des cases diffère de ce qui est actuellement chargé. Clique pour synchroniser."
+            elif anything_selected:
+                _btn_label = "🚀 Charger les données sélectionnées"
+                _btn_help = None
+            else:
+                _btn_label = "🗑️ Décharger les données préchargées"
+                _btn_help = "Aucune case cochée — clique pour vider les données préchargées (tes fichiers uploadés manuellement sont conservés)."
+            if st.button(_btn_label, key="load_all_preloaded", use_container_width=True, type="primary", help=_btn_help):
+                    # Keep only USER-UPLOADED files (preserve manual uploads); we
+                    # rebuild the preloaded subset from the current checkbox state.
+                    _existing = st.session_state.get("stored_files", [])
+                    st.session_state.stored_files = [sf for sf in _existing if sf.get("source") == "uploaded"]
                     # Load category ZIPs
                     if PRELOADED_FILES and selected_years:
                         for year in selected_years:
@@ -4785,7 +4819,8 @@ with st.sidebar:
                                             file_data = zf.read(name)
                                             st.session_state.stored_files.append({
                                                 'name': name.split('/')[-1],
-                                                'data': file_data
+                                                'data': file_data,
+                                                'source': 'preloaded',
                                             })
                             except Exception as e:
                                 st.error(f"Erreur catégories {year}: {e}")
@@ -4796,7 +4831,8 @@ with st.sidebar:
                                 with open(csv_path, 'rb') as f:
                                     st.session_state.stored_files.append({
                                         'name': os.path.basename(csv_path),
-                                        'data': f.read()
+                                        'data': f.read(),
+                                        'source': 'preloaded',
                                     })
                             except Exception as e:
                                 st.error(f"Erreur clients: {e}")
@@ -4807,7 +4843,8 @@ with st.sidebar:
                                 with open(xlsx_path, 'rb') as f:
                                     st.session_state.stored_files.append({
                                         'name': os.path.basename(xlsx_path),
-                                        'data': f.read()
+                                        'data': f.read(),
+                                        'source': 'preloaded',
                                     })
                             except Exception as e:
                                 st.error(f"Erreur produits: {e}")
@@ -4898,13 +4935,15 @@ with st.sidebar:
                     if hasattr(f, 'getvalue'):
                         new_file_entries.append({
                             'name': f.name,
-                            'data': f.getvalue()
+                            'data': f.getvalue(),
+                            'source': 'uploaded',
                         })
                     elif hasattr(f, 'read'):
                         f.seek(0)
                         new_file_entries.append({
                             'name': f.name,
-                            'data': f.read()
+                            'data': f.read(),
+                            'source': 'uploaded',
                         })
                     new_names.add(f.name)
                 # Keep existing stored files that are NOT being replaced by new uploads
