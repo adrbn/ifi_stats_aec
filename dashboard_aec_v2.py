@@ -5274,7 +5274,14 @@ else:
                 processed = process_data(df, year, semester, sede)
                 all_data.append(processed)
                 semester_label = semester if semester else "annuel"
-                file_info.append({"Fichier": uploaded_file.name, "Sede": sede, "Semestre": semester_label, "Année": year, "Lignes": len(processed)})
+                file_info.append({
+                    "Fichier": uploaded_file.name,
+                    "Type": "Rapport par catégories",
+                    "Sede": sede,
+                    "Semestre": semester_label,
+                    "Année": year,
+                    "Lignes": len(processed),
+                })
 
     if errors:
         for err in errors:
@@ -5314,6 +5321,34 @@ else:
     st.session_state.activite_periode_data = df_activite
     st.session_state.activite_file_info = activite_info
     st.session_state._files_hash = _file_names_hash
+
+    # ── Double-source overlap detection ──
+    # Cours data can come from TWO sources:
+    #   1. "Rapport par catégories" (legacy AEC export, one row per category)
+    #   2. "Tous les cours" (new AEC export, one row per course → parsed by aec_parser_v3)
+    # If both formats cover the same year(s), the totals will be double-counted
+    # because they're concat'd into df_combined. Detect and warn the user.
+    def _years_per_type(infos):
+        out = {}
+        for f in infos:
+            t = f.get("Type", "Rapport par catégories")
+            yrs_field = f.get("Années") or f.get("Année")
+            if yrs_field is None:
+                continue
+            if isinstance(yrs_field, str):
+                yrs = {int(y.strip()) for y in yrs_field.split(",") if y.strip().isdigit()}
+            else:
+                yrs = {int(yrs_field)}
+            out.setdefault(t, set()).update(yrs)
+        return out
+
+    _src_years = _years_per_type(file_info)
+    _legacy_years = _src_years.get("Rapport par catégories", set())
+    _new_years = _src_years.get("Tous les cours", set())
+    _overlap_years = sorted(_legacy_years & _new_years)
+    st.session_state["_cours_source_overlap_years"] = _overlap_years
+    st.session_state["_cours_source_legacy_years"] = sorted(_legacy_years)
+    st.session_state["_cours_source_new_years"] = sorted(_new_years)
 
     # Show detection toasts (bottom-right, auto-dismiss)
     _toast_msgs = []
@@ -5409,6 +5444,31 @@ with _cours_ctx:
     # =====================================================
     # KEY METRICS
     # =====================================================
+    # ── Double-source overlap alert ──
+    _overlap = st.session_state.get("_cours_source_overlap_years", [])
+    _legacy_yrs = st.session_state.get("_cours_source_legacy_years", [])
+    _new_yrs = st.session_state.get("_cours_source_new_years", [])
+    if _overlap:
+        _yrs_str = ", ".join(map(str, _overlap))
+        st.error(
+            f"⚠️ **Double comptage détecté pour l'année(s) {_yrs_str}**\n\n"
+            f"Deux sources fournissent les données de Cours pour ces années :\n"
+            f"- **Rapport par catégories** (ancien format) — années chargées : {', '.join(map(str, _legacy_yrs)) or '—'}\n"
+            f"- **Tous les cours** (nouveau format) — années chargées : {', '.join(map(str, _new_yrs)) or '—'}\n\n"
+            f"Les totaux affichés sont **additionnés** entre les deux sources et donc gonflés.\n\n"
+            f"**Pour corriger** : décoche la source de trop dans la sidebar (☰ Importer des données AEC) "
+            f"puis recharge.",
+            icon="⚠️",
+        )
+    elif _legacy_yrs and _new_yrs:
+        # Both sources present but on disjoint years — informational only
+        st.info(
+            f"ℹ️ Données Cours issues de **deux sources distinctes** (pas de chevauchement) : "
+            f"Rapport par catégories ({', '.join(map(str, _legacy_yrs))}) "
+            f"+ Tous les cours ({', '.join(map(str, _new_yrs))}).",
+            icon="ℹ️",
+        )
+
     st.markdown(f"## {t('overview')}")
 
     # Check if multiple years are loaded
