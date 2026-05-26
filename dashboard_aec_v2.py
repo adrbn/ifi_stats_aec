@@ -6221,8 +6221,51 @@ with _cours_ctx:
                     return ['background-color: #e2e8f0; font-weight: bold'] * len(row)
                 return [''] * len(row)
 
-            styled_df = df_display.style.apply(highlight_totals, axis=1)
+            # Anomaly highlighting on delta cells: a delta beyond ±50%
+            # almost always means the comparison year is incomplete
+            # (current year still in progress, or historical year only
+            # partially loaded). We color these so the user immediately
+            # knows the % is not a real trend.
+            _delta_col_names = {v for v in delta_cols_map.values() if v in df_display.columns}
+
+            def _parse_delta_pct(val):
+                if not isinstance(val, str) or not val.endswith('%'):
+                    return None
+                try:
+                    return float(val.rstrip('%').replace('+', ''))
+                except ValueError:
+                    return None
+
+            def highlight_delta_anomalies(row):
+                styles = [''] * len(row)
+                if row[t('year')] == "TOTAL":
+                    return styles
+                for i, col in enumerate(row.index):
+                    if col not in _delta_col_names:
+                        continue
+                    pct = _parse_delta_pct(row[col])
+                    if pct is None:
+                        continue
+                    abs_pct = abs(pct)
+                    if abs_pct >= 200:
+                        # Extreme: almost certainly incomplete data
+                        styles[i] = 'background-color: #fecaca; color: #7f1d1d; font-weight: 600;'
+                    elif abs_pct >= 50:
+                        # Suspicious: worth a manual check
+                        styles[i] = 'background-color: #fed7aa; color: #7c2d12;'
+                return styles
+
+            styled_df = (
+                df_display.style
+                .apply(highlight_totals, axis=1)
+                .apply(highlight_delta_anomalies, axis=1)
+            )
             st.dataframe(styled_df, hide_index=True, use_container_width=True)
+            st.caption(
+                "🟧 Δ entre ±50% et ±200% : variation forte, vérifier que l'année est complète.  "
+                "🟥 Δ au-delà de ±200% : très probablement une année incomplète ou des données manquantes "
+                "côté comparaison (le pourcentage n'est pas une vraie tendance)."
+            )
 
         # --- Part B: Évolution par indicateur (charts) ---
         st.markdown("#### Évolution par indicateur")
