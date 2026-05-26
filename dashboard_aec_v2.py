@@ -5706,6 +5706,25 @@ with _cours_ctx:
         else:
             st.caption(f"{t('showing_years')}: {years_label}")
 
+    # ── Active data-source badge (which export format is feeding the dashboard?) ──
+    # Always visible so the user knows whether numbers come from the legacy
+    # "Rapport par catégories" or the new "Tous les cours" export — and which
+    # years come from which source when both are loaded.
+    _legacy_yrs_all = sorted(st.session_state.get("_cours_source_legacy_years", []), reverse=True)
+    _new_yrs_all = sorted(st.session_state.get("_cours_source_new_years", []), reverse=True)
+    _sel = set(selected_years_list)
+    _legacy_shown = [y for y in _legacy_yrs_all if y in _sel]
+    _new_shown = [y for y in _new_yrs_all if y in _sel]
+    if _legacy_shown and _new_shown:
+        st.caption(
+            f"🔀 **Sources** : 🆕 Nouveau format (Tous les cours) — {', '.join(map(str, _new_shown))}  •  "
+            f"🗂️ Ancien format (Rapport par catégories) — {', '.join(map(str, _legacy_shown))}"
+        )
+    elif _new_shown:
+        st.caption(f"🆕 **Source** : Nouveau format (Tous les cours) — {', '.join(map(str, _new_shown))}")
+    elif _legacy_shown:
+        st.caption(f"🗂️ **Source** : Ancien format (Rapport par catégories) — {', '.join(map(str, _legacy_shown))}")
+
     # =====================================================
     # TABS - Right after year selection
     # =====================================================
