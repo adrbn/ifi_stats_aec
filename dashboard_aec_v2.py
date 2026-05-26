@@ -5750,35 +5750,71 @@ with _cours_ctx:
     _new_yrs = st.session_state.get("_cours_source_new_years", [])
     _policy = st.session_state.get("cours_conflict_policy", "prefer_new")
 
+    # ── First-time conflict: show a modal ONCE so the user makes a deliberate choice ──
+    _overlap_set = set(_legacy_yrs) & set(_new_yrs)
+    _conflict_signature = "|".join(map(str, sorted(_overlap_set))) if _overlap_set else ""
+    _last_shown_sig = st.session_state.get("_cours_conflict_modal_shown_for", "")
+    if _overlap_set and _conflict_signature != _last_shown_sig:
+        @st.dialog("⚠️ Conflit ancien/nouveau format détecté", width="large")
+        def _conflict_modal():
+            st.markdown(
+                f"Les deux formats de l'export AEC couvrent les mêmes années : "
+                f"**{', '.join(map(str, sorted(_overlap_set, reverse=True)))}**."
+            )
+            st.markdown("Choisis comment combiner les données :")
+            _cmp_modal = st.session_state.get("_cours_format_comparison", {})
+            if _cmp_modal.get("rows"):
+                import pandas as _pd
+                st.dataframe(_pd.DataFrame(_cmp_modal["rows"]), use_container_width=True, hide_index=True)
+            if _cmp_modal.get("cats_old_only"):
+                st.caption(
+                    f"⚠️ Catégories **uniquement** dans l'ancien : {', '.join(_cmp_modal['cats_old_only'])}"
+                )
+            if _cmp_modal.get("cats_new_only"):
+                st.caption(
+                    f"ℹ️ Catégories **uniquement** dans le nouveau : {', '.join(_cmp_modal['cats_new_only'])}"
+                )
+            _c1, _c2, _c3 = st.columns(3)
+            with _c1:
+                if st.button("🆕 Préférer nouveau", use_container_width=True, type="primary"):
+                    st.session_state["cours_conflict_policy"] = "prefer_new"
+                    st.session_state["_cours_conflict_modal_shown_for"] = _conflict_signature
+                    for _k in ['processed_data', 'file_info', '_files_hash']:
+                        st.session_state.pop(_k, None)
+                    st.rerun()
+            with _c2:
+                if st.button("🗂️ Préférer ancien", use_container_width=True):
+                    st.session_state["cours_conflict_policy"] = "prefer_old"
+                    st.session_state["_cours_conflict_modal_shown_for"] = _conflict_signature
+                    for _k in ['processed_data', 'file_info', '_files_hash']:
+                        st.session_state.pop(_k, None)
+                    st.rerun()
+            with _c3:
+                if st.button("➕ Tout sommer", use_container_width=True):
+                    st.session_state["cours_conflict_policy"] = "sum_both"
+                    st.session_state["_cours_conflict_modal_shown_for"] = _conflict_signature
+                    for _k in ['processed_data', 'file_info', '_files_hash']:
+                        st.session_state.pop(_k, None)
+                    st.rerun()
+        _conflict_modal()
+
+    # ── Compact one-liner status (auto-dismisses on hover of expander) ──
     if _dedup_dropped:
-        _kept = "🆕 nouveau format (Tous les cours)" if _dedup_fmt_dropped == "ancien" else "🗂️ ancien format (Rapport par catégories)"
-        _dropped = "🗂️ ancien" if _dedup_fmt_dropped == "ancien" else "🆕 nouveau"
-        st.success(
-            f"✅ **Conflit résolu** — années {', '.join(map(str, _dedup_dropped))} : "
-            f"l'app garde le **{_kept}** et ignore le {_dropped} pour ces années. "
-            f"Change la politique dans la sidebar (Importer des données AEC → Conflit ancien/nouveau format).",
-            icon="✅",
+        _kept = "🆕 nouveau" if _dedup_fmt_dropped == "ancien" else "🗂️ ancien"
+        st.caption(
+            f"✅ Conflit résolu pour {', '.join(map(str, _dedup_dropped))} — politique : **{_kept}** "
+            f"(modifiable dans la sidebar)."
         )
-    elif _policy == "sum_both" and (set(_legacy_yrs) & set(_new_yrs)):
-        _overlap = sorted(set(_legacy_yrs) & set(_new_yrs), reverse=True)
-        st.warning(
-            f"⚠️ **Sommation activée** — années {', '.join(map(str, _overlap))} : "
-            f"les deux formats sont additionnés (double comptage possible). "
-            f"Pour désactiver, va dans la sidebar → Conflit ancien/nouveau format.",
-            icon="⚠️",
-        )
-    elif _legacy_yrs and _new_yrs:
-        st.info(
-            f"ℹ️ Données Cours issues de **deux sources complémentaires** (pas de chevauchement) : "
-            f"Rapport par catégories ({', '.join(map(str, _legacy_yrs))}) "
-            f"+ Tous les cours ({', '.join(map(str, _new_yrs))}).",
-            icon="ℹ️",
+    elif _policy == "sum_both" and _overlap_set:
+        _overlap = sorted(_overlap_set, reverse=True)
+        st.caption(
+            f"⚠️ Sommation active pour {', '.join(map(str, _overlap))} — chiffres potentiellement gonflés."
         )
 
     # ── Detailed format-comparison expander (only when both formats overlap) ──
     _cmp = st.session_state.get("_cours_format_comparison")
-    if _cmp and _cmp.get("rows") and (set(_legacy_yrs) & set(_new_yrs)):
-        with st.expander("📊 Comparaison détaillée ancien vs nouveau format", expanded=False):
+    if _cmp and _cmp.get("rows") and _overlap_set:
+        with st.expander("📊 Comparaison ancien vs nouveau format", expanded=False):
             st.caption(
                 "Pour chaque année couverte par les deux formats, voici ce que contient chaque source. "
                 "Les écarts importants peuvent signaler qu'un format est incomplet."
