@@ -4797,10 +4797,51 @@ with st.sidebar:
 
     # ── Chargement des données ──
     with st.expander("📂 Importer des données AEC", expanded=True):
+        # ── Status block: what is ACTUALLY loaded right now ──
+        # Reads the real state from session_state (post-processing, post-dedup)
+        # instead of just listing server-side preloaded files. This is the
+        # single source of truth for the user.
+        _loaded_cours_yrs_new = sorted(st.session_state.get("_cours_source_new_years", []), reverse=True)
+        _loaded_cours_yrs_old = sorted(st.session_state.get("_cours_source_legacy_years", []), reverse=True)
+        _dropped_yrs = set(st.session_state.get("_cours_dedup_dropped_years", []))
+        _fmt_dropped = st.session_state.get("_cours_dedup_format_dropped")
+        # Effective (post-dedup) years per format
+        if _fmt_dropped == "ancien":
+            _eff_old = [y for y in _loaded_cours_yrs_old if y not in _dropped_yrs]
+            _eff_new = list(_loaded_cours_yrs_new)
+        elif _fmt_dropped == "nouveau":
+            _eff_old = list(_loaded_cours_yrs_old)
+            _eff_new = [y for y in _loaded_cours_yrs_new if y not in _dropped_yrs]
+        else:  # sum_both or no conflict
+            _eff_old = list(_loaded_cours_yrs_old)
+            _eff_new = list(_loaded_cours_yrs_new)
+        _all_loaded_yrs = sorted(set(_eff_old) | set(_eff_new), reverse=True)
+
+        _profils_df = st.session_state.get("profils_clients_data")
+        _produits_df = st.session_state.get("produits_data")
+        _nb_profils = len(_profils_df) if _profils_df is not None else 0
+        _nb_produits = len(_produits_df) if _produits_df is not None else 0
+
+        _has_any_loaded = bool(_all_loaded_yrs) or _nb_profils or _nb_produits
+        if _has_any_loaded:
+            st.markdown("**📊 Actuellement chargé**")
+            if _all_loaded_yrs:
+                _parts = []
+                if _eff_new:
+                    _parts.append(f"🆕 {', '.join(map(str, sorted(_eff_new, reverse=True)))}")
+                if _eff_old:
+                    _parts.append(f"🗂️ {', '.join(map(str, sorted(_eff_old, reverse=True)))}")
+                st.caption(f"**Cours** : {' • '.join(_parts)}")
+            if _nb_profils:
+                st.caption(f"**Profils** : {_nb_profils:,} lignes".replace(",", " "))
+            if _nb_produits:
+                st.caption(f"**Produits** : {_nb_produits:,} lignes".replace(",", " "))
+            st.markdown("---")
+
         st.caption("Glissez vos exports Excel/CSV ou utilisez les données pré-chargées ci-dessous.")
         # Show preloaded files section if available
         if HAS_PRELOADED_DATA:
-            st.markdown(f"**📦 {t('preloaded_files')}**")
+            st.markdown(f"**📦 {t('preloaded_files')}** _(serveur)_")
 
             # --- Cours : un seul toggle, format auto-détecté ---
             # If both old and new server-side data exist, NEW takes precedence
@@ -4830,8 +4871,12 @@ with st.sidebar:
                     )
                     st.session_state["check_cours_unified"] = _has_any_cours
                 _toggle_on = st.checkbox(
-                    f"Cours ({_years_label})", key="check_cours_unified",
-                    help=f"{len(_years)} année(s) sur le serveur",
+                    f"Cours serveur ({_years_label})", key="check_cours_unified",
+                    help=(
+                        f"Charge les {len(_years)} année(s) de cours pré-chargées sur le serveur. "
+                        f"Pour voir ce qui est ACTUELLEMENT en mémoire (uploads + restore + préchargés), "
+                        f"regarde le bloc '📊 Actuellement chargé' en haut."
+                    ),
                 )
                 if _toggle_on:
                     if PRELOADED_NEW_COURS:
@@ -4849,8 +4894,8 @@ with st.sidebar:
                     st.session_state["check_clients"] = any(
                         'clients' in sf.get('name', '').lower() for sf in _stored
                     )
-                load_clients = st.checkbox("Profils", key="check_clients",
-                                           help=f"{len(PRELOADED_CLIENTS)} fichier(s) disponible(s)")
+                load_clients = st.checkbox("Profils serveur", key="check_clients",
+                                           help=f"Charge les {len(PRELOADED_CLIENTS)} fichier(s) profils pré-chargés sur le serveur.")
 
             # --- Produits (default checked iff data of this category is in memory) ---
             load_produits = False
@@ -4860,8 +4905,8 @@ with st.sidebar:
                     st.session_state["check_produits"] = any(
                         'produit' in sf.get('name', '').lower() for sf in _stored
                     )
-                load_produits = st.checkbox("Catalogue produits", key="check_produits",
-                                            help=f"{len(PRELOADED_PRODUITS)} fichier(s) — IFM, IFF, IFN, IFP")
+                load_produits = st.checkbox("Catalogue produits serveur", key="check_produits",
+                                            help=f"Charge les {len(PRELOADED_PRODUITS)} fichier(s) catalogue produits pré-chargés sur le serveur (IFM, IFF, IFN, IFP).")
 
             # Single load/apply button — always visible, always says the same thing.
             # The mismatch warning was removed because it confused users; the button
