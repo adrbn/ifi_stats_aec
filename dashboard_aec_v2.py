@@ -5024,11 +5024,33 @@ with st.sidebar:
                             'source': 'uploaded',
                         })
                     new_names.add(f.name)
-                # Keep existing stored files that are NOT being replaced by new uploads
+                # Keep existing stored files that are NOT being replaced by new uploads.
+                # ALSO: if the user just uploaded any course-like xlsx, drop any
+                # preloaded LEGACY cours data so we don't silently double-count.
+                # (clients & produits preloaded data is orthogonal and stays.)
+                _uploaded_has_cours = any(
+                    e['name'].lower().endswith(('.xlsx', '.xls'))
+                    and 'clients' not in e['name'].lower()
+                    and 'produit' not in e['name'].lower()
+                    for e in new_file_entries
+                )
                 existing = st.session_state.get('stored_files', [])
-                merged = [sf for sf in existing if sf['name'] not in new_names]
+                merged = [
+                    sf for sf in existing
+                    if sf['name'] not in new_names
+                    and not (
+                        _uploaded_has_cours
+                        and sf.get('source') == 'preloaded'
+                        and sf['name'].lower().endswith(('.xlsx', '.xls'))
+                        and 'clients' not in sf['name'].lower()
+                        and 'produit' not in sf['name'].lower()
+                    )
+                ]
                 merged.extend(new_file_entries)
                 st.session_state.stored_files = merged
+                # Sync the sidebar 'Cours' checkbox so it reflects the new state.
+                if _uploaded_has_cours:
+                    st.session_state["check_cours_unified"] = False
                 # Clear processed data cache to force reprocessing with all files
                 for _k in ['processed_data', 'file_info', '_files_hash']:
                     st.session_state.pop(_k, None)
