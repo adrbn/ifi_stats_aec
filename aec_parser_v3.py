@@ -245,8 +245,10 @@ def parse_aec_export(
             unknown_sedes=unknown_sedes,
         )
 
-    # Aggregate by (Année, Semestre, Sede, Catégorie de cours)
-    group_cols = ["Année", "Semestre", "Période", "Sede", "Catégorie de cours"]
+    # Aggregate by (Année, Semestre, Sede, Catégorie de cours, Tranche d'âge).
+    # Keeping the age group in the key preserves the age dimension so downstream
+    # views (Carte, Profils) can split by Adultes / Adolescents / Enfants.
+    group_cols = ["Année", "Semestre", "Période", "Sede", "Catégorie de cours", "Tranche d'âge du cours"]
     agg_with_count = dict(AGG_RULES)
 
     # Count of courses per group

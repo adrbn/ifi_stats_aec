@@ -5280,6 +5280,14 @@ else:
                     processed["Macro-catégorie"] = "NON RATTACHÉ"
                     processed["Sous-secteur"] = "NON RATTACHÉ"
                     processed["Secteur"] = "NON RATTACHÉ"
+                # Derive Groupe_Age (same as legacy process_data) so downstream
+                # tabs (Carte / Profils / etc.) don't see NaN in this column.
+                # The parser aggregates over Tranche d'âge so we can't recover
+                # per-age splits here — fallback to 'Adultes' (the dominant group).
+                if "Tranche d'âge du cours" in processed.columns:
+                    processed["Groupe_Age"] = processed["Tranche d'âge du cours"].apply(get_age_group)
+                else:
+                    processed["Groupe_Age"] = "Adultes"
                 all_data.append(processed)
                 years_str = ", ".join(map(str, sorted(processed["Année"].unique().tolist())))
                 sedi_str = ", ".join(sorted(processed["Sede"].unique().tolist()))
@@ -8111,7 +8119,7 @@ with _cours_ctx:
 
         # Age group filter
         st.markdown(f"#### {t('filter_by_age')}")
-        age_groups = ["Tous"] + sorted(df_tab6_base["Groupe_Age"].unique().tolist())
+        age_groups = ["Tous"] + sorted({str(g) for g in df_tab6_base["Groupe_Age"].dropna().unique()})
         selected_age = st.selectbox(t("age_groups"), age_groups, key="map_age_filter")
 
         if selected_age != "Tous":
