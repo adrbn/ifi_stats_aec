@@ -5443,6 +5443,7 @@ else:
                     processed["Groupe_Age"] = processed["Tranche d'âge du cours"].apply(get_age_group)
                 else:
                     processed["Groupe_Age"] = "Adultes"
+                processed["__source_format"] = "Tous les cours"
                 all_data.append(processed)
                 years_str = ", ".join(map(str, sorted(processed["Année"].unique().tolist())))
                 sedi_str = ", ".join(sorted(processed["Sede"].unique().tolist()))
@@ -5474,6 +5475,7 @@ else:
                     errors.append(f"Sede non détectée: {uploaded_file.name}")
                     continue
                 processed = process_data(df, year, semester, sede)
+                processed["__source_format"] = "Rapport par catégories"
                 all_data.append(processed)
                 semester_label = semester if semester else "annuel"
                 file_info.append({
@@ -5497,6 +5499,31 @@ else:
     df_activite = None
     if all_data:
         df_combined = pd.concat(all_data, ignore_index=True)
+        # ── Auto-deduplication: prefer "Tous les cours" (new format) over
+        # "Rapport par catégories" (legacy ZIPs) when both cover the same year.
+        # The new format is granular per-course and aggregates to the same
+        # totals as the legacy by-category report, so dropping legacy rows for
+        # those years removes silent double-counting without losing data.
+        _dedup_dropped_years = []
+        if "__source_format" in df_combined.columns and "Année" in df_combined.columns:
+            _new_years = set(
+                df_combined.loc[df_combined["__source_format"] == "Tous les cours", "Année"].unique()
+            )
+            _legacy_years = set(
+                df_combined.loc[df_combined["__source_format"] == "Rapport par catégories", "Année"].unique()
+            )
+            _conflict_years = _new_years & _legacy_years
+            if _conflict_years:
+                _mask_drop = (
+                    (df_combined["__source_format"] == "Rapport par catégories")
+                    & (df_combined["Année"].isin(_conflict_years))
+                )
+                df_combined = df_combined.loc[~_mask_drop].reset_index(drop=True)
+                _dedup_dropped_years = sorted(_conflict_years, reverse=True)
+        # Drop the internal tag so downstream tabs don't see it
+        if "__source_format" in df_combined.columns:
+            df_combined = df_combined.drop(columns=["__source_format"])
+        st.session_state["_cours_dedup_dropped_years"] = _dedup_dropped_years
     if all_fiches:
         df_fiches = pd.concat(all_fiches, ignore_index=True)
     if all_profils:
@@ -5624,26 +5651,25 @@ with _cours_ctx:
     # =====================================================
     # KEY METRICS
     # =====================================================
-    # ── Double-source overlap alert ──
-    _overlap = st.session_state.get("_cours_source_overlap_years", [])
+    # ── Dedup-status banner (only when both sources were present) ──
+    # The old red 'Double comptage' alert is gone: we now auto-resolve the
+    # overlap at concat-time by preferring the new format. The banner below
+    # is informational only — to give the user transparency about what got
+    # silently dropped.
+    _dedup_dropped = st.session_state.get("_cours_dedup_dropped_years", [])
     _legacy_yrs = st.session_state.get("_cours_source_legacy_years", [])
     _new_yrs = st.session_state.get("_cours_source_new_years", [])
-    if _overlap:
-        _yrs_str = ", ".join(map(str, _overlap))
-        st.error(
-            f"⚠️ **Double comptage détecté pour l'année(s) {_yrs_str}**\n\n"
-            f"Deux sources fournissent les données de Cours pour ces années :\n"
-            f"- **Rapport par catégories** (ancien format) — années chargées : {', '.join(map(str, _legacy_yrs)) or '—'}\n"
-            f"- **Tous les cours** (nouveau format) — années chargées : {', '.join(map(str, _new_yrs)) or '—'}\n\n"
-            f"Les totaux affichés sont **additionnés** entre les deux sources et donc gonflés.\n\n"
-            f"**Pour corriger** : décoche la source de trop dans la sidebar (☰ Importer des données AEC) "
-            f"puis recharge.",
-            icon="⚠️",
+    if _dedup_dropped:
+        st.success(
+            f"✅ **Doublons résolus automatiquement** — pour les années "
+            f"{', '.join(map(str, _dedup_dropped))} les deux formats étaient présents ; "
+            f"l'app utilise le **nouveau format** (Tous les cours, plus granulaire) "
+            f"et ignore l'ancien (Rapport par catégories) pour éviter le double comptage.",
+            icon="✅",
         )
     elif _legacy_yrs and _new_yrs:
-        # Both sources present but on disjoint years — informational only
         st.info(
-            f"ℹ️ Données Cours issues de **deux sources distinctes** (pas de chevauchement) : "
+            f"ℹ️ Données Cours issues de **deux sources complémentaires** (pas de chevauchement) : "
             f"Rapport par catégories ({', '.join(map(str, _legacy_yrs))}) "
             f"+ Tous les cours ({', '.join(map(str, _new_yrs))}).",
             icon="ℹ️",
@@ -5720,6 +5746,10 @@ with _cours_ctx:
     # colored info banner (not a grey caption) so it can't be missed.
     _legacy_yrs_all = sorted(st.session_state.get("_cours_source_legacy_years", []), reverse=True)
     _new_yrs_all = sorted(st.session_state.get("_cours_source_new_years", []), reverse=True)
+    # After dedup, a year covered by BOTH formats is effectively rendered by the
+    # new one — remove the dropped years from the legacy list before display.
+    _dropped = set(st.session_state.get("_cours_dedup_dropped_years", []))
+    _legacy_yrs_all = [y for y in _legacy_yrs_all if y not in _dropped]
     _sel = set(selected_years_list)
     _legacy_shown = [y for y in _legacy_yrs_all if y in _sel]
     _new_shown = [y for y in _new_yrs_all if y in _sel]
