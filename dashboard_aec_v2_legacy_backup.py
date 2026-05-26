@@ -762,7 +762,7 @@ def t(key):
 # PAGE CONFIG
 # =====================================================
 st.set_page_config(
-    page_title="OSCAR v3",
+    page_title="OSCAR",
     page_icon=os.path.join(os.path.dirname(os.path.abspath(__file__)), "IFI_noir_logo.png"),
     layout="wide",
     initial_sidebar_state="expanded"
@@ -1883,20 +1883,13 @@ MONTH_NUM_TO_FR = {
 def detect_export_type(df):
     """Detect export type from DataFrame columns."""
     cols = set(df.columns)
-    # New AEC export ("Cours > Tous les cours"): per-course rows with
-    # 'Quantité d'inscriptions ', 'Total des ventes', 'Statut' and either
-    # 'Lieu du cours' or 'Centre'. Trailing space on the inscription column
-    # is part of the real header in the AEC export.
-    tous_cours_markers = {"Quantité d'inscriptions ", "Total des ventes", "Statut"}
-    tous_cours_alt = {"Quantité d'inscriptions", "Total des ventes", "Statut"}
-    has_lieu = ("Lieu du cours" in cols) or ("Centre" in cols)
     # Activity report (Activité par période): has "Période", "Élèves différents", "Heures-Élèves"
     activite_markers = {"Période", "Élèves différents", "Heures-Élèves", "Heures enseignées"}
     # Course fiches: has "Centre", "Catégorie", "Nb total de participants", "Date début"
     fiches_markers = {"Centre", "Catégorie", "Nb total de participants", "Date début"}
     # Category report: has "Catégorie de cours"
     report_markers = {"Catégorie de cours"}
-
+    
     # Client profiles: has "Tranche d'âge de l'élève", "Nationalité", "Profil client", "Code Client"
     profils_markers = {"Tranche d'âge de l'élève", "Nationalité", "Profil client", "Code Client"}
     # Products catalog: has "Type de produit", "Nom du produit", "Code article", "Nombre maximum de places"
@@ -1907,13 +1900,7 @@ def detect_export_type(df):
     profils_score = len(profils_markers & cols)
     produits_score = len(produits_markers & cols)
     activite_score = len(activite_markers & cols)
-    tous_cours_score = max(len(tous_cours_markers & cols), len(tous_cours_alt & cols))
-
-    # Check "tous les cours" FIRST — it shares several markers (Période, Statut) with
-    # other exports but is the only one with both 'Quantité d'inscriptions' and
-    # 'Total des ventes' and a 'Lieu du cours'/'Centre' antenna column.
-    if tous_cours_score >= 3 and has_lieu:
-        return "tous_les_cours"
+    
     if activite_score >= 3:
         return "activite_periode"
     elif profils_score >= 3:
@@ -4716,7 +4703,6 @@ with st.sidebar:
     st.markdown(f"""
     <div style="padding:0; text-align:left;">
     {_logo_html}
-    <div style="display:inline-block; padding:2px 8px; background:#0ea5e9; color:white; border-radius:4px; font-size:11px; font-weight:700; letter-spacing:0.5px; margin-bottom:6px;">OSCAR v3 • NEW PARSER</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -5220,37 +5206,6 @@ else:
                     "Fichier": uploaded_file.name, "Type": "Produits",
                     "Sede": sede_code,
                     "Lignes": len(processed)
-                })
-            elif export_type == "tous_les_cours":
-                # NEW: AEC "Cours > Tous les cours" export — per-course rows.
-                # Parsed and aggregated to v2 schema by aec_parser_v3.parse_aec_export().
-                from aec_parser_v3 import parse_aec_export
-                try:
-                    processed, stats = parse_aec_export(uploaded_file)
-                except Exception as e:
-                    errors.append(f"Erreur parse Tous-les-cours ({uploaded_file.name}): {e}")
-                    continue
-                # Map Catégorie → (Macro-catégorie, Sous-secteur, Secteur) using the
-                # same mapping as the legacy flow.
-                if "Catégorie de cours" in processed.columns:
-                    levels = processed["Catégorie de cours"].apply(map_category_to_levels)
-                    processed["Macro-catégorie"] = levels.apply(lambda x: x[0])
-                    processed["Sous-secteur"] = levels.apply(lambda x: x[1])
-                    processed["Secteur"] = levels.apply(lambda x: x[2])
-                else:
-                    processed["Macro-catégorie"] = "NON RATTACHÉ"
-                    processed["Sous-secteur"] = "NON RATTACHÉ"
-                    processed["Secteur"] = "NON RATTACHÉ"
-                all_data.append(processed)
-                years_str = ", ".join(map(str, sorted(processed["Année"].unique().tolist())))
-                sedi_str = ", ".join(sorted(processed["Sede"].unique().tolist()))
-                file_info.append({
-                    "Fichier": uploaded_file.name,
-                    "Type": "Tous les cours",
-                    "Sedi": sedi_str,
-                    "Années": years_str,
-                    "Lignes": len(processed),
-                    "Lignes brutes": stats.rows_raw,
                 })
             elif export_type == "activite_periode":
                 # Activity report (Activité par période)
