@@ -5044,6 +5044,18 @@ with st.sidebar:
                     for e in new_file_entries
                 )
                 existing = st.session_state.get('stored_files', [])
+                # Detect whether there's actually preloaded cours data to evict
+                # right now. Streamlit's file_uploader retains files across reruns,
+                # so this whole block runs every single render — without this
+                # guard we'd fire st.rerun() every cycle (infinite loop) and the
+                # user's clicks on year buttons / tabs would silently get wiped.
+                _has_preloaded_cours_to_evict = _uploaded_has_cours and any(
+                    sf.get('source') == 'preloaded'
+                    and sf['name'].lower().endswith(('.xlsx', '.xls'))
+                    and 'clients' not in sf['name'].lower()
+                    and 'produit' not in sf['name'].lower()
+                    for sf in existing
+                )
                 merged = [
                     sf for sf in existing
                     if sf['name'] not in new_names
@@ -5056,12 +5068,13 @@ with st.sidebar:
                     )
                 ]
                 merged.extend(new_file_entries)
-                st.session_state.stored_files = merged
-                # Sync the sidebar 'Cours' checkbox on the NEXT run. Streamlit
-                # forbids writing to a widget's session_state key after that widget
-                # has been rendered, so we set a transient flag here and reconcile
-                # it at the very top of the script.
-                if _uploaded_has_cours:
+                # Only update stored_files + rerun if there's an actual change.
+                _stored_changed = merged != existing
+                if _stored_changed:
+                    st.session_state.stored_files = merged
+                # Trigger the deferred Cours-checkbox sync ONCE, only when there
+                # was real preloaded cours data we just evicted.
+                if _has_preloaded_cours_to_evict:
                     st.session_state["_pending_uncheck_cours"] = True
                     st.rerun()
                 # Clear processed data cache to force reprocessing with all files
