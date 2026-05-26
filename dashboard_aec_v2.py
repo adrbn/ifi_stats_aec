@@ -1034,6 +1034,15 @@ if (st.session_state.get('authenticated')
         if _al_files:
             st.session_state.stored_files = _al_files
 
+# ── Reconcile deferred widget-state changes BEFORE any widget renders ──
+# (Streamlit forbids mutating a widget's session_state key after the widget
+# has been instantiated, so we set transient flags during the run and apply
+# them at the top of the next run.)
+if st.session_state.pop("_pending_uncheck_cours", False):
+    # Clear the Cours checkbox state so the sidebar re-derives the default
+    # from what's actually in memory (which now has no preloaded cours).
+    st.session_state.pop("check_cours_unified", None)
+
 # =====================================================
 # CUSTOM CSS
 # =====================================================
@@ -5048,9 +5057,13 @@ with st.sidebar:
                 ]
                 merged.extend(new_file_entries)
                 st.session_state.stored_files = merged
-                # Sync the sidebar 'Cours' checkbox so it reflects the new state.
+                # Sync the sidebar 'Cours' checkbox on the NEXT run. Streamlit
+                # forbids writing to a widget's session_state key after that widget
+                # has been rendered, so we set a transient flag here and reconcile
+                # it at the very top of the script.
                 if _uploaded_has_cours:
-                    st.session_state["check_cours_unified"] = False
+                    st.session_state["_pending_uncheck_cours"] = True
+                    st.rerun()
                 # Clear processed data cache to force reprocessing with all files
                 for _k in ['processed_data', 'file_info', '_files_hash']:
                     st.session_state.pop(_k, None)
