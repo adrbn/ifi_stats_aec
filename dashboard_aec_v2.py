@@ -5326,14 +5326,18 @@ if (not all_uploaded_files) or _force_home:
     st.markdown("---")
     _DEFAULT_INSTRUCTIONS = (
         "### 📂 Parcours de récupération des fichiers depuis AEC\n\n"
-        "1. **Rapport par catégories** : AEC → *Rapports* → *Par catégories* → exporter en .xlsx "
-        "(un fichier par antenne × par semestre)\n"
-        "2. **Fiches de cours** : AEC → *Cours* → *Fiches de cours* → filtrer → exporter en .csv\n"
-        "3. **Profils clients** : AEC → *Clients* → sélectionner les colonnes utiles → exporter en .xlsx\n"
-        "4. **Catalogue produits** : AEC → *Catalogue* → *Produits* → exporter en .xlsx\n"
-        "5. **Activité par période** : AEC → *Cours* → *Rapports* → *Activité par période* → exporter en .xlsx "
+        "1. **🆕 Tous les cours** *(format recommandé)* : AEC → *Cours* → *Tous les cours* → exporter en .xlsx "
+        "(une seule export couvre toutes les antennes et toutes les années — l'app prend le relais pour le découpage)\n"
+        "2. **Rapport par catégories** *(ancien format, toujours supporté)* : AEC → *Rapports* → *Par catégories* "
+        "→ exporter en .xlsx (un fichier par antenne × par semestre)\n"
+        "3. **Fiches de cours** : AEC → *Cours* → *Fiches de cours* → filtrer → exporter en .csv\n"
+        "4. **Profils clients** : AEC → *Clients* → sélectionner les colonnes utiles → exporter en .xlsx\n"
+        "5. **Catalogue produits** : AEC → *Catalogue* → *Produits* → exporter en .xlsx\n"
+        "6. **Activité par période** : AEC → *Cours* → *Rapports* → *Activité par période* → exporter en .xlsx "
         "(décocher « exporter uniquement colonnes visibles »)\n\n"
-        "*Déposez ensuite les fichiers via le panneau latéral gauche.*"
+        "*Déposez ensuite les fichiers via le panneau latéral gauche. "
+        "Si tu charges à la fois le nouveau format (1) et l'ancien (2) pour les mêmes années, "
+        "l'app dédoublonne automatiquement — un panneau de comparaison s'ouvre pour te laisser choisir.*"
     )
     _INSTR_KEY = "_welcome_instructions"
     if _INSTR_KEY not in st.session_state:
