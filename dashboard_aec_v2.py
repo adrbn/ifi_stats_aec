@@ -5850,12 +5850,14 @@ with _cours_ctx:
                     if drop_col in ifi_display.columns:
                         ifi_display = ifi_display.drop(columns=[drop_col])
                 if "Inscriptions" in ifi_display.columns:
+                    # Use np.nan instead of pd.NA — pd.NA + Series.round() raises
+                    # TypeError on older pandas/numpy combos, and pd.notna() handles both.
                     if "Nouveaux inscrits" in ifi_display.columns:
-                        ifi_display["% nouveaux"] = (ifi_display["Nouveaux inscrits"] / ifi_display["Inscriptions"].replace(0, pd.NA) * 100).round(1)
-                        ifi_display["% nouveaux"] = ifi_display["% nouveaux"].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
+                        _pct_new = (ifi_display["Nouveaux inscrits"] / ifi_display["Inscriptions"].replace(0, float("nan")) * 100)
+                        ifi_display["% nouveaux"] = _pct_new.apply(lambda x: f"{round(x, 1):.1f}%" if pd.notna(x) else "")
                     if "Réinscrits" in ifi_display.columns:
-                        ifi_display["% réinscrits"] = (ifi_display["Réinscrits"] / ifi_display["Inscriptions"].replace(0, pd.NA) * 100).round(1)
-                        ifi_display["% réinscrits"] = ifi_display["% réinscrits"].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
+                        _pct_re = (ifi_display["Réinscrits"] / ifi_display["Inscriptions"].replace(0, float("nan")) * 100)
+                        ifi_display["% réinscrits"] = _pct_re.apply(lambda x: f"{round(x, 1):.1f}%" if pd.notna(x) else "")
 
                 # Format numeric columns
                 for col in ifi_display.columns:
