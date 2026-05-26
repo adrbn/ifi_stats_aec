@@ -120,12 +120,19 @@ def save_recent_session(stored_files: list) -> None:
 
 
 def restore_recent_session(session: dict) -> list:
-    """Load stored_files list from a saved session ZIP."""
+    """Load stored_files list from a saved session ZIP.
+
+    Files are tagged with source='uploaded' because from the user's
+    perspective these are 'their' files (they originally uploaded them or
+    explicitly chose to load preloaded data into this session). This makes
+    them survive the Apply button's rebuild step — which only wipes
+    server-side preloaded entries.
+    """
     result = []
     try:
         with zipfile.ZipFile(session["zip_path"], "r") as zf:
             for name in zf.namelist():
-                result.append({"name": name, "data": zf.read(name)})
+                result.append({"name": name, "data": zf.read(name), "source": "uploaded"})
     except Exception:
         pass
     return result
@@ -1042,6 +1049,33 @@ if st.session_state.pop("_pending_uncheck_cours", False):
     # Clear the Cours checkbox state so the sidebar re-derives the default
     # from what's actually in memory (which now has no preloaded cours).
     st.session_state.pop("check_cours_unified", None)
+
+# Auto-sync preloaded-data checkboxes to the actual loaded state every run.
+# Without this, the sidebar can show 'Profils' unchecked while 'Actuellement
+# chargé' shows '8 497 lignes' — clicking Apply would then wipe the loaded
+# profils data because the checkbox is treated as the user's intent.
+# We reconcile by clearing the widget state so the sidebar's own default-
+# init logic (which reads stored_files) computes a fresh accurate value.
+_sync_stored = st.session_state.get("stored_files", [])
+_actual_has_cours = any(
+    sf.get('name', '').lower().endswith(('.xlsx', '.xls'))
+    and 'clients' not in sf.get('name', '').lower()
+    and 'produit' not in sf.get('name', '').lower()
+    for sf in _sync_stored
+)
+_actual_has_clients = any('clients' in sf.get('name', '').lower() for sf in _sync_stored)
+_actual_has_produits = any('produit' in sf.get('name', '').lower() for sf in _sync_stored)
+for _key, _actual in (
+    ("check_cours_unified", _actual_has_cours),
+    ("check_clients", _actual_has_clients),
+    ("check_produits", _actual_has_produits),
+):
+    # Only re-sync when checkbox is currently FALSE but data IS loaded — this
+    # prevents Apply from accidentally wiping data. We leave the other direction
+    # alone (checkbox TRUE but no data yet) so the user can intentionally
+    # request a load that hasn't happened yet.
+    if _key in st.session_state and st.session_state[_key] is False and _actual:
+        st.session_state.pop(_key, None)
 
 # =====================================================
 # CUSTOM CSS
