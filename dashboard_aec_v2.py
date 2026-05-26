@@ -4946,6 +4946,37 @@ with st.sidebar:
         else:
             st.caption(t('sedi_semesters'))
 
+        # ── Conflict-resolution policy (when 2 formats overlap on same year) ──
+        # Only rendered if BOTH formats are detected in the current data set.
+        _legacy_set = set(st.session_state.get("_cours_source_legacy_years", []))
+        _new_set = set(st.session_state.get("_cours_source_new_years", []))
+        _has_conflict = bool(_legacy_set & _new_set)
+        if _has_conflict:
+            with st.expander("⚙️ Conflit ancien/nouveau format", expanded=False):
+                st.caption(
+                    "Les deux formats couvrent les mêmes années. Choisis comment l'app combine les données :"
+                )
+                _prev_policy = st.session_state.get("cours_conflict_policy", "prefer_new")
+                _policy = st.radio(
+                    "Politique de fusion",
+                    options=["prefer_new", "prefer_old", "sum_both"],
+                    format_func=lambda x: {
+                        "prefer_new": "🆕 Préférer nouveau (Tous les cours) — recommandé",
+                        "prefer_old": "🗂️ Préférer ancien (Rapport par catégories)",
+                        "sum_both": "➕ Tout sommer (peut gonfler les chiffres)",
+                    }[x],
+                    key="cours_conflict_policy",
+                    label_visibility="collapsed",
+                )
+                if _policy != _prev_policy:
+                    # Policy changed → invalidate cache so dedup re-runs
+                    for _k in ['processed_data', 'file_info', '_files_hash']:
+                        st.session_state.pop(_k, None)
+                    st.rerun()
+                st.caption(
+                    "Vois l'onglet **Cours → Comparaison des formats** pour les détails par année."
+                )
+
         # ── Fichiers récents ──────────────────────────────────────────────────
         recent_sessions = load_recent_sessions()
         if recent_sessions:
@@ -5499,12 +5530,62 @@ else:
     df_activite = None
     if all_data:
         df_combined = pd.concat(all_data, ignore_index=True)
-        # ── Auto-deduplication: prefer "Tous les cours" (new format) over
-        # "Rapport par catégories" (legacy ZIPs) when both cover the same year.
-        # The new format is granular per-course and aggregates to the same
-        # totals as the legacy by-category report, so dropping legacy rows for
-        # those years removes silent double-counting without losing data.
+        # ── Build the format-comparison snapshot BEFORE dedup so the user can
+        # see what's in each source per year (inscriptions, cours, heures,
+        # recettes, catégories couvertes, sedi). Stored in session_state for
+        # the Cours-tab expander to render.
+        if "__source_format" in df_combined.columns:
+            _cmp_rows = []
+            _cat_col = None
+            for c in ("Catégorie de cours", "Catégorie", "Catégorie macro", "Macro-catégorie"):
+                if c in df_combined.columns:
+                    _cat_col = c
+                    break
+            _inscr_col = "Nb. d'inscriptions" if "Nb. d'inscriptions" in df_combined.columns else None
+            _cours_col = "Nb. de Cours" if "Nb. de Cours" in df_combined.columns else None
+            _hrs_col = next((c for c in df_combined.columns if "Nombre total d'heures" in c), None)
+            _rec_col = "Recettes" if "Recettes" in df_combined.columns else next(
+                (c for c in df_combined.columns if "recette" in c.lower()), None
+            )
+            for _yr in sorted(df_combined["Année"].dropna().unique(), reverse=True):
+                _yr_df = df_combined[df_combined["Année"] == _yr]
+                for _fmt in ["Tous les cours", "Rapport par catégories"]:
+                    _sub = _yr_df[_yr_df["__source_format"] == _fmt]
+                    if _sub.empty:
+                        continue
+                    _row = {
+                        "Année": int(_yr),
+                        "Format": "🆕 Nouveau" if _fmt == "Tous les cours" else "🗂️ Ancien",
+                        "Inscriptions": int(_sub[_inscr_col].sum()) if _inscr_col else None,
+                        "Cours": int(_sub[_cours_col].sum()) if _cours_col else None,
+                        "Heures": int(_sub[_hrs_col].sum()) if _hrs_col else None,
+                        "Recettes (€)": int(_sub[_rec_col].sum()) if _rec_col else None,
+                        "Catégories": _sub[_cat_col].nunique() if _cat_col else None,
+                        "Sedi": _sub["Sede"].nunique() if "Sede" in _sub.columns else None,
+                        "Lignes": len(_sub),
+                    }
+                    _cmp_rows.append(_row)
+            # Categories present in each format (overlap years only)
+            _cat_by_fmt = {"Tous les cours": set(), "Rapport par catégories": set()}
+            if _cat_col:
+                for _fmt in _cat_by_fmt:
+                    _cat_by_fmt[_fmt] = set(
+                        df_combined.loc[df_combined["__source_format"] == _fmt, _cat_col].dropna().unique().tolist()
+                    )
+            st.session_state["_cours_format_comparison"] = {
+                "rows": _cmp_rows,
+                "cats_new_only": sorted(_cat_by_fmt["Tous les cours"] - _cat_by_fmt["Rapport par catégories"]),
+                "cats_old_only": sorted(_cat_by_fmt["Rapport par catégories"] - _cat_by_fmt["Tous les cours"]),
+                "cats_both": sorted(_cat_by_fmt["Tous les cours"] & _cat_by_fmt["Rapport par catégories"]),
+            }
+        # ── Conflict resolution between old & new cours formats ──
+        # Policy comes from the sidebar radio:
+        #   prefer_new  → drop legacy rows for overlap years (safe default)
+        #   prefer_old  → drop new-format rows for overlap years
+        #   sum_both    → keep everything (gonflé, user's call)
+        _policy = st.session_state.get("cours_conflict_policy", "prefer_new")
         _dedup_dropped_years = []
+        _dedup_format_dropped = None  # which format got dropped (for the UI)
         if "__source_format" in df_combined.columns and "Année" in df_combined.columns:
             _new_years = set(
                 df_combined.loc[df_combined["__source_format"] == "Tous les cours", "Année"].unique()
@@ -5513,9 +5594,15 @@ else:
                 df_combined.loc[df_combined["__source_format"] == "Rapport par catégories", "Année"].unique()
             )
             _conflict_years = _new_years & _legacy_years
-            if _conflict_years:
+            if _conflict_years and _policy != "sum_both":
+                if _policy == "prefer_new":
+                    _drop_label = "Rapport par catégories"
+                    _dedup_format_dropped = "ancien"
+                else:  # prefer_old
+                    _drop_label = "Tous les cours"
+                    _dedup_format_dropped = "nouveau"
                 _mask_drop = (
-                    (df_combined["__source_format"] == "Rapport par catégories")
+                    (df_combined["__source_format"] == _drop_label)
                     & (df_combined["Année"].isin(_conflict_years))
                 )
                 df_combined = df_combined.loc[~_mask_drop].reset_index(drop=True)
@@ -5524,6 +5611,7 @@ else:
         if "__source_format" in df_combined.columns:
             df_combined = df_combined.drop(columns=["__source_format"])
         st.session_state["_cours_dedup_dropped_years"] = _dedup_dropped_years
+        st.session_state["_cours_dedup_format_dropped"] = _dedup_format_dropped
     if all_fiches:
         df_fiches = pd.concat(all_fiches, ignore_index=True)
     if all_profils:
@@ -5657,15 +5745,27 @@ with _cours_ctx:
     # is informational only — to give the user transparency about what got
     # silently dropped.
     _dedup_dropped = st.session_state.get("_cours_dedup_dropped_years", [])
+    _dedup_fmt_dropped = st.session_state.get("_cours_dedup_format_dropped")
     _legacy_yrs = st.session_state.get("_cours_source_legacy_years", [])
     _new_yrs = st.session_state.get("_cours_source_new_years", [])
+    _policy = st.session_state.get("cours_conflict_policy", "prefer_new")
+
     if _dedup_dropped:
+        _kept = "🆕 nouveau format (Tous les cours)" if _dedup_fmt_dropped == "ancien" else "🗂️ ancien format (Rapport par catégories)"
+        _dropped = "🗂️ ancien" if _dedup_fmt_dropped == "ancien" else "🆕 nouveau"
         st.success(
-            f"✅ **Doublons résolus automatiquement** — pour les années "
-            f"{', '.join(map(str, _dedup_dropped))} les deux formats étaient présents ; "
-            f"l'app utilise le **nouveau format** (Tous les cours, plus granulaire) "
-            f"et ignore l'ancien (Rapport par catégories) pour éviter le double comptage.",
+            f"✅ **Conflit résolu** — années {', '.join(map(str, _dedup_dropped))} : "
+            f"l'app garde le **{_kept}** et ignore le {_dropped} pour ces années. "
+            f"Change la politique dans la sidebar (Importer des données AEC → Conflit ancien/nouveau format).",
             icon="✅",
+        )
+    elif _policy == "sum_both" and (set(_legacy_yrs) & set(_new_yrs)):
+        _overlap = sorted(set(_legacy_yrs) & set(_new_yrs), reverse=True)
+        st.warning(
+            f"⚠️ **Sommation activée** — années {', '.join(map(str, _overlap))} : "
+            f"les deux formats sont additionnés (double comptage possible). "
+            f"Pour désactiver, va dans la sidebar → Conflit ancien/nouveau format.",
+            icon="⚠️",
         )
     elif _legacy_yrs and _new_yrs:
         st.info(
@@ -5674,6 +5774,41 @@ with _cours_ctx:
             f"+ Tous les cours ({', '.join(map(str, _new_yrs))}).",
             icon="ℹ️",
         )
+
+    # ── Detailed format-comparison expander (only when both formats overlap) ──
+    _cmp = st.session_state.get("_cours_format_comparison")
+    if _cmp and _cmp.get("rows") and (set(_legacy_yrs) & set(_new_yrs)):
+        with st.expander("📊 Comparaison détaillée ancien vs nouveau format", expanded=False):
+            st.caption(
+                "Pour chaque année couverte par les deux formats, voici ce que contient chaque source. "
+                "Les écarts importants peuvent signaler qu'un format est incomplet."
+            )
+            import pandas as _pd
+            _cmp_df = _pd.DataFrame(_cmp["rows"])
+            st.dataframe(_cmp_df, use_container_width=True, hide_index=True)
+
+            st.markdown("**Catégories de cours**")
+            _c1, _c2, _c3 = st.columns(3)
+            with _c1:
+                st.metric("Communes aux 2 formats", len(_cmp.get("cats_both", [])))
+            with _c2:
+                st.metric("🆕 Présentes uniquement dans Nouveau", len(_cmp.get("cats_new_only", [])))
+            with _c3:
+                st.metric("🗂️ Présentes uniquement dans Ancien", len(_cmp.get("cats_old_only", [])))
+
+            if _cmp.get("cats_old_only"):
+                st.warning(
+                    f"⚠️ Ces catégories existent dans l'ancien format mais pas dans le nouveau : "
+                    f"**{', '.join(_cmp['cats_old_only'])}** — si tu choisis 'Préférer nouveau' "
+                    f"ces données disparaîtront des totaux.",
+                    icon="⚠️",
+                )
+            if _cmp.get("cats_new_only"):
+                st.info(
+                    f"ℹ️ Ces catégories existent uniquement dans le nouveau format : "
+                    f"**{', '.join(_cmp['cats_new_only'])}**.",
+                    icon="ℹ️",
+                )
 
     st.markdown(f"## {t('overview')}")
 
