@@ -4807,8 +4807,19 @@ with st.sidebar:
                 else:
                     _years = sorted(PRELOADED_FILES.keys(), reverse=True) if PRELOADED_FILES else []
                 _years_label = ", ".join(map(str, _years)) if _years else "—"
+                # Default the toggle to MATCH what's currently in memory, so the UI
+                # never starts in a 'mismatch' state on first paint.
+                if "check_cours_unified" not in st.session_state:
+                    _stored = st.session_state.get("stored_files", [])
+                    _has_any_pre_cours = any(
+                        sf.get("source") == "preloaded"
+                        and 'clients' not in sf.get('name', '').lower()
+                        and 'produit' not in sf.get('name', '').lower()
+                        for sf in _stored
+                    )
+                    st.session_state["check_cours_unified"] = _has_any_pre_cours
                 _toggle_on = st.checkbox(
-                    f"Cours ({_years_label})", key="check_cours_unified", value=True,
+                    f"Cours ({_years_label})", key="check_cours_unified",
                     help=f"{len(_years)} année(s) sur le serveur",
                 )
                 if _toggle_on:
@@ -4819,63 +4830,42 @@ with st.sidebar:
                         selected_years = list(PRELOADED_FILES.keys())
                         load_categories = True
 
-            # --- Clients ---
+            # --- Clients (default checked iff already in memory) ---
             load_clients = False
             if PRELOADED_CLIENTS:
-                load_clients = st.checkbox("Profils", key="check_clients", value=True,
+                if "check_clients" not in st.session_state:
+                    _stored = st.session_state.get("stored_files", [])
+                    st.session_state["check_clients"] = any(
+                        sf.get("source") == "preloaded" and 'clients' in sf.get('name', '').lower()
+                        for sf in _stored
+                    )
+                load_clients = st.checkbox("Profils", key="check_clients",
                                            help=f"{len(PRELOADED_CLIENTS)} fichier(s) disponible(s)")
 
-            # --- Produits ---
+            # --- Produits (default checked iff already in memory) ---
             load_produits = False
             if PRELOADED_PRODUITS:
-                load_produits = st.checkbox("Catalogue produits", key="check_produits", value=True,
+                if "check_produits" not in st.session_state:
+                    _stored = st.session_state.get("stored_files", [])
+                    st.session_state["check_produits"] = any(
+                        sf.get("source") == "preloaded" and 'produit' in sf.get('name', '').lower()
+                        for sf in _stored
+                    )
+                load_produits = st.checkbox("Catalogue produits", key="check_produits",
                                             help=f"{len(PRELOADED_PRODUITS)} fichier(s) — IFM, IFF, IFN, IFP")
 
-            # Detect mismatch between checkbox state and what's actually in memory.
-            # Filenames in stored_files tagged with source='preloaded' reveal which
-            # preloaded categories are currently active. New-format files are tagged
-            # with subsource='new_cours_server' to distinguish them.
-            _stored = st.session_state.get("stored_files", [])
-            _preloaded_in_mem = [sf for sf in _stored if sf.get("source") == "preloaded"]
-            _has_legacy_cours = any(sf.get('subsource') != 'new_cours_server'
-                                    and sf.get('name', '').endswith(('.xlsx', '.xls'))
-                                    and 'clients' not in sf.get('name', '').lower()
-                                    and 'produit' not in sf.get('name', '').lower()
-                                    for sf in _preloaded_in_mem)
-            _has_new_cours = any(sf.get('subsource') == 'new_cours_server' for sf in _preloaded_in_mem)
-            _has_pre_clients = any('clients' in sf.get('name', '').lower() for sf in _preloaded_in_mem)
-            _has_pre_produits = any('produit' in sf.get('name', '').lower() for sf in _preloaded_in_mem)
-            _mismatch = (
-                (load_categories != _has_legacy_cours and PRELOADED_FILES)
-                or (load_new_cours_server != _has_new_cours and PRELOADED_NEW_COURS)
-                or (load_clients != _has_pre_clients and PRELOADED_CLIENTS)
-                or (load_produits != _has_pre_produits and PRELOADED_PRODUITS)
-            )
-            if _mismatch:
-                st.warning(
-                    "⚠️ Les cases ne correspondent pas aux données chargées. "
-                    "Clique sur le bouton ci-dessous pour appliquer.",
-                    icon="⚠️",
-                )
-
-            # Single load/apply button. The button is ALWAYS shown so the user can
-            # apply their checkbox selection (even when unchecking everything to
-            # clear preloaded data).
+            # Single load/apply button — always visible, always says the same thing.
+            # The mismatch warning was removed because it confused users; the button
+            # itself is now the one source of truth: click it = apply the current
+            # checkbox state.
             anything_selected = (
                 (PRELOADED_FILES and load_categories)
                 or (PRELOADED_NEW_COURS and load_new_cours_server)
                 or (PRELOADED_CLIENTS and load_clients)
                 or (PRELOADED_PRODUITS and load_produits)
             )
-            if _mismatch:
-                _btn_label = "🔄 Appliquer la sélection"
-                _btn_help = "L'état des cases diffère de ce qui est actuellement chargé. Clique pour synchroniser."
-            elif anything_selected:
-                _btn_label = "🚀 Charger les données sélectionnées"
-                _btn_help = None
-            else:
-                _btn_label = "🗑️ Décharger les données préchargées"
-                _btn_help = "Aucune case cochée — clique pour vider les données préchargées (tes fichiers uploadés manuellement sont conservés)."
+            _btn_label = "🔄 Appliquer"
+            _btn_help = "Charge/décharge les données préchargées selon les cases cochées ci-dessus. Tes fichiers uploadés manuellement sont toujours conservés."
             if st.button(_btn_label, key="load_all_preloaded", use_container_width=True, type="primary", help=_btn_help):
                     # Keep only USER-UPLOADED files (preserve manual uploads); we
                     # rebuild the preloaded subset from the current checkbox state.
