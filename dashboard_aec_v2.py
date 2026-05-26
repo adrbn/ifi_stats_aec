@@ -4816,17 +4816,19 @@ with st.sidebar:
                 else:
                     _years = sorted(PRELOADED_FILES.keys(), reverse=True) if PRELOADED_FILES else []
                 _years_label = ", ".join(map(str, _years)) if _years else "—"
-                # Default the toggle to MATCH what's currently in memory, so the UI
-                # never starts in a 'mismatch' state on first paint.
+                # Default the toggle to MATCH what's currently in memory, regardless
+                # of source tag. Restored sessions lose the 'preloaded' tag but the
+                # data is still there — the checkbox should reflect "is this
+                # category present" rather than "did it come from the server".
                 if "check_cours_unified" not in st.session_state:
                     _stored = st.session_state.get("stored_files", [])
-                    _has_any_pre_cours = any(
-                        sf.get("source") == "preloaded"
+                    _has_any_cours = any(
+                        sf.get('name', '').lower().endswith(('.xlsx', '.xls'))
                         and 'clients' not in sf.get('name', '').lower()
                         and 'produit' not in sf.get('name', '').lower()
                         for sf in _stored
                     )
-                    st.session_state["check_cours_unified"] = _has_any_pre_cours
+                    st.session_state["check_cours_unified"] = _has_any_cours
                 _toggle_on = st.checkbox(
                     f"Cours ({_years_label})", key="check_cours_unified",
                     help=f"{len(_years)} année(s) sur le serveur",
@@ -4839,26 +4841,24 @@ with st.sidebar:
                         selected_years = list(PRELOADED_FILES.keys())
                         load_categories = True
 
-            # --- Clients (default checked iff already in memory) ---
+            # --- Clients (default checked iff data of this category is in memory) ---
             load_clients = False
             if PRELOADED_CLIENTS:
                 if "check_clients" not in st.session_state:
                     _stored = st.session_state.get("stored_files", [])
                     st.session_state["check_clients"] = any(
-                        sf.get("source") == "preloaded" and 'clients' in sf.get('name', '').lower()
-                        for sf in _stored
+                        'clients' in sf.get('name', '').lower() for sf in _stored
                     )
                 load_clients = st.checkbox("Profils", key="check_clients",
                                            help=f"{len(PRELOADED_CLIENTS)} fichier(s) disponible(s)")
 
-            # --- Produits (default checked iff already in memory) ---
+            # --- Produits (default checked iff data of this category is in memory) ---
             load_produits = False
             if PRELOADED_PRODUITS:
                 if "check_produits" not in st.session_state:
                     _stored = st.session_state.get("stored_files", [])
                     st.session_state["check_produits"] = any(
-                        sf.get("source") == "preloaded" and 'produit' in sf.get('name', '').lower()
-                        for sf in _stored
+                        'produit' in sf.get('name', '').lower() for sf in _stored
                     )
                 load_produits = st.checkbox("Catalogue produits", key="check_produits",
                                             help=f"{len(PRELOADED_PRODUITS)} fichier(s) — IFM, IFF, IFN, IFP")
