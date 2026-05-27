@@ -120,19 +120,12 @@ def save_recent_session(stored_files: list) -> None:
 
 
 def restore_recent_session(session: dict) -> list:
-    """Load stored_files list from a saved session ZIP.
-
-    Files are tagged with source='uploaded' because from the user's
-    perspective these are 'their' files (they originally uploaded them or
-    explicitly chose to load preloaded data into this session). This makes
-    them survive the Apply button's rebuild step — which only wipes
-    server-side preloaded entries.
-    """
+    """Load stored_files list from a saved session ZIP."""
     result = []
     try:
         with zipfile.ZipFile(session["zip_path"], "r") as zf:
             for name in zf.namelist():
-                result.append({"name": name, "data": zf.read(name), "source": "uploaded"})
+                result.append({"name": name, "data": zf.read(name)})
     except Exception:
         pass
     return result
@@ -989,93 +982,33 @@ if (st.session_state.get('authenticated')
     from io import BytesIO as _al_BytesIO
     _al_script_dir = _al_os.path.dirname(_al_os.path.abspath(__file__))
     _al_data_dir = _al_os.path.join(_al_script_dir, "data")
-    _al_new_cours_dir = _al_os.path.join(_al_data_dir, "new_cours")
-    # Prefer NEW format if any files are present in data/new_cours/.
-    # This avoids auto-loading BOTH formats on first visit (which would silently double-count).
-    _al_has_new = (
-        _al_os.path.exists(_al_new_cours_dir)
-        and any(_fn.lower().endswith(('.xlsx', '.xls')) and not _fn.startswith('.')
-                for _fn in _al_os.listdir(_al_new_cours_dir))
-    )
     if _al_os.path.exists(_al_data_dir):
         _al_files = []
-        # 1) Cours data — pick NEW if available, else fall back to legacy ZIPs
-        if _al_has_new:
-            for _fn in sorted(_al_os.listdir(_al_new_cours_dir)):
-                if _fn.lower().endswith(('.xlsx', '.xls')) and not _fn.startswith('.'):
-                    try:
-                        with open(_al_os.path.join(_al_new_cours_dir, _fn), 'rb') as _f:
-                            _al_files.append({
-                                'name': _fn, 'data': _f.read(),
-                                'source': 'preloaded', 'subsource': 'new_cours_server',
-                            })
-                    except Exception:
-                        pass
-        else:
-            for _fn in sorted(_al_os.listdir(_al_data_dir)):
-                _fp = _al_os.path.join(_al_data_dir, _fn)
-                if _fn.endswith('.zip') and 'exports_AEC_' in _fn:
-                    try:
-                        with open(_fp, 'rb') as _f:
-                            with _al_zip.ZipFile(_al_BytesIO(_f.read()), 'r') as _zf:
-                                for _n in _zf.namelist():
-                                    if _n.lower().endswith(('.xlsx', '.xls')) and not _n.startswith('__MACOSX'):
-                                        _al_files.append({'name': _n.split('/')[-1], 'data': _zf.read(_n), 'source': 'preloaded'})
-                    except Exception:
-                        pass
-        # 2) Clients & produits — always load (orthogonal to Cours source)
         for _fn in sorted(_al_os.listdir(_al_data_dir)):
             _fp = _al_os.path.join(_al_data_dir, _fn)
-            if _fn.endswith('.csv') and 'clients' in _fn.lower():
+            if _fn.endswith('.zip') and 'exports_AEC_' in _fn:
                 try:
                     with open(_fp, 'rb') as _f:
-                        _al_files.append({'name': _fn, 'data': _f.read(), 'source': 'preloaded'})
+                        with _al_zip.ZipFile(_al_BytesIO(_f.read()), 'r') as _zf:
+                            for _n in _zf.namelist():
+                                if _n.lower().endswith(('.xlsx', '.xls')) and not _n.startswith('__MACOSX'):
+                                    _al_files.append({'name': _n.split('/')[-1], 'data': _zf.read(_n)})
+                except Exception:
+                    pass
+            elif _fn.endswith('.csv') and 'clients' in _fn.lower():
+                try:
+                    with open(_fp, 'rb') as _f:
+                        _al_files.append({'name': _fn, 'data': _f.read()})
                 except Exception:
                     pass
             elif _fn.endswith('.xlsx') and 'produit' in _fn.lower():
                 try:
                     with open(_fp, 'rb') as _f:
-                        _al_files.append({'name': _fn, 'data': _f.read(), 'source': 'preloaded'})
+                        _al_files.append({'name': _fn, 'data': _f.read()})
                 except Exception:
                     pass
         if _al_files:
             st.session_state.stored_files = _al_files
-
-# ── Reconcile deferred widget-state changes BEFORE any widget renders ──
-# (Streamlit forbids mutating a widget's session_state key after the widget
-# has been instantiated, so we set transient flags during the run and apply
-# them at the top of the next run.)
-if st.session_state.pop("_pending_uncheck_cours", False):
-    # Clear the Cours checkbox state so the sidebar re-derives the default
-    # from what's actually in memory (which now has no preloaded cours).
-    st.session_state.pop("check_cours_unified", None)
-
-# Auto-sync preloaded-data checkboxes to the actual loaded state every run.
-# Without this, the sidebar can show 'Profils' unchecked while 'Actuellement
-# chargé' shows '8 497 lignes' — clicking Apply would then wipe the loaded
-# profils data because the checkbox is treated as the user's intent.
-# We reconcile by clearing the widget state so the sidebar's own default-
-# init logic (which reads stored_files) computes a fresh accurate value.
-_sync_stored = st.session_state.get("stored_files", [])
-_actual_has_cours = any(
-    sf.get('name', '').lower().endswith(('.xlsx', '.xls'))
-    and 'clients' not in sf.get('name', '').lower()
-    and 'produit' not in sf.get('name', '').lower()
-    for sf in _sync_stored
-)
-_actual_has_clients = any('clients' in sf.get('name', '').lower() for sf in _sync_stored)
-_actual_has_produits = any('produit' in sf.get('name', '').lower() for sf in _sync_stored)
-for _key, _actual in (
-    ("check_cours_unified", _actual_has_cours),
-    ("check_clients", _actual_has_clients),
-    ("check_produits", _actual_has_produits),
-):
-    # Only re-sync when checkbox is currently FALSE but data IS loaded — this
-    # prevents Apply from accidentally wiping data. We leave the other direction
-    # alone (checkbox TRUE but no data yet) so the user can intentionally
-    # request a load that hasn't happened yet.
-    if _key in st.session_state and st.session_state[_key] is False and _actual:
-        st.session_state.pop(_key, None)
 
 # =====================================================
 # CUSTOM CSS
@@ -1950,20 +1883,13 @@ MONTH_NUM_TO_FR = {
 def detect_export_type(df):
     """Detect export type from DataFrame columns."""
     cols = set(df.columns)
-    # New AEC export ("Cours > Tous les cours"): per-course rows with
-    # 'Quantité d'inscriptions ', 'Total des ventes', 'Statut' and either
-    # 'Lieu du cours' or 'Centre'. Trailing space on the inscription column
-    # is part of the real header in the AEC export.
-    tous_cours_markers = {"Quantité d'inscriptions ", "Total des ventes", "Statut"}
-    tous_cours_alt = {"Quantité d'inscriptions", "Total des ventes", "Statut"}
-    has_lieu = ("Lieu du cours" in cols) or ("Centre" in cols)
     # Activity report (Activité par période): has "Période", "Élèves différents", "Heures-Élèves"
     activite_markers = {"Période", "Élèves différents", "Heures-Élèves", "Heures enseignées"}
     # Course fiches: has "Centre", "Catégorie", "Nb total de participants", "Date début"
     fiches_markers = {"Centre", "Catégorie", "Nb total de participants", "Date début"}
     # Category report: has "Catégorie de cours"
     report_markers = {"Catégorie de cours"}
-
+    
     # Client profiles: has "Tranche d'âge de l'élève", "Nationalité", "Profil client", "Code Client"
     profils_markers = {"Tranche d'âge de l'élève", "Nationalité", "Profil client", "Code Client"}
     # Products catalog: has "Type de produit", "Nom du produit", "Code article", "Nombre maximum de places"
@@ -1974,13 +1900,7 @@ def detect_export_type(df):
     profils_score = len(profils_markers & cols)
     produits_score = len(produits_markers & cols)
     activite_score = len(activite_markers & cols)
-    tous_cours_score = max(len(tous_cours_markers & cols), len(tous_cours_alt & cols))
-
-    # Check "tous les cours" FIRST — it shares several markers (Période, Statut) with
-    # other exports but is the only one with both 'Quantité d'inscriptions' and
-    # 'Total des ventes' and a 'Lieu du cours'/'Centre' antenna column.
-    if tous_cours_score >= 3 and has_lieu:
-        return "tous_les_cours"
+    
     if activite_score >= 3:
         return "activite_periode"
     elif profils_score >= 3:
@@ -4751,11 +4671,9 @@ def render_activite_tabs(df_act):
 import os
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
-NEW_COURS_DIR = os.path.join(DATA_DIR, "new_cours")
-PRELOADED_FILES = {}            # year -> zip path (LEGACY category reports)
-PRELOADED_NEW_COURS = []        # list of .xlsx paths (NEW "Tous les cours" format)
-PRELOADED_CLIENTS = []          # list of csv paths
-PRELOADED_PRODUITS = []         # list of xlsx paths
+PRELOADED_FILES = {}       # year -> zip path (category reports)
+PRELOADED_CLIENTS = []     # list of csv paths
+PRELOADED_PRODUITS = []    # list of xlsx paths
 
 if os.path.exists(DATA_DIR):
     for filename in os.listdir(DATA_DIR):
@@ -4771,29 +4689,7 @@ if os.path.exists(DATA_DIR):
         elif filename.endswith('.xlsx') and 'produits' in filename.lower():
             PRELOADED_PRODUITS.append(filepath)
 
-# Scan data/new_cours/ for the new-format "Tous les cours" exports
-if os.path.exists(NEW_COURS_DIR):
-    for filename in sorted(os.listdir(NEW_COURS_DIR)):
-        if filename.lower().endswith(('.xlsx', '.xls')) and not filename.startswith('.'):
-            PRELOADED_NEW_COURS.append(os.path.join(NEW_COURS_DIR, filename))
-
-HAS_PRELOADED_DATA = bool(PRELOADED_FILES) or bool(PRELOADED_NEW_COURS) or bool(PRELOADED_CLIENTS) or bool(PRELOADED_PRODUITS)
-
-
-@st.cache_data(show_spinner=False)
-def _peek_new_cours_years(filepaths: tuple) -> dict:
-    """Return {filepath: sorted_list_of_years} by lightly parsing each new-format file.
-    Cached on the tuple of file paths."""
-    out = {}
-    for fp in filepaths:
-        try:
-            from aec_parser_v3 import parse_aec_export
-            with open(fp, 'rb') as _f:
-                _df, _ = parse_aec_export(_f.read())
-            out[fp] = sorted(int(y) for y in _df["Année"].dropna().unique())
-        except Exception:
-            out[fp] = []
-    return out
+HAS_PRELOADED_DATA = bool(PRELOADED_FILES) or bool(PRELOADED_CLIENTS) or bool(PRELOADED_PRODUITS)
 
 with st.sidebar:
     # ── Branding ──
@@ -4807,7 +4703,6 @@ with st.sidebar:
     st.markdown(f"""
     <div style="padding:0; text-align:left;">
     {_logo_html}
-    <div style="display:inline-block; padding:1px 6px; background:#e2e8f0; color:#475569; border-radius:3px; font-size:10px; font-weight:600; letter-spacing:0.3px; margin-bottom:6px;">v3 parser</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -4831,135 +4726,39 @@ with st.sidebar:
 
     # ── Chargement des données ──
     with st.expander("📂 Importer des données AEC", expanded=True):
-        # ── Status block: what is ACTUALLY loaded right now ──
-        # Reads the real state from session_state (post-processing, post-dedup)
-        # instead of just listing server-side preloaded files. This is the
-        # single source of truth for the user.
-        _loaded_cours_yrs_new = sorted(st.session_state.get("_cours_source_new_years", []), reverse=True)
-        _loaded_cours_yrs_old = sorted(st.session_state.get("_cours_source_legacy_years", []), reverse=True)
-        _dropped_yrs = set(st.session_state.get("_cours_dedup_dropped_years", []))
-        _fmt_dropped = st.session_state.get("_cours_dedup_format_dropped")
-        # Effective (post-dedup) years per format
-        if _fmt_dropped == "ancien":
-            _eff_old = [y for y in _loaded_cours_yrs_old if y not in _dropped_yrs]
-            _eff_new = list(_loaded_cours_yrs_new)
-        elif _fmt_dropped == "nouveau":
-            _eff_old = list(_loaded_cours_yrs_old)
-            _eff_new = [y for y in _loaded_cours_yrs_new if y not in _dropped_yrs]
-        else:  # sum_both or no conflict
-            _eff_old = list(_loaded_cours_yrs_old)
-            _eff_new = list(_loaded_cours_yrs_new)
-        _all_loaded_yrs = sorted(set(_eff_old) | set(_eff_new), reverse=True)
-
-        _profils_df = st.session_state.get("profils_clients_data")
-        _produits_df = st.session_state.get("produits_data")
-        _nb_profils = len(_profils_df) if _profils_df is not None else 0
-        _nb_produits = len(_produits_df) if _produits_df is not None else 0
-
-        _has_any_loaded = bool(_all_loaded_yrs) or _nb_profils or _nb_produits
-        if _has_any_loaded:
-            st.markdown("**📊 Actuellement chargé**")
-            if _all_loaded_yrs:
-                _parts = []
-                if _eff_new:
-                    _parts.append(f"🆕 {', '.join(map(str, sorted(_eff_new, reverse=True)))}")
-                if _eff_old:
-                    _parts.append(f"🗂️ {', '.join(map(str, sorted(_eff_old, reverse=True)))}")
-                st.caption(f"**Cours** : {' • '.join(_parts)}")
-            if _nb_profils:
-                st.caption(f"**Profils** : {_nb_profils:,} lignes".replace(",", " "))
-            if _nb_produits:
-                st.caption(f"**Produits** : {_nb_produits:,} lignes".replace(",", " "))
-            st.markdown("---")
-
         st.caption("Glissez vos exports Excel/CSV ou utilisez les données pré-chargées ci-dessous.")
         # Show preloaded files section if available
         if HAS_PRELOADED_DATA:
-            st.markdown(f"**📦 {t('preloaded_files')}** _(serveur)_")
+            st.markdown(f"**📦 {t('preloaded_files')}**")
 
-            # --- Cours : un seul toggle, format auto-détecté ---
-            # If both old and new server-side data exist, NEW takes precedence
-            # (avoids silent double-counting and aligns with auto-load behavior).
-            load_categories = False           # legacy ZIPs enabled?
-            load_new_cours_server = False     # new-format files enabled?
-            selected_years = []
-            selected_new_cours_paths = []
-            if PRELOADED_FILES or PRELOADED_NEW_COURS:
-                if PRELOADED_NEW_COURS:
-                    _file_years = _peek_new_cours_years(tuple(PRELOADED_NEW_COURS))
-                    _years = sorted({y for ys in _file_years.values() for y in ys}, reverse=True)
-                else:
-                    _years = sorted(PRELOADED_FILES.keys(), reverse=True) if PRELOADED_FILES else []
-                _years_label = ", ".join(map(str, _years)) if _years else "—"
-                # Default the toggle to MATCH what's currently in memory, regardless
-                # of source tag. Restored sessions lose the 'preloaded' tag but the
-                # data is still there — the checkbox should reflect "is this
-                # category present" rather than "did it come from the server".
-                if "check_cours_unified" not in st.session_state:
-                    _stored = st.session_state.get("stored_files", [])
-                    _has_any_cours = any(
-                        sf.get('name', '').lower().endswith(('.xlsx', '.xls'))
-                        and 'clients' not in sf.get('name', '').lower()
-                        and 'produit' not in sf.get('name', '').lower()
-                        for sf in _stored
-                    )
-                    st.session_state["check_cours_unified"] = _has_any_cours
-                _toggle_on = st.checkbox(
-                    f"Cours serveur ({_years_label})", key="check_cours_unified",
-                    help=(
-                        f"Charge les {len(_years)} année(s) de cours pré-chargées sur le serveur. "
-                        f"Pour voir ce qui est ACTUELLEMENT en mémoire (uploads + restore + préchargés), "
-                        f"regarde le bloc '📊 Actuellement chargé' en haut."
-                    ),
-                )
-                if _toggle_on:
-                    if PRELOADED_NEW_COURS:
-                        selected_new_cours_paths = PRELOADED_NEW_COURS
-                        load_new_cours_server = True
-                    elif PRELOADED_FILES:
-                        selected_years = list(PRELOADED_FILES.keys())
-                        load_categories = True
+            # --- Catégories / Cours (ZIP par année) ---
+            load_categories = False
+            if PRELOADED_FILES:
+                available_years = sorted(PRELOADED_FILES.keys(), reverse=True)
+                years_label = ", ".join(str(y) for y in available_years)
+                load_categories = st.checkbox(
+                    f"Cours ({years_label})", key="check_categories", value=True,
+                    help=f"{len(available_years)} année(s) disponible(s)")
+                selected_years = available_years if load_categories else []
 
-            # --- Clients (default checked iff data of this category is in memory) ---
+            # --- Clients ---
             load_clients = False
             if PRELOADED_CLIENTS:
-                if "check_clients" not in st.session_state:
-                    _stored = st.session_state.get("stored_files", [])
-                    st.session_state["check_clients"] = any(
-                        'clients' in sf.get('name', '').lower() for sf in _stored
-                    )
-                load_clients = st.checkbox("Profils serveur", key="check_clients",
-                                           help=f"Charge les {len(PRELOADED_CLIENTS)} fichier(s) profils pré-chargés sur le serveur.")
+                load_clients = st.checkbox("Profils", key="check_clients", value=True,
+                                           help=f"{len(PRELOADED_CLIENTS)} fichier(s) disponible(s)")
 
-            # --- Produits (default checked iff data of this category is in memory) ---
+            # --- Produits ---
             load_produits = False
             if PRELOADED_PRODUITS:
-                if "check_produits" not in st.session_state:
-                    _stored = st.session_state.get("stored_files", [])
-                    st.session_state["check_produits"] = any(
-                        'produit' in sf.get('name', '').lower() for sf in _stored
-                    )
-                load_produits = st.checkbox("Catalogue produits serveur", key="check_produits",
-                                            help=f"Charge les {len(PRELOADED_PRODUITS)} fichier(s) catalogue produits pré-chargés sur le serveur (IFM, IFF, IFN, IFP).")
+                load_produits = st.checkbox("Catalogue produits", key="check_produits", value=True,
+                                            help=f"{len(PRELOADED_PRODUITS)} fichier(s) — IFM, IFF, IFN, IFP")
 
-            # Single load/apply button — always visible, always says the same thing.
-            # The mismatch warning was removed because it confused users; the button
-            # itself is now the one source of truth: click it = apply the current
-            # checkbox state.
-            anything_selected = (
-                (PRELOADED_FILES and load_categories)
-                or (PRELOADED_NEW_COURS and load_new_cours_server)
-                or (PRELOADED_CLIENTS and load_clients)
-                or (PRELOADED_PRODUITS and load_produits)
-            )
-            _btn_label = "🔄 Appliquer"
-            _btn_help = "Charge/décharge les données préchargées selon les cases cochées ci-dessus. Tes fichiers uploadés manuellement sont toujours conservés."
-            if st.button(_btn_label, key="load_all_preloaded", use_container_width=True, type="primary", help=_btn_help):
-                    # Keep only USER-UPLOADED files (preserve manual uploads); we
-                    # rebuild the preloaded subset from the current checkbox state.
-                    _existing = st.session_state.get("stored_files", [])
-                    st.session_state.stored_files = [sf for sf in _existing if sf.get("source") == "uploaded"]
-                    # Load LEGACY category ZIPs (old format)
+            # Single load button
+            anything_selected = (PRELOADED_FILES and load_categories) or (PRELOADED_CLIENTS and load_clients) or (PRELOADED_PRODUITS and load_produits)
+            if anything_selected:
+                if st.button("🚀 Charger les données sélectionnées", key="load_all_preloaded", use_container_width=True, type="primary"):
+                    st.session_state.stored_files = []
+                    # Load category ZIPs
                     if PRELOADED_FILES and selected_years:
                         for year in selected_years:
                             zip_path = PRELOADED_FILES[year]
@@ -4972,24 +4771,10 @@ with st.sidebar:
                                             file_data = zf.read(name)
                                             st.session_state.stored_files.append({
                                                 'name': name.split('/')[-1],
-                                                'data': file_data,
-                                                'source': 'preloaded',
+                                                'data': file_data
                                             })
                             except Exception as e:
                                 st.error(f"Erreur catégories {year}: {e}")
-                    # Load NEW-format Cours xlsx files (from data/new_cours/)
-                    if PRELOADED_NEW_COURS and selected_new_cours_paths:
-                        for _new_path in selected_new_cours_paths:
-                            try:
-                                with open(_new_path, 'rb') as _f:
-                                    st.session_state.stored_files.append({
-                                        'name': os.path.basename(_new_path),
-                                        'data': _f.read(),
-                                        'source': 'preloaded',
-                                        'subsource': 'new_cours_server',
-                                    })
-                            except Exception as e:
-                                st.error(f"Erreur Tous les cours ({os.path.basename(_new_path)}): {e}")
                     # Load clients CSVs
                     if PRELOADED_CLIENTS and load_clients:
                         for csv_path in PRELOADED_CLIENTS:
@@ -4997,8 +4782,7 @@ with st.sidebar:
                                 with open(csv_path, 'rb') as f:
                                     st.session_state.stored_files.append({
                                         'name': os.path.basename(csv_path),
-                                        'data': f.read(),
-                                        'source': 'preloaded',
+                                        'data': f.read()
                                     })
                             except Exception as e:
                                 st.error(f"Erreur clients: {e}")
@@ -5009,8 +4793,7 @@ with st.sidebar:
                                 with open(xlsx_path, 'rb') as f:
                                     st.session_state.stored_files.append({
                                         'name': os.path.basename(xlsx_path),
-                                        'data': f.read(),
-                                        'source': 'preloaded',
+                                        'data': f.read()
                                     })
                             except Exception as e:
                                 st.error(f"Erreur produits: {e}")
@@ -5024,37 +4807,6 @@ with st.sidebar:
             st.caption(t('or_upload_files'))
         else:
             st.caption(t('sedi_semesters'))
-
-        # ── Conflict-resolution policy (when 2 formats overlap on same year) ──
-        # Only rendered if BOTH formats are detected in the current data set.
-        _legacy_set = set(st.session_state.get("_cours_source_legacy_years", []))
-        _new_set = set(st.session_state.get("_cours_source_new_years", []))
-        _has_conflict = bool(_legacy_set & _new_set)
-        if _has_conflict:
-            with st.expander("⚙️ Conflit ancien/nouveau format", expanded=False):
-                st.caption(
-                    "Les deux formats couvrent les mêmes années. Choisis comment l'app combine les données :"
-                )
-                _prev_policy = st.session_state.get("cours_conflict_policy", "prefer_new")
-                _policy = st.radio(
-                    "Politique de fusion",
-                    options=["prefer_new", "prefer_old", "sum_both"],
-                    format_func=lambda x: {
-                        "prefer_new": "🆕 Préférer nouveau (Tous les cours) — recommandé",
-                        "prefer_old": "🗂️ Préférer ancien (Rapport par catégories)",
-                        "sum_both": "➕ Tout sommer (peut gonfler les chiffres)",
-                    }[x],
-                    key="cours_conflict_policy",
-                    label_visibility="collapsed",
-                )
-                if _policy != _prev_policy:
-                    # Policy changed → invalidate cache so dedup re-runs
-                    for _k in ['processed_data', 'file_info', '_files_hash']:
-                        st.session_state.pop(_k, None)
-                    st.rerun()
-                st.caption(
-                    "Vois l'onglet **Cours → Comparaison des formats** pour les détails par année."
-                )
 
         # ── Fichiers récents ──────────────────────────────────────────────────
         recent_sessions = load_recent_sessions()
@@ -5132,61 +4884,20 @@ with st.sidebar:
                     if hasattr(f, 'getvalue'):
                         new_file_entries.append({
                             'name': f.name,
-                            'data': f.getvalue(),
-                            'source': 'uploaded',
+                            'data': f.getvalue()
                         })
                     elif hasattr(f, 'read'):
                         f.seek(0)
                         new_file_entries.append({
                             'name': f.name,
-                            'data': f.read(),
-                            'source': 'uploaded',
+                            'data': f.read()
                         })
                     new_names.add(f.name)
-                # Keep existing stored files that are NOT being replaced by new uploads.
-                # ALSO: if the user just uploaded any course-like xlsx, drop any
-                # preloaded LEGACY cours data so we don't silently double-count.
-                # (clients & produits preloaded data is orthogonal and stays.)
-                _uploaded_has_cours = any(
-                    e['name'].lower().endswith(('.xlsx', '.xls'))
-                    and 'clients' not in e['name'].lower()
-                    and 'produit' not in e['name'].lower()
-                    for e in new_file_entries
-                )
+                # Keep existing stored files that are NOT being replaced by new uploads
                 existing = st.session_state.get('stored_files', [])
-                # Detect whether there's actually preloaded cours data to evict
-                # right now. Streamlit's file_uploader retains files across reruns,
-                # so this whole block runs every single render — without this
-                # guard we'd fire st.rerun() every cycle (infinite loop) and the
-                # user's clicks on year buttons / tabs would silently get wiped.
-                _has_preloaded_cours_to_evict = _uploaded_has_cours and any(
-                    sf.get('source') == 'preloaded'
-                    and sf['name'].lower().endswith(('.xlsx', '.xls'))
-                    and 'clients' not in sf['name'].lower()
-                    and 'produit' not in sf['name'].lower()
-                    for sf in existing
-                )
-                merged = [
-                    sf for sf in existing
-                    if sf['name'] not in new_names
-                    and not (
-                        _uploaded_has_cours
-                        and sf.get('source') == 'preloaded'
-                        and sf['name'].lower().endswith(('.xlsx', '.xls'))
-                        and 'clients' not in sf['name'].lower()
-                        and 'produit' not in sf['name'].lower()
-                    )
-                ]
+                merged = [sf for sf in existing if sf['name'] not in new_names]
                 merged.extend(new_file_entries)
-                # Only update stored_files + rerun if there's an actual change.
-                _stored_changed = merged != existing
-                if _stored_changed:
-                    st.session_state.stored_files = merged
-                # Trigger the deferred Cours-checkbox sync ONCE, only when there
-                # was real preloaded cours data we just evicted.
-                if _has_preloaded_cours_to_evict:
-                    st.session_state["_pending_uncheck_cours"] = True
-                    st.rerun()
+                st.session_state.stored_files = merged
                 # Clear processed data cache to force reprocessing with all files
                 for _k in ['processed_data', 'file_info', '_files_hash']:
                     st.session_state.pop(_k, None)
@@ -5326,18 +5037,14 @@ if (not all_uploaded_files) or _force_home:
     st.markdown("---")
     _DEFAULT_INSTRUCTIONS = (
         "### 📂 Parcours de récupération des fichiers depuis AEC\n\n"
-        "1. **🆕 Tous les cours** *(format recommandé)* : AEC → *Cours* → *Tous les cours* → exporter en .xlsx "
-        "(une seule export couvre toutes les antennes et toutes les années — l'app prend le relais pour le découpage)\n"
-        "2. **Rapport par catégories** *(ancien format, toujours supporté)* : AEC → *Rapports* → *Par catégories* "
-        "→ exporter en .xlsx (un fichier par antenne × par semestre)\n"
-        "3. **Fiches de cours** : AEC → *Cours* → *Fiches de cours* → filtrer → exporter en .csv\n"
-        "4. **Profils clients** : AEC → *Clients* → sélectionner les colonnes utiles → exporter en .xlsx\n"
-        "5. **Catalogue produits** : AEC → *Catalogue* → *Produits* → exporter en .xlsx\n"
-        "6. **Activité par période** : AEC → *Cours* → *Rapports* → *Activité par période* → exporter en .xlsx "
+        "1. **Rapport par catégories** : AEC → *Rapports* → *Par catégories* → exporter en .xlsx "
+        "(un fichier par antenne × par semestre)\n"
+        "2. **Fiches de cours** : AEC → *Cours* → *Fiches de cours* → filtrer → exporter en .csv\n"
+        "3. **Profils clients** : AEC → *Clients* → sélectionner les colonnes utiles → exporter en .xlsx\n"
+        "4. **Catalogue produits** : AEC → *Catalogue* → *Produits* → exporter en .xlsx\n"
+        "5. **Activité par période** : AEC → *Cours* → *Rapports* → *Activité par période* → exporter en .xlsx "
         "(décocher « exporter uniquement colonnes visibles »)\n\n"
-        "*Déposez ensuite les fichiers via le panneau latéral gauche. "
-        "Si tu charges à la fois le nouveau format (1) et l'ancien (2) pour les mêmes années, "
-        "l'app dédoublonne automatiquement — un panneau de comparaison s'ouvre pour te laisser choisir.*"
+        "*Déposez ensuite les fichiers via le panneau latéral gauche.*"
     )
     _INSTR_KEY = "_welcome_instructions"
     if _INSTR_KEY not in st.session_state:
@@ -5442,29 +5149,6 @@ _cache_hit = (
     and st.session_state.get('processed_data') is not None
 )
 
-def _compute_source_years(infos):
-    """Bucket years by Type so the source badge / overlap alert always reflects
-    the file_info we have right now — works on both cache hits and full
-    processing runs."""
-    out = {}
-    for f in infos:
-        t = f.get("Type", "Rapport par catégories")
-        yrs_field = f.get("Années") or f.get("Année")
-        if yrs_field is None:
-            continue
-        if isinstance(yrs_field, str):
-            yrs = {int(y.strip()) for y in yrs_field.split(",") if y.strip().isdigit()}
-        else:
-            try:
-                yrs = {int(yrs_field)}
-            except (TypeError, ValueError):
-                yrs = set()
-        out.setdefault(t, set()).update(yrs)
-    legacy = out.get("Rapport par catégories", set())
-    new = out.get("Tous les cours", set())
-    return sorted(legacy), sorted(new), sorted(legacy & new)
-
-
 if _cache_hit:
     # Restore from cache — skip file parsing
     df_combined = st.session_state.processed_data
@@ -5477,12 +5161,6 @@ if _cache_hit:
     profils_info = st.session_state.get('profils_file_info', [])
     produits_info = st.session_state.get('produits_file_info', [])
     activite_info = st.session_state.get('activite_file_info', [])
-    # Refresh source-year tracking from cached file_info every run so the badge
-    # works for users whose session predates this code path.
-    _lg, _nw, _ov = _compute_source_years(file_info)
-    st.session_state["_cours_source_legacy_years"] = _lg
-    st.session_state["_cours_source_new_years"] = _nw
-    st.session_state["_cours_source_overlap_years"] = _ov
 else:
     # Full processing
     all_data, all_fiches, all_profils, all_produits, all_activite = [], [], [], [], []
@@ -5529,46 +5207,6 @@ else:
                     "Sede": sede_code,
                     "Lignes": len(processed)
                 })
-            elif export_type == "tous_les_cours":
-                # NEW: AEC "Cours > Tous les cours" export — per-course rows.
-                # Parsed and aggregated to v2 schema by aec_parser_v3.parse_aec_export().
-                from aec_parser_v3 import parse_aec_export
-                try:
-                    processed, stats = parse_aec_export(uploaded_file)
-                except Exception as e:
-                    errors.append(f"Erreur parse Tous-les-cours ({uploaded_file.name}): {e}")
-                    continue
-                # Map Catégorie → (Macro-catégorie, Sous-secteur, Secteur) using the
-                # same mapping as the legacy flow.
-                if "Catégorie de cours" in processed.columns:
-                    levels = processed["Catégorie de cours"].apply(map_category_to_levels)
-                    processed["Macro-catégorie"] = levels.apply(lambda x: x[0])
-                    processed["Sous-secteur"] = levels.apply(lambda x: x[1])
-                    processed["Secteur"] = levels.apply(lambda x: x[2])
-                else:
-                    processed["Macro-catégorie"] = "NON RATTACHÉ"
-                    processed["Sous-secteur"] = "NON RATTACHÉ"
-                    processed["Secteur"] = "NON RATTACHÉ"
-                # Derive Groupe_Age (same as legacy process_data) so downstream
-                # tabs (Carte / Profils / etc.) don't see NaN in this column.
-                # The parser aggregates over Tranche d'âge so we can't recover
-                # per-age splits here — fallback to 'Adultes' (the dominant group).
-                if "Tranche d'âge du cours" in processed.columns:
-                    processed["Groupe_Age"] = processed["Tranche d'âge du cours"].apply(get_age_group)
-                else:
-                    processed["Groupe_Age"] = "Adultes"
-                processed["__source_format"] = "Tous les cours"
-                all_data.append(processed)
-                years_str = ", ".join(map(str, sorted(processed["Année"].unique().tolist())))
-                sedi_str = ", ".join(sorted(processed["Sede"].unique().tolist()))
-                file_info.append({
-                    "Fichier": uploaded_file.name,
-                    "Type": "Tous les cours",
-                    "Sedi": sedi_str,
-                    "Années": years_str,
-                    "Lignes": len(processed),
-                    "Lignes brutes": stats.rows_raw,
-                })
             elif export_type == "activite_periode":
                 # Activity report (Activité par période)
                 processed = process_activite_periode(df)
@@ -5589,17 +5227,9 @@ else:
                     errors.append(f"Sede non détectée: {uploaded_file.name}")
                     continue
                 processed = process_data(df, year, semester, sede)
-                processed["__source_format"] = "Rapport par catégories"
                 all_data.append(processed)
                 semester_label = semester if semester else "annuel"
-                file_info.append({
-                    "Fichier": uploaded_file.name,
-                    "Type": "Rapport par catégories",
-                    "Sede": sede,
-                    "Semestre": semester_label,
-                    "Année": year,
-                    "Lignes": len(processed),
-                })
+                file_info.append({"Fichier": uploaded_file.name, "Sede": sede, "Semestre": semester_label, "Année": year, "Lignes": len(processed)})
 
     if errors:
         for err in errors:
@@ -5613,88 +5243,6 @@ else:
     df_activite = None
     if all_data:
         df_combined = pd.concat(all_data, ignore_index=True)
-        # ── Build the format-comparison snapshot BEFORE dedup so the user can
-        # see what's in each source per year (inscriptions, cours, heures,
-        # recettes, catégories couvertes, sedi). Stored in session_state for
-        # the Cours-tab expander to render.
-        if "__source_format" in df_combined.columns:
-            _cmp_rows = []
-            _cat_col = None
-            for c in ("Catégorie de cours", "Catégorie", "Catégorie macro", "Macro-catégorie"):
-                if c in df_combined.columns:
-                    _cat_col = c
-                    break
-            _inscr_col = "Nb. d'inscriptions" if "Nb. d'inscriptions" in df_combined.columns else None
-            _cours_col = "Nb. de Cours" if "Nb. de Cours" in df_combined.columns else None
-            _hrs_col = next((c for c in df_combined.columns if "Nombre total d'heures" in c), None)
-            _rec_col = "Recettes" if "Recettes" in df_combined.columns else next(
-                (c for c in df_combined.columns if "recette" in c.lower()), None
-            )
-            for _yr in sorted(df_combined["Année"].dropna().unique(), reverse=True):
-                _yr_df = df_combined[df_combined["Année"] == _yr]
-                for _fmt in ["Tous les cours", "Rapport par catégories"]:
-                    _sub = _yr_df[_yr_df["__source_format"] == _fmt]
-                    if _sub.empty:
-                        continue
-                    _row = {
-                        "Année": int(_yr),
-                        "Format": "🆕 Nouveau" if _fmt == "Tous les cours" else "🗂️ Ancien",
-                        "Inscriptions": int(_sub[_inscr_col].sum()) if _inscr_col else None,
-                        "Cours": int(_sub[_cours_col].sum()) if _cours_col else None,
-                        "Heures": int(_sub[_hrs_col].sum()) if _hrs_col else None,
-                        "Recettes (€)": int(_sub[_rec_col].sum()) if _rec_col else None,
-                        "Catégories": _sub[_cat_col].nunique() if _cat_col else None,
-                        "Sedi": _sub["Sede"].nunique() if "Sede" in _sub.columns else None,
-                        "Lignes": len(_sub),
-                    }
-                    _cmp_rows.append(_row)
-            # Categories present in each format (overlap years only)
-            _cat_by_fmt = {"Tous les cours": set(), "Rapport par catégories": set()}
-            if _cat_col:
-                for _fmt in _cat_by_fmt:
-                    _cat_by_fmt[_fmt] = set(
-                        df_combined.loc[df_combined["__source_format"] == _fmt, _cat_col].dropna().unique().tolist()
-                    )
-            st.session_state["_cours_format_comparison"] = {
-                "rows": _cmp_rows,
-                "cats_new_only": sorted(_cat_by_fmt["Tous les cours"] - _cat_by_fmt["Rapport par catégories"]),
-                "cats_old_only": sorted(_cat_by_fmt["Rapport par catégories"] - _cat_by_fmt["Tous les cours"]),
-                "cats_both": sorted(_cat_by_fmt["Tous les cours"] & _cat_by_fmt["Rapport par catégories"]),
-            }
-        # ── Conflict resolution between old & new cours formats ──
-        # Policy comes from the sidebar radio:
-        #   prefer_new  → drop legacy rows for overlap years (safe default)
-        #   prefer_old  → drop new-format rows for overlap years
-        #   sum_both    → keep everything (gonflé, user's call)
-        _policy = st.session_state.get("cours_conflict_policy", "prefer_new")
-        _dedup_dropped_years = []
-        _dedup_format_dropped = None  # which format got dropped (for the UI)
-        if "__source_format" in df_combined.columns and "Année" in df_combined.columns:
-            _new_years = set(
-                df_combined.loc[df_combined["__source_format"] == "Tous les cours", "Année"].unique()
-            )
-            _legacy_years = set(
-                df_combined.loc[df_combined["__source_format"] == "Rapport par catégories", "Année"].unique()
-            )
-            _conflict_years = _new_years & _legacy_years
-            if _conflict_years and _policy != "sum_both":
-                if _policy == "prefer_new":
-                    _drop_label = "Rapport par catégories"
-                    _dedup_format_dropped = "ancien"
-                else:  # prefer_old
-                    _drop_label = "Tous les cours"
-                    _dedup_format_dropped = "nouveau"
-                _mask_drop = (
-                    (df_combined["__source_format"] == _drop_label)
-                    & (df_combined["Année"].isin(_conflict_years))
-                )
-                df_combined = df_combined.loc[~_mask_drop].reset_index(drop=True)
-                _dedup_dropped_years = sorted(_conflict_years, reverse=True)
-        # Drop the internal tag so downstream tabs don't see it
-        if "__source_format" in df_combined.columns:
-            df_combined = df_combined.drop(columns=["__source_format"])
-        st.session_state["_cours_dedup_dropped_years"] = _dedup_dropped_years
-        st.session_state["_cours_dedup_format_dropped"] = _dedup_format_dropped
     if all_fiches:
         df_fiches = pd.concat(all_fiches, ignore_index=True)
     if all_profils:
@@ -5721,12 +5269,6 @@ else:
     st.session_state.activite_periode_data = df_activite
     st.session_state.activite_file_info = activite_info
     st.session_state._files_hash = _file_names_hash
-
-    # Source-year tracking (same helper as cache-hit branch)
-    _lg, _nw, _ov = _compute_source_years(file_info)
-    st.session_state["_cours_source_legacy_years"] = _lg
-    st.session_state["_cours_source_new_years"] = _nw
-    st.session_state["_cours_source_overlap_years"] = _ov
 
     # Show detection toasts (bottom-right, auto-dismiss)
     _toast_msgs = []
@@ -5822,113 +5364,6 @@ with _cours_ctx:
     # =====================================================
     # KEY METRICS
     # =====================================================
-    # ── Dedup-status banner (only when both sources were present) ──
-    # The old red 'Double comptage' alert is gone: we now auto-resolve the
-    # overlap at concat-time by preferring the new format. The banner below
-    # is informational only — to give the user transparency about what got
-    # silently dropped.
-    _dedup_dropped = st.session_state.get("_cours_dedup_dropped_years", [])
-    _dedup_fmt_dropped = st.session_state.get("_cours_dedup_format_dropped")
-    _legacy_yrs = st.session_state.get("_cours_source_legacy_years", [])
-    _new_yrs = st.session_state.get("_cours_source_new_years", [])
-    _policy = st.session_state.get("cours_conflict_policy", "prefer_new")
-
-    # ── First-time conflict: show a modal ONCE so the user makes a deliberate choice ──
-    _overlap_set = set(_legacy_yrs) & set(_new_yrs)
-    _conflict_signature = "|".join(map(str, sorted(_overlap_set))) if _overlap_set else ""
-    _last_shown_sig = st.session_state.get("_cours_conflict_modal_shown_for", "")
-    if _overlap_set and _conflict_signature != _last_shown_sig:
-        @st.dialog("⚠️ Conflit ancien/nouveau format détecté", width="large")
-        def _conflict_modal():
-            st.markdown(
-                f"Les deux formats de l'export AEC couvrent les mêmes années : "
-                f"**{', '.join(map(str, sorted(_overlap_set, reverse=True)))}**."
-            )
-            st.markdown("Choisis comment combiner les données :")
-            _cmp_modal = st.session_state.get("_cours_format_comparison", {})
-            if _cmp_modal.get("rows"):
-                import pandas as _pd
-                st.dataframe(_pd.DataFrame(_cmp_modal["rows"]), use_container_width=True, hide_index=True)
-            if _cmp_modal.get("cats_old_only"):
-                st.caption(
-                    f"⚠️ Catégories **uniquement** dans l'ancien : {', '.join(_cmp_modal['cats_old_only'])}"
-                )
-            if _cmp_modal.get("cats_new_only"):
-                st.caption(
-                    f"ℹ️ Catégories **uniquement** dans le nouveau : {', '.join(_cmp_modal['cats_new_only'])}"
-                )
-            _c1, _c2, _c3 = st.columns(3)
-            with _c1:
-                if st.button("🆕 Préférer nouveau", use_container_width=True, type="primary"):
-                    st.session_state["cours_conflict_policy"] = "prefer_new"
-                    st.session_state["_cours_conflict_modal_shown_for"] = _conflict_signature
-                    for _k in ['processed_data', 'file_info', '_files_hash']:
-                        st.session_state.pop(_k, None)
-                    st.rerun()
-            with _c2:
-                if st.button("🗂️ Préférer ancien", use_container_width=True):
-                    st.session_state["cours_conflict_policy"] = "prefer_old"
-                    st.session_state["_cours_conflict_modal_shown_for"] = _conflict_signature
-                    for _k in ['processed_data', 'file_info', '_files_hash']:
-                        st.session_state.pop(_k, None)
-                    st.rerun()
-            with _c3:
-                if st.button("➕ Tout sommer", use_container_width=True):
-                    st.session_state["cours_conflict_policy"] = "sum_both"
-                    st.session_state["_cours_conflict_modal_shown_for"] = _conflict_signature
-                    for _k in ['processed_data', 'file_info', '_files_hash']:
-                        st.session_state.pop(_k, None)
-                    st.rerun()
-        _conflict_modal()
-
-    # ── Compact one-liner status (auto-dismisses on hover of expander) ──
-    if _dedup_dropped:
-        _kept = "🆕 nouveau" if _dedup_fmt_dropped == "ancien" else "🗂️ ancien"
-        st.caption(
-            f"✅ Conflit résolu pour {', '.join(map(str, _dedup_dropped))} — politique : **{_kept}** "
-            f"(modifiable dans la sidebar)."
-        )
-    elif _policy == "sum_both" and _overlap_set:
-        _overlap = sorted(_overlap_set, reverse=True)
-        st.caption(
-            f"⚠️ Sommation active pour {', '.join(map(str, _overlap))} — chiffres potentiellement gonflés."
-        )
-
-    # ── Detailed format-comparison expander (only when both formats overlap) ──
-    _cmp = st.session_state.get("_cours_format_comparison")
-    if _cmp and _cmp.get("rows") and _overlap_set:
-        with st.expander("📊 Comparaison ancien vs nouveau format", expanded=False):
-            st.caption(
-                "Pour chaque année couverte par les deux formats, voici ce que contient chaque source. "
-                "Les écarts importants peuvent signaler qu'un format est incomplet."
-            )
-            import pandas as _pd
-            _cmp_df = _pd.DataFrame(_cmp["rows"])
-            st.dataframe(_cmp_df, use_container_width=True, hide_index=True)
-
-            st.markdown("**Catégories de cours**")
-            _c1, _c2, _c3 = st.columns(3)
-            with _c1:
-                st.metric("Communes aux 2 formats", len(_cmp.get("cats_both", [])))
-            with _c2:
-                st.metric("🆕 Présentes uniquement dans Nouveau", len(_cmp.get("cats_new_only", [])))
-            with _c3:
-                st.metric("🗂️ Présentes uniquement dans Ancien", len(_cmp.get("cats_old_only", [])))
-
-            if _cmp.get("cats_old_only"):
-                st.warning(
-                    f"Ces catégories existent dans l'ancien format mais pas dans le nouveau : "
-                    f"**{', '.join(_cmp['cats_old_only'])}** — si tu choisis 'Préférer nouveau' "
-                    f"ces données disparaîtront des totaux.",
-                    icon="⚠️",
-                )
-            if _cmp.get("cats_new_only"):
-                st.info(
-                    f"Ces catégories existent uniquement dans le nouveau format : "
-                    f"**{', '.join(_cmp['cats_new_only'])}**.",
-                    icon="ℹ️",
-                )
-
     st.markdown(f"## {t('overview')}")
 
     # Check if multiple years are loaded
@@ -5992,38 +5427,6 @@ with _cours_ctx:
             st.caption(f"{t('showing_all_years')}: {years_label}")
         else:
             st.caption(f"{t('showing_years')}: {years_label}")
-
-    # ── Active data-source badge (which export format is feeding the dashboard?) ──
-    # Always visible so the user knows whether numbers come from the legacy
-    # "Rapport par catégories" or the new "Tous les cours" export — and which
-    # years come from which source when both are loaded. Rendered as a
-    # colored info banner (not a grey caption) so it can't be missed.
-    _legacy_yrs_all = sorted(st.session_state.get("_cours_source_legacy_years", []), reverse=True)
-    _new_yrs_all = sorted(st.session_state.get("_cours_source_new_years", []), reverse=True)
-    # After dedup, a year covered by BOTH formats is effectively rendered by the
-    # new one — remove the dropped years from the legacy list before display.
-    _dropped = set(st.session_state.get("_cours_dedup_dropped_years", []))
-    _legacy_yrs_all = [y for y in _legacy_yrs_all if y not in _dropped]
-    _sel = set(selected_years_list)
-    _legacy_shown = [y for y in _legacy_yrs_all if y in _sel]
-    _new_shown = [y for y in _new_yrs_all if y in _sel]
-    if _legacy_shown and _new_shown:
-        st.info(
-            f"**Sources mixtes**  \n"
-            f"• **Nouveau format** (Tous les cours) — années {', '.join(map(str, _new_shown))}  \n"
-            f"• **Ancien format** (Rapport par catégories) — années {', '.join(map(str, _legacy_shown))}",
-            icon="🔀",
-        )
-    elif _new_shown:
-        st.success(
-            f"**Source** : Nouveau format AEC (Tous les cours) — années {', '.join(map(str, _new_shown))}",
-            icon="🆕",
-        )
-    elif _legacy_shown:
-        st.info(
-            f"**Source** : Ancien format AEC (Rapport par catégories) — années {', '.join(map(str, _legacy_shown))}",
-            icon="🗂️",
-        )
 
     # =====================================================
     # TABS - Right after year selection
@@ -6225,51 +5628,8 @@ with _cours_ctx:
                     return ['background-color: #e2e8f0; font-weight: bold'] * len(row)
                 return [''] * len(row)
 
-            # Anomaly highlighting on delta cells: a delta beyond ±50%
-            # almost always means the comparison year is incomplete
-            # (current year still in progress, or historical year only
-            # partially loaded). We color these so the user immediately
-            # knows the % is not a real trend.
-            _delta_col_names = {v for v in delta_cols_map.values() if v in df_display.columns}
-
-            def _parse_delta_pct(val):
-                if not isinstance(val, str) or not val.endswith('%'):
-                    return None
-                try:
-                    return float(val.rstrip('%').replace('+', ''))
-                except ValueError:
-                    return None
-
-            def highlight_delta_anomalies(row):
-                styles = [''] * len(row)
-                if row[t('year')] == "TOTAL":
-                    return styles
-                for i, col in enumerate(row.index):
-                    if col not in _delta_col_names:
-                        continue
-                    pct = _parse_delta_pct(row[col])
-                    if pct is None:
-                        continue
-                    abs_pct = abs(pct)
-                    if abs_pct >= 200:
-                        # Extreme: almost certainly incomplete data
-                        styles[i] = 'background-color: #fecaca; color: #7f1d1d; font-weight: 600;'
-                    elif abs_pct >= 50:
-                        # Suspicious: worth a manual check
-                        styles[i] = 'background-color: #fed7aa; color: #7c2d12;'
-                return styles
-
-            styled_df = (
-                df_display.style
-                .apply(highlight_totals, axis=1)
-                .apply(highlight_delta_anomalies, axis=1)
-            )
+            styled_df = df_display.style.apply(highlight_totals, axis=1)
             st.dataframe(styled_df, hide_index=True, use_container_width=True)
-            st.caption(
-                "🟧 Δ entre ±50% et ±200% : variation forte, vérifier que l'année est complète.  "
-                "🟥 Δ au-delà de ±200% : très probablement une année incomplète ou des données manquantes "
-                "côté comparaison (le pourcentage n'est pas une vraie tendance)."
-            )
 
         # --- Part B: Évolution par indicateur (charts) ---
         st.markdown("#### Évolution par indicateur")
@@ -6338,14 +5698,12 @@ with _cours_ctx:
                     if drop_col in ifi_display.columns:
                         ifi_display = ifi_display.drop(columns=[drop_col])
                 if "Inscriptions" in ifi_display.columns:
-                    # Use np.nan instead of pd.NA — pd.NA + Series.round() raises
-                    # TypeError on older pandas/numpy combos, and pd.notna() handles both.
                     if "Nouveaux inscrits" in ifi_display.columns:
-                        _pct_new = (ifi_display["Nouveaux inscrits"] / ifi_display["Inscriptions"].replace(0, float("nan")) * 100)
-                        ifi_display["% nouveaux"] = _pct_new.apply(lambda x: f"{round(x, 1):.1f}%" if pd.notna(x) else "")
+                        ifi_display["% nouveaux"] = (ifi_display["Nouveaux inscrits"] / ifi_display["Inscriptions"].replace(0, pd.NA) * 100).round(1)
+                        ifi_display["% nouveaux"] = ifi_display["% nouveaux"].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
                     if "Réinscrits" in ifi_display.columns:
-                        _pct_re = (ifi_display["Réinscrits"] / ifi_display["Inscriptions"].replace(0, float("nan")) * 100)
-                        ifi_display["% réinscrits"] = _pct_re.apply(lambda x: f"{round(x, 1):.1f}%" if pd.notna(x) else "")
+                        ifi_display["% réinscrits"] = (ifi_display["Réinscrits"] / ifi_display["Inscriptions"].replace(0, pd.NA) * 100).round(1)
+                        ifi_display["% réinscrits"] = ifi_display["% réinscrits"].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
 
                 # Format numeric columns
                 for col in ifi_display.columns:
@@ -8609,7 +7967,7 @@ with _cours_ctx:
 
         # Age group filter
         st.markdown(f"#### {t('filter_by_age')}")
-        age_groups = ["Tous"] + sorted({str(g) for g in df_tab6_base["Groupe_Age"].dropna().unique()})
+        age_groups = ["Tous"] + sorted(df_tab6_base["Groupe_Age"].unique().tolist())
         selected_age = st.selectbox(t("age_groups"), age_groups, key="map_age_filter")
 
         if selected_age != "Tous":
