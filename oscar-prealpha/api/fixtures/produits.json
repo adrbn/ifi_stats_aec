@@ -1,0 +1,7603 @@
+{
+  "available": true,
+  "meta": {
+    "source": "computed",
+    "updated": "2026-06-01T22:10:16Z"
+  },
+  "kpis": [
+    {
+      "key": "produits",
+      "label": "Produits",
+      "value": 455,
+      "format": "int"
+    },
+    {
+      "key": "types",
+      "label": "Types",
+      "value": 22,
+      "format": "int"
+    },
+    {
+      "key": "actifs",
+      "label": "Produits actifs",
+      "value": 369,
+      "format": "int"
+    },
+    {
+      "key": "prixMoyen",
+      "label": "Prix moyen",
+      "value": 230.13,
+      "format": "eur0"
+    },
+    {
+      "key": "heures",
+      "label": "Total heures",
+      "value": 736.0,
+      "format": "int"
+    },
+    {
+      "key": "capacite",
+      "label": "Capacité totale",
+      "value": 6000.0,
+      "format": "int"
+    }
+  ],
+  "bySede": [
+    {
+      "code": "IFM",
+      "name": "IFM Milano",
+      "color": "#FF8C00",
+      "nbProduits": 129,
+      "prixMoyen": 370.5,
+      "totalHeures": 181.8
+    },
+    {
+      "code": "IFF",
+      "name": "IFF Firenze",
+      "color": "#8B5CF6",
+      "nbProduits": 108,
+      "prixMoyen": 181.4,
+      "totalHeures": 181.8
+    },
+    {
+      "code": "IFN",
+      "name": "IFN Napoli",
+      "color": "#22C55E",
+      "nbProduits": 123,
+      "prixMoyen": 171.0,
+      "totalHeures": 181.8
+    },
+    {
+      "code": "IFP",
+      "name": "IFP Palermo",
+      "color": "#EF4444",
+      "nbProduits": 95,
+      "prixMoyen": 171.5,
+      "totalHeures": 190.8
+    }
+  ],
+  "byType": [
+    {
+      "type": "Matériel pédagogique",
+      "nbProduits": 61,
+      "prixMoyen": 33.52,
+      "prixMin": 15.0,
+      "prixMax": 35.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "Service location espaces",
+      "nbProduits": 47,
+      "prixMoyen": 777.73,
+      "prixMin": 12.5,
+      "prixMax": 4500.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "Frais de transport",
+      "nbProduits": 43,
+      "prixMoyen": 14.14,
+      "prixMin": 0.0,
+      "prixMax": 95.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "Bons cadeaux",
+      "nbProduits": 42,
+      "prixMoyen": 54.62,
+      "prixMin": 1.0,
+      "prixMax": 268.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nbProduits": 37,
+      "prixMoyen": 83.78,
+      "prixMin": 5.0,
+      "prixMax": 580.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "EXAMENS - frais divers",
+      "nbProduits": 37,
+      "prixMoyen": 23.78,
+      "prixMin": 10.0,
+      "prixMax": 50.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "COURS PARTICULIERS",
+      "nbProduits": 32,
+      "prixMoyen": 1203.12,
+      "prixMin": 650.0,
+      "prixMax": 1950.0,
+      "heuresTotal": 600.0,
+      "heuresMoy": 18.8
+    },
+    {
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nbProduits": 29,
+      "prixMoyen": 330.69,
+      "prixMin": 0.0,
+      "prixMax": 650.0,
+      "heuresTotal": 136.0,
+      "heuresMoy": 4.7
+    },
+    {
+      "type": "COURS - autres frais ",
+      "nbProduits": 24,
+      "prixMoyen": 109.5,
+      "prixMin": 2.0,
+      "prixMax": 300.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "Service hébergement",
+      "nbProduits": 21,
+      "prixMoyen": 200.48,
+      "prixMin": 10.0,
+      "prixMax": 1000.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nbProduits": 16,
+      "prixMoyen": 93.75,
+      "prixMin": 65.0,
+      "prixMax": 130.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "ATELIERS DE COURS",
+      "nbProduits": 12,
+      "prixMoyen": 15.33,
+      "prixMin": 1.0,
+      "prixMax": 25.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "Frais d'inscription",
+      "nbProduits": 12,
+      "prixMoyen": 30.0,
+      "prixMin": 30.0,
+      "prixMax": 30.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "CLASSES DECOUVERTE",
+      "nbProduits": 11,
+      "prixMoyen": 12.0,
+      "prixMin": 2.0,
+      "prixMax": 15.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "COURS ÉCOLES ",
+      "nbProduits": 9,
+      "prixMoyen": 199.56,
+      "prixMin": 8.0,
+      "prixMax": 1400.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "SG- Autres locations 708.3",
+      "nbProduits": 5,
+      "prixMoyen": 1.0,
+      "prixMin": 1.0,
+      "prixMax": 1.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "COURS COLLECTIFS DE FR GRL",
+      "nbProduits": 4,
+      "prixMoyen": 0.0,
+      "prixMin": 0.0,
+      "prixMax": 0.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "SG - Revenus créances diverses",
+      "nbProduits": 4,
+      "prixMoyen": 1.0,
+      "prixMin": 1.0,
+      "prixMax": 1.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "Service de traduction",
+      "nbProduits": 4,
+      "prixMoyen": 35.0,
+      "prixMin": 35.0,
+      "prixMax": 35.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "Cinéma (hors billetterie)",
+      "nbProduits": 3,
+      "prixMoyen": 21.17,
+      "prixMin": 3.5,
+      "prixMax": 35.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "Cours coll spe  (externe)",
+      "nbProduits": 1,
+      "prixMoyen": 105.0,
+      "prixMin": 105.0,
+      "prixMax": 105.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    },
+    {
+      "type": "SG- Frais Divers",
+      "nbProduits": 1,
+      "prixMoyen": 12.0,
+      "prixMin": 12.0,
+      "prixMax": 12.0,
+      "heuresTotal": 0.0,
+      "heuresMoy": 0.0
+    }
+  ],
+  "catalogue": [
+    {
+      "sede": "IFM",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "A1 SCO",
+      "prix": 65.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "A2 SCO",
+      "prix": 75.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "ABC DELF B1 (avec tuteur 3h)",
+      "prix": 245.0,
+      "heures": 3.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "ABC DELF B2 (avec tuteur 4h)",
+      "prix": 310.0,
+      "heures": 4.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès Apolearn asynchone",
+      "prix": 5.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF A2",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF A2 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B1",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B1 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B2",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B2 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "B1 SCO",
+      "prix": 105.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "B2 SCO",
+      "prix": 130.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau Cinéma : 7 billets",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau langue française : 3 ateliers thématiques",
+      "prix": 60.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Cinéma (hors billetterie)",
+      "nom": "Carte cinéma 7 places",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Cours coll spe  (externe)",
+      "nom": "Cours de théâtre",
+      "prix": 105.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Cours sur mesure de préparation DALF (8h cours+10h plateforme Apolearn)",
+      "prix": 480.0,
+      "heures": 8.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Edito Pro (B1)",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais d'inscription",
+      "nom": "Frais de dossier / secrétariat",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "SG- Frais Divers",
+      "nom": "Frais de facturation électronique",
+      "prix": 12.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFF-ZONE 1 - centre historique",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFN-ZONE 6 - 126-150 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFN-ZONE 9 - + de 200 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFP-ZONE 7 - 250-300 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM Location petit stand événement",
+      "prix": 84.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Plateforme Apolearn parcours 10h",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS - autres frais ",
+      "nom": "Prestation de conseil, formation ou expertise",
+      "prix": 300.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS - autres frais ",
+      "nom": "Prestation de traduction simultanée/consécutive",
+      "prix": 250.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "surveillance examens externes (tarif horaire)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Voucher cinéma (marché de Noël)",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Voucher cinéma (marché de Noël) maxi",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "ATELIERS DE COURS",
+      "nom": "Atelier",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Carte cadeau \"Coup de coeur\" ",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Cinéma (hors billetterie)",
+      "nom": "Entrée cinéma scolaire",
+      "prix": 3.5,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "ATELIERS DE COURS",
+      "nom": "Atelier \"PRONONCIATION\"",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cours rete ESABAC",
+      "prix": 268.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cours rete ESABAC 2023-2024",
+      "prix": 222.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Carte cadeau \"Amour\"",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (9H-12 entretiens)",
+      "prix": 650.0,
+      "heures": 9.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS COLLECTIFS DE FR GRL",
+      "nom": "Complément versement cours",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "SG- Autres locations 708.3",
+      "nom": "Contribution distribution Boissons",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "SG- Autres locations 708.3",
+      "nom": "Contributions distribution boissons",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 1 (A1) - livre + cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 2 (A2) - livre + cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 3 (B1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 4 (B2) - livre + cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "FRANTASTIQUE, IL FRANCESE SU MISURA PER TE",
+      "prix": 0.0,
+      "heures": 0.25,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (20€)",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 5 (C1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (1€)",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (10€)",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (50€)",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Coupon cadeau pour un cours",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (100€)",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Bons cadeaux",
+      "nom": "Coupon cadeau pour un cours",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (C1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 10h Cours individuel ",
+      "prix": 650.0,
+      "heures": 10.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 15h Cours individuel  ",
+      "prix": 975.0,
+      "heures": 15.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 20h Cours individuel",
+      "prix": 1200.0,
+      "heures": 20.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 30h Cours individuel ",
+      "prix": 1800.0,
+      "heures": 30.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 10h Cours individuel",
+      "prix": 700.0,
+      "heures": 10.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 15h Cours individuel ",
+      "prix": 1050.0,
+      "heures": 15.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 20h Cours individuel",
+      "prix": 1300.0,
+      "heures": 20.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 30h Cours individuel",
+      "prix": 1950.0,
+      "heures": 30.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais d'inscription",
+      "nom": "Frais de dossier (inscription annuelle)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais d'inscription",
+      "nom": "Frais administratifs (Adhésion année scolaire)1",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes en Italie",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes hors Italie",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "DPL IFM-ZONE 1 - Zone urbaine",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (8 entretiens)",
+      "prix": 470.0,
+      "heures": 6.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "DPL IFM-ZONE 2 - 10-20 km",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "DPL IFM-ZONE 3 - 21-45 kms",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "DPL IFM-ZONE 4 - 46-95 kms",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "DPL IFM-ZONE 5 - 96-150 kms",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Frais de transport",
+      "nom": "DPL IFM-ZONE 6 - +de 150 kms",
+      "prix": 75.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM Location - partenaires",
+      "prix": 400.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM Location cinéma demi-journée (plein/A)",
+      "prix": 750.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (A1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM Location cinéma soirée (plein / A)",
+      "prix": 1200.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM Location cinéma soirée (B)",
+      "prix": 840.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM Location salle cinéma journée (B)",
+      "prix": 600.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM Location salle cinéma journée (plein/A )",
+      "prix": 1500.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location galerie demi-journée ",
+      "prix": 1500.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location salle de cours - demi-journée ",
+      "prix": 350.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location salle de cours - journée ",
+      "prix": 500.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location salle de cours - semaine",
+      "prix": 2000.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location galerie à la journée  - plein tarif",
+      "prix": 3000.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location galerie à la soirée - plein tarif",
+      "prix": 4500.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location galerie à la journée - tarif A",
+      "prix": 2100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location galerie à la soirée - tarif A",
+      "prix": 3150.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location médiathèque à la journée - plein tarif",
+      "prix": 2000.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location médiathèque à la journée - tarif A",
+      "prix": 1400.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location médiathèque à la journée - tarif B",
+      "prix": 800.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Odyssée (livre + cahier)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location galerie à la journée - tarif B",
+      "prix": 1200.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location galerie à la soirée - tarif B",
+      "prix": 1800.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location stand événement",
+      "prix": 210.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "IFM location stand événement (moyen)",
+      "prix": 147.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (A2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (B1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (B2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "SG - Revenus créances diverses",
+      "nom": "Intérêts bancaires",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "L'Atelier A1(+) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "L'Atelier 2 (A2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "L'Atelier 3 (B1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "ATELIERS DE COURS",
+      "nom": "Test paiement en ligne",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "L'Atelier 4 (B2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS ÉCOLES ",
+      "nom": "Matinée à l'IFM",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS ÉCOLES ",
+      "nom": "Matinée à l'Institut 1h30",
+      "prix": 90.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Matériel pédagogique (livre+cahier)",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Mon cours en ligne en autonomie (60h sur plateforme)",
+      "prix": 290.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Objectif Express 1 - livre +cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Matériel pédagogique",
+      "nom": "Objectif Express 2 - livre +cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "Prestation technique /h ",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS ÉCOLES ",
+      "nom": "Projet \"Au travail\" PCTO",
+      "prix": 1400.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "RIPASSO GRAMMATICALE (10h autonomia +1h30 lezione)",
+      "prix": 120.0,
+      "heures": 1.5,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais de modification données DELF DALF",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFM",
+      "type": "EXAMENS - frais divers",
+      "nom": "Réimpression diplômes DELF DALF",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service location espaces",
+      "nom": "Sanification espaces",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "Service de traduction",
+      "nom": "Dossier 1500 caractères - espaces inclus",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFM",
+      "type": "COURS - autres frais ",
+      "nom": "Timbre fiscal",
+      "prix": 2.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "A1 SCO",
+      "prix": 65.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "A2 SCO",
+      "prix": 75.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "ABC DELF B1 (avec tuteur 3h)",
+      "prix": 245.0,
+      "heures": 3.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "ABC DELF B2 (avec tuteur 4h)",
+      "prix": 310.0,
+      "heures": 4.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès Apolearn asynchone",
+      "prix": 5.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF A2",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF A2 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B1",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B1 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B2",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B2 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Atelier 3h CLASSES DÉCOUVERTE (gruppi da 15 part e oltre)",
+      "prix": 12.5,
+      "heures": 0.0,
+      "places": 3000.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Atelier CLASSES DÉCOUVERTE (gruppi inferiori a 15 part)",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "B1 SCO",
+      "prix": 105.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "B2 SCO",
+      "prix": 130.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Chambre 1-2 / mois",
+      "prix": 1000.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Chambre 1-2 / nuit",
+      "prix": 90.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Chambre 1-2 / semaine",
+      "prix": 420.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Chambre 2 / nuit",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Chambre 2 / semaine",
+      "prix": 300.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Cours sur mesure de préparation DALF (8h cours+10h plateforme Apolearn)",
+      "prix": 480.0,
+      "heures": 8.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "DPL IFF-ZONE 2 - zone urbaine",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "DPL IFF-ZONE 3 - 10-20 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "DPL IFF-ZONE 4 - 21-35 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "DPL IFF-ZONE 5 - 36-80 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "DPL IFF-ZONE 6 - 80-120 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Edito Pro (B1)",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais d'inscription",
+      "nom": "Frais de dossier / secrétariat",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFF-ZONE 1 - centre historique",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFN-ZONE 6 - 126-150 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFN-ZONE 9 - + de 200 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFP-ZONE 7 - 250-300 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Service location espaces",
+      "nom": "IFF Location salle de lecture /jr",
+      "prix": 250.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service location espaces",
+      "nom": "IFF Location tarif horaire",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service location espaces",
+      "nom": "IFF Location théâtre /jr",
+      "prix": 500.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service location espaces",
+      "nom": "IFF Location théâtre demi-jr",
+      "prix": 250.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service location espaces",
+      "nom": "IFF Location théâtre la semaine (usage cours) (tarif horaire)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service location espaces",
+      "nom": "IFF Location théâtre le week-end (usage cours) (tarif horaire)",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Location oreillette pour visite ",
+      "prix": 2.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Mezzanine / mois",
+      "prix": 1000.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Mezzanine / nuit",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Mezzanine / semaine",
+      "prix": 500.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Plateforme Apolearn parcours 10h",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS - autres frais ",
+      "nom": "Prestation de conseil, formation ou expertise",
+      "prix": 300.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS - autres frais ",
+      "nom": "Prestation de traduction simultanée/consécutive",
+      "prix": 250.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Supplément 3ème pers / mois",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Supplément 3ème pers / nuit",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service hébergement",
+      "nom": "Supplément 3ème pers / semaine",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "surveillance examens externes (tarif horaire)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Visite 2h Classe Découverte (gruppi da 15 part e oltre)",
+      "prix": 12.5,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Visite 2h Classe Découverte (gruppi inferiori a 15 part)",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Visite 3h Classe Découverte (gruppi da 15 part e oltre)",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "ATELIERS DE COURS",
+      "nom": "Atelier",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Carte cadeau \"Coup de coeur\" ",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "ATELIERS DE COURS",
+      "nom": "Atelier \"PRONONCIATION\"",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Carte cadeau \"Amour\"",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (9H-12 entretiens)",
+      "prix": 650.0,
+      "heures": 9.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS COLLECTIFS DE FR GRL",
+      "nom": "Complément versement cours",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "SG- Autres locations 708.3",
+      "nom": "Contribution distribution Boissons",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 4 (B2) - livre + cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "FRANTASTIQUE, IL FRANCESE SU MISURA PER TE",
+      "prix": 0.0,
+      "heures": 0.25,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (20€)",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 5 (C1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (1€)",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (10€)",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (50€)",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Coupon cadeau pour un cours",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (100€)",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Bons cadeaux",
+      "nom": "Coupon cadeau pour un cours",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (B1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (B2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 10h Cours individuel ",
+      "prix": 650.0,
+      "heures": 10.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 15h Cours individuel  ",
+      "prix": 975.0,
+      "heures": 15.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 20h Cours individuel",
+      "prix": 1200.0,
+      "heures": 20.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 30h Cours individuel ",
+      "prix": 1800.0,
+      "heures": 30.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 10h Cours individuel",
+      "prix": 700.0,
+      "heures": 10.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 15h Cours individuel ",
+      "prix": 1050.0,
+      "heures": 15.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 20h Cours individuel",
+      "prix": 1300.0,
+      "heures": 20.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 30h Cours individuel",
+      "prix": 1950.0,
+      "heures": 30.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais d'inscription",
+      "nom": "Frais de dossier (inscription annuelle)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Frais d'inscription",
+      "nom": "Frais administratifs (Adhésion année scolaire)1",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes en Italie",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes hors Italie",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (8 entretiens)",
+      "prix": 470.0,
+      "heures": 6.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (A1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Odyssée (livre + cahier)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (A2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (B1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (B2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "SG - Revenus créances diverses",
+      "nom": "Intérêts bancaires",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "ATELIERS DE COURS",
+      "nom": "Test paiement en ligne",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS ÉCOLES ",
+      "nom": "Matinée à l'IFF",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS ÉCOLES ",
+      "nom": "Matinée à l'Institut 1h30",
+      "prix": 90.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Mon cours en ligne en autonomie (60h sur plateforme)",
+      "prix": 290.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Objectif Express 1 - livre +cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Matériel pédagogique",
+      "nom": "Objectif Express 2 - livre +cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "RIPASSO GRAMMATICALE (10h autonomia +1h30 lezione)",
+      "prix": 120.0,
+      "heures": 1.5,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais de modification données DELF DALF",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFF",
+      "type": "EXAMENS - frais divers",
+      "nom": "Réimpression diplômes DELF DALF",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "Service de traduction",
+      "nom": "Dossier 1500 caractères - espaces inclus",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFF",
+      "type": "COURS - autres frais ",
+      "nom": "Timbre fiscal",
+      "prix": 2.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "A1 SCO",
+      "prix": 65.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "A2 SCO",
+      "prix": 75.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "ABC DELF B1 (avec tuteur 3h)",
+      "prix": 245.0,
+      "heures": 3.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "ABC DELF B2 (avec tuteur 4h)",
+      "prix": 310.0,
+      "heures": 4.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès Apolearn asynchone",
+      "prix": 5.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF A2",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF A2 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B1",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B1 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B2",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B2 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Atelier 3h CLASSES DÉCOUVERTE (gruppi da 15 part e oltre)",
+      "prix": 12.5,
+      "heures": 0.0,
+      "places": 3000.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Atelier CLASSES DÉCOUVERTE (gruppi inferiori a 15 part)",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "B1 SCO",
+      "prix": 105.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "B2 SCO",
+      "prix": 130.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Cinéma (hors billetterie)",
+      "nom": "Carte annuelle ciné-club IFN",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°2 ou 4 simple / nuit ",
+      "prix": 75.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°2 ou 4 simple / nuit (partenaire)",
+      "prix": 40.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°2 ou 4 simple / nuit (tarif réduit)",
+      "prix": 65.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°3 double / nuit ",
+      "prix": 80.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°3 double / nuit (partenaire)",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°3 simple / nuit (tarif réduit)",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°5 double / nuit ",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°5 double / nuit (partenaire)",
+      "prix": 65.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Chambre n°5 double/ nuit (réduit)",
+      "prix": 90.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Cours sur mesure de préparation DALF (8h cours+10h plateforme Apolearn)",
+      "prix": 480.0,
+      "heures": 8.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 1 - Zone urbaine",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 2 - 7-15 kms",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 3 -  16-30 kms",
+      "prix": 18.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 4 - 31-45 kms",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 5 - 46-75 kms",
+      "prix": 40.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 6 - 76-125 kms",
+      "prix": 60.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 7 - 126-150 kms",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 8 - 151-200 kms",
+      "prix": 80.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "DPL IFN-ZONE 9 - + de 200 kms",
+      "prix": 95.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Edito Pro (B1)",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais d'inscription",
+      "nom": "Frais de dossier / secrétariat",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFF-ZONE 1 - centre historique",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFN-ZONE 6 - 126-150 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFN-ZONE 9 - + de 200 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFP-ZONE 7 - 250-300 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location jardin (journée)",
+      "prix": 400.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location jardin (mi-journée)",
+      "prix": 300.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location jardin (tarif associatif)",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location médiathèque (tarif journalier)",
+      "prix": 200.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location salle de cours (tarif horaire)",
+      "prix": 40.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location salle Dumas /salle Dada (forfait 2 jours)",
+      "prix": 450.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location salle Dumas /salle Dada (journée)",
+      "prix": 800.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location salle Dumas /salle Dada (mi-journée)",
+      "prix": 600.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location salle Dumas /salle Dada (mi-journée)",
+      "prix": 500.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location salle Dumas /salle Dada (tarif associatif)",
+      "prix": 250.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location salle Dumas /salle Dada (tarif par jour - forfait à partir de 3 jours)",
+      "prix": 250.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location Salon du 2ème étage et terrasse (journée)",
+      "prix": 500.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location Salon du 2ème étage et terrasse (mi-journée)",
+      "prix": 400.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service location espaces",
+      "nom": "IFN Location Salon du 2ème étage et terrasse (tarif associatif)",
+      "prix": 150.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Plateforme Apolearn parcours 10h",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS - autres frais ",
+      "nom": "Prestation de conseil, formation ou expertise",
+      "prix": 300.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS - autres frais ",
+      "nom": "Prestation de traduction simultanée/consécutive",
+      "prix": 250.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service hébergement",
+      "nom": "Supplément lit enfant",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "surveillance examens externes (tarif horaire)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Visite 2h Classe Découverte (gruppi da 15 part e oltre)",
+      "prix": 12.5,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Visite 2h Classe Découverte (gruppi inferiori a 15 part)",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "CLASSES DECOUVERTE",
+      "nom": "Visite 3h Classe Découverte (gruppi da 15 part e oltre)",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "ATELIERS DE COURS",
+      "nom": "Atelier",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Carte cadeau \"Coup de coeur\" ",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "ATELIERS DE COURS",
+      "nom": "Atelier \"PRONONCIATION\"",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Carte cadeau \"Amour\"",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (9H-12 entretiens)",
+      "prix": 650.0,
+      "heures": 9.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS COLLECTIFS DE FR GRL",
+      "nom": "Complément versement cours",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "SG- Autres locations 708.3",
+      "nom": "Contribution distribution Boissons",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 4 (B2) - livre + cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "FRANTASTIQUE, IL FRANCESE SU MISURA PER TE",
+      "prix": 0.0,
+      "heures": 0.25,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (20€)",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 5 (C1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (1€)",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (10€)",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (50€)",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Coupon cadeau pour un cours",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (100€)",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Bons cadeaux",
+      "nom": "Coupon cadeau pour un cours",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (A1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (A2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (B1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (B2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 10h Cours individuel ",
+      "prix": 650.0,
+      "heures": 10.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 15h Cours individuel  ",
+      "prix": 975.0,
+      "heures": 15.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 20h Cours individuel",
+      "prix": 1200.0,
+      "heures": 20.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 30h Cours individuel ",
+      "prix": 1800.0,
+      "heures": 30.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 10h Cours individuel",
+      "prix": 700.0,
+      "heures": 10.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 15h Cours individuel ",
+      "prix": 1050.0,
+      "heures": 15.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 20h Cours individuel",
+      "prix": 1300.0,
+      "heures": 20.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 30h Cours individuel",
+      "prix": 1950.0,
+      "heures": 30.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais d'inscription",
+      "nom": "Frais de dossier (inscription annuelle)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Frais d'inscription",
+      "nom": "Frais administratifs (Adhésion année scolaire)1",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes en Italie",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes hors Italie",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (8 entretiens)",
+      "prix": 470.0,
+      "heures": 6.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (A1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Odyssée (livre + cahier)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (A2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (B1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (B2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "SG - Revenus créances diverses",
+      "nom": "Intérêts bancaires",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "ATELIERS DE COURS",
+      "nom": "Test paiement en ligne",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS ÉCOLES ",
+      "nom": "Matinée à l'IFN",
+      "prix": 8.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS ÉCOLES ",
+      "nom": "Matinée à l'IFP",
+      "prix": 8.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS ÉCOLES ",
+      "nom": "Matinée à l'Institut 1h30",
+      "prix": 90.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Mon cours en ligne en autonomie (60h sur plateforme)",
+      "prix": 290.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Objectif Express 1 - livre +cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Matériel pédagogique",
+      "nom": "Objectif Express 2 - livre +cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "RIPASSO GRAMMATICALE (10h autonomia +1h30 lezione)",
+      "prix": 120.0,
+      "heures": 1.5,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais de modification données DELF DALF",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFN",
+      "type": "EXAMENS - frais divers",
+      "nom": "Réimpression diplômes DELF DALF",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "Service de traduction",
+      "nom": "Dossier 1500 caractères - espaces inclus",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFN",
+      "type": "COURS - autres frais ",
+      "nom": "Timbre fiscal",
+      "prix": 2.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "A1 SCO",
+      "prix": 65.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "A2 SCO",
+      "prix": 75.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "ABC DELF B1 (avec tuteur 3h)",
+      "prix": 245.0,
+      "heures": 3.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "ABC DELF B2 (avec tuteur 4h)",
+      "prix": 310.0,
+      "heures": 4.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès Apolearn asynchone",
+      "prix": 5.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF A2",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF A2 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B1",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B1 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B2",
+      "prix": 70.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Accès plateforme ABC DELF B2 (ECOLES)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS - autres frais ",
+      "nom": "Attestation de niveau",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "B1 SCO",
+      "prix": 105.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "nom": "B2 SCO",
+      "prix": 130.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Cours sur mesure de préparation DALF (8h cours+10h plateforme Apolearn)",
+      "prix": 480.0,
+      "heures": 8.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "DPL IFP-ZONE 1 - Zone urbaine",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "DPL IFP-ZONE 2 - 31-60 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "DPL IFP-ZONE 3 - 61-100 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "DPL IFP-ZONE 4 - 101-150 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "DPL IFP-ZONE 5 - 150-200 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "DPL IFP-ZONE 6 - 201-250 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "DPL IFP-ZONE 7 - 250-300 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Edito Pro (B1)",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais d'inscription",
+      "nom": "Frais de dossier / secrétariat",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFF-ZONE 1 - centre historique",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFN-ZONE 6 - 126-150 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFN-ZONE 9 - + de 200 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais de transport",
+      "nom": "Frais de transport IFP-ZONE 7 - 250-300 kms",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Service location espaces",
+      "nom": "IFP location médiathèque (/jr)",
+      "prix": 200.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Service location espaces",
+      "nom": "IFP location salle (/h)",
+      "prix": 12.5,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Service location espaces",
+      "nom": "IFP location salle (/jr)",
+      "prix": 80.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Plateforme Apolearn parcours 10h",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS - autres frais ",
+      "nom": "Prestation de conseil, formation ou expertise",
+      "prix": 300.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS - autres frais ",
+      "nom": "Prestation de traduction simultanée/consécutive",
+      "prix": 250.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "surveillance examens externes (tarif horaire)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "ATELIERS DE COURS",
+      "nom": "Atelier",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Carte cadeau \"Coup de coeur\" ",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "ATELIERS DE COURS",
+      "nom": "Atelier \"PRONONCIATION\"",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Carte cadeau \"Amour\"",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (9H-12 entretiens)",
+      "prix": 650.0,
+      "heures": 9.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS COLLECTIFS DE FR GRL",
+      "nom": "Complément versement cours",
+      "prix": 0.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "SG- Autres locations 708.3",
+      "nom": "Contribution distribution Boissons",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 4 (B2) - livre + cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "FRANTASTIQUE, IL FRANCESE SU MISURA PER TE",
+      "prix": 0.0,
+      "heures": 0.25,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (20€)",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Cosmopolite 5 (C1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (1€)",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (10€)",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (50€)",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Coupon cadeau pour un cours",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Bon cadeau (100€)",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Bons cadeaux",
+      "nom": "Coupon cadeau pour un cours",
+      "prix": 100.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (A1) - livre",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (A2) - livre ",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (B1) - livre",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Edito (B2) - livre",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 10h Cours individuel ",
+      "prix": 650.0,
+      "heures": 10.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 15h Cours individuel  ",
+      "prix": 975.0,
+      "heures": 15.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 20h Cours individuel",
+      "prix": 1200.0,
+      "heures": 20.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS GÉNÉRAL - 30h Cours individuel ",
+      "prix": 1800.0,
+      "heures": 30.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 10h Cours individuel",
+      "prix": 700.0,
+      "heures": 10.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 15h Cours individuel ",
+      "prix": 1050.0,
+      "heures": 15.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 20h Cours individuel",
+      "prix": 1300.0,
+      "heures": 20.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS PARTICULIERS",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 30h Cours individuel",
+      "prix": 1950.0,
+      "heures": 30.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais d'inscription",
+      "nom": "Frais de dossier (inscription annuelle)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 50.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Matériel pédagogique (Cahier d'activités)",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Matériel pédagogique (Manuel de cours)",
+      "prix": 25.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Frais d'inscription",
+      "nom": "Frais administratifs (Adhésion année scolaire)1",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 15.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes en Italie",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais d'envoi diplômes hors Italie",
+      "prix": 20.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (8 entretiens)",
+      "prix": 470.0,
+      "heures": 6.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "Mon cours en ligne avec tuteur (DUO-12 entretiens)",
+      "prix": 490.0,
+      "heures": 9.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (A1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Odyssée (livre + cahier)",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (A2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (B1) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Inspire (B2) - livre + cahier ",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "SG - Revenus créances diverses",
+      "nom": "Intérêts bancaires",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "ATELIERS DE COURS",
+      "nom": "Test paiement en ligne",
+      "prix": 1.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS ÉCOLES ",
+      "nom": "Matinée à l'Institut 1h30",
+      "prix": 90.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "DUO St Valentin - 2 cours en ligne en autonomie ",
+      "prix": 580.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "nom": "Mon cours en ligne en autonomie (60h sur plateforme)",
+      "prix": 290.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Objectif Express 1 - livre +cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Matériel pédagogique",
+      "nom": "Objectif Express 2 - livre +cahier",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "nom": "RIPASSO GRAMMATICALE (10h autonomia +1h30 lezione)",
+      "prix": 120.0,
+      "heures": 1.5,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "Frais de modification données DELF DALF",
+      "prix": 10.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": false
+    },
+    {
+      "sede": "IFP",
+      "type": "EXAMENS - frais divers",
+      "nom": "Réimpression diplômes DELF DALF",
+      "prix": 30.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "Service de traduction",
+      "nom": "Dossier 1500 caractères - espaces inclus",
+      "prix": 35.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    },
+    {
+      "sede": "IFP",
+      "type": "COURS - autres frais ",
+      "nom": "Timbre fiscal",
+      "prix": 2.0,
+      "heures": 0.0,
+      "places": 0.0,
+      "actif": true
+    }
+  ],
+  "prixStatsBySede": [
+    {
+      "code": "IFM",
+      "nbProduits": 129,
+      "prixMoyen": 370.5,
+      "prixMedian": 50.0,
+      "prixMin": 0.0,
+      "prixMax": 4500.0,
+      "ecartType": 718.1
+    },
+    {
+      "code": "IFF",
+      "nbProduits": 108,
+      "prixMoyen": 181.4,
+      "prixMedian": 35.0,
+      "prixMin": 0.0,
+      "prixMax": 1950.0,
+      "ecartType": 360.6
+    },
+    {
+      "code": "IFN",
+      "nbProduits": 123,
+      "prixMoyen": 171.0,
+      "prixMedian": 35.0,
+      "prixMin": 0.0,
+      "prixMax": 1950.0,
+      "ecartType": 330.6
+    },
+    {
+      "code": "IFP",
+      "nbProduits": 95,
+      "prixMoyen": 171.5,
+      "prixMedian": 30.0,
+      "prixMin": 0.0,
+      "prixMax": 1950.0,
+      "ecartType": 362.8
+    }
+  ],
+  "prixParHeureByType": [
+    {
+      "type": "COURS PARTICULIERS",
+      "prixParHeure": 65.0,
+      "nbProduits": 32
+    },
+    {
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "prixParHeure": 63.9,
+      "nbProduits": 29
+    }
+  ],
+  "prixHistogram": [
+    {
+      "bin": 76.0,
+      "count": 308
+    },
+    {
+      "bin": 226.0,
+      "count": 27
+    },
+    {
+      "bin": 376.0,
+      "count": 10
+    },
+    {
+      "bin": 526.0,
+      "count": 17
+    },
+    {
+      "bin": 676.0,
+      "count": 13
+    },
+    {
+      "bin": 826.0,
+      "count": 3
+    },
+    {
+      "bin": 976.0,
+      "count": 10
+    },
+    {
+      "bin": 1126.0,
+      "count": 6
+    },
+    {
+      "bin": 1276.0,
+      "count": 4
+    },
+    {
+      "bin": 1426.0,
+      "count": 4
+    },
+    {
+      "bin": 1576.0,
+      "count": 0
+    },
+    {
+      "bin": 1726.0,
+      "count": 5
+    },
+    {
+      "bin": 1876.0,
+      "count": 4
+    },
+    {
+      "bin": 2026.0,
+      "count": 3
+    },
+    {
+      "bin": 2176.0,
+      "count": 0
+    },
+    {
+      "bin": 2325.0,
+      "count": 0
+    },
+    {
+      "bin": 2475.0,
+      "count": 0
+    },
+    {
+      "bin": 2625.0,
+      "count": 0
+    },
+    {
+      "bin": 2775.0,
+      "count": 0
+    },
+    {
+      "bin": 2925.0,
+      "count": 1
+    },
+    {
+      "bin": 3075.0,
+      "count": 1
+    },
+    {
+      "bin": 3225.0,
+      "count": 0
+    },
+    {
+      "bin": 3375.0,
+      "count": 0
+    },
+    {
+      "bin": 3525.0,
+      "count": 0
+    },
+    {
+      "bin": 3675.0,
+      "count": 0
+    },
+    {
+      "bin": 3825.0,
+      "count": 0
+    },
+    {
+      "bin": 3975.0,
+      "count": 0
+    },
+    {
+      "bin": 4125.0,
+      "count": 0
+    },
+    {
+      "bin": 4275.0,
+      "count": 0
+    },
+    {
+      "bin": 4425.0,
+      "count": 1
+    }
+  ],
+  "prixBoxByType": [
+    {
+      "type": "COURS PARTICULIERS",
+      "min": 650.0,
+      "q1": 906.2,
+      "median": 1125.0,
+      "q3": 1425.0,
+      "max": 1950.0
+    },
+    {
+      "type": "Service location espaces",
+      "min": 12.5,
+      "q1": 175.0,
+      "median": 400.0,
+      "q3": 1020.0,
+      "max": 4500.0
+    },
+    {
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "min": 0.0,
+      "q1": 120.0,
+      "median": 310.0,
+      "q3": 480.0,
+      "max": 650.0
+    },
+    {
+      "type": "COURS ÉCOLES ",
+      "min": 8.0,
+      "q1": 10.0,
+      "median": 90.0,
+      "q3": 90.0,
+      "max": 1400.0
+    },
+    {
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "min": 65.0,
+      "q1": 72.5,
+      "median": 90.0,
+      "q3": 111.2,
+      "max": 130.0
+    },
+    {
+      "type": "Service hébergement",
+      "min": 10.0,
+      "q1": 50.0,
+      "median": 75.0,
+      "q3": 100.0,
+      "max": 1000.0
+    },
+    {
+      "type": "Bons cadeaux",
+      "min": 1.0,
+      "q1": 20.0,
+      "median": 50.0,
+      "q3": 67.5,
+      "max": 268.0
+    },
+    {
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "min": 5.0,
+      "q1": 25.0,
+      "median": 50.0,
+      "q3": 70.0,
+      "max": 580.0
+    },
+    {
+      "type": "COURS - autres frais ",
+      "min": 2.0,
+      "q1": 25.0,
+      "median": 40.0,
+      "q3": 250.0,
+      "max": 300.0
+    },
+    {
+      "type": "Matériel pédagogique",
+      "min": 15.0,
+      "q1": 35.0,
+      "median": 35.0,
+      "q3": 35.0,
+      "max": 35.0
+    },
+    {
+      "type": "Frais d'inscription",
+      "min": 30.0,
+      "q1": 30.0,
+      "median": 30.0,
+      "q3": 30.0,
+      "max": 30.0
+    },
+    {
+      "type": "EXAMENS - frais divers",
+      "min": 10.0,
+      "q1": 15.0,
+      "median": 25.0,
+      "q3": 30.0,
+      "max": 50.0
+    },
+    {
+      "type": "ATELIERS DE COURS",
+      "min": 1.0,
+      "q1": 1.0,
+      "median": 20.0,
+      "q3": 25.0,
+      "max": 25.0
+    },
+    {
+      "type": "CLASSES DECOUVERTE",
+      "min": 2.0,
+      "q1": 11.2,
+      "median": 12.5,
+      "q3": 15.0,
+      "max": 15.0
+    },
+    {
+      "type": "SG- Autres locations 708.3",
+      "min": 1.0,
+      "q1": 1.0,
+      "median": 1.0,
+      "q3": 1.0,
+      "max": 1.0
+    },
+    {
+      "type": "Frais de transport",
+      "min": 0.0,
+      "q1": 0.0,
+      "median": 0.0,
+      "q3": 21.5,
+      "max": 95.0
+    }
+  ],
+  "typeBySede": [
+    {
+      "type": "Matériel pédagogique",
+      "IFM": 19,
+      "IFF": 12,
+      "IFN": 14,
+      "IFP": 16
+    },
+    {
+      "type": "Service location espaces",
+      "IFM": 24,
+      "IFF": 6,
+      "IFN": 14,
+      "IFP": 3
+    },
+    {
+      "type": "Frais de transport",
+      "IFM": 10,
+      "IFF": 9,
+      "IFN": 13,
+      "IFP": 11
+    },
+    {
+      "type": "Bons cadeaux",
+      "IFM": 15,
+      "IFF": 9,
+      "IFN": 9,
+      "IFP": 9
+    },
+    {
+      "type": "COURS EN LIGNE (plateforme / en autonomie)",
+      "IFM": 9,
+      "IFF": 9,
+      "IFN": 9,
+      "IFP": 10
+    },
+    {
+      "type": "EXAMENS - frais divers",
+      "IFM": 9,
+      "IFF": 9,
+      "IFN": 10,
+      "IFP": 9
+    },
+    {
+      "type": "COURS PARTICULIERS",
+      "IFM": 8,
+      "IFF": 8,
+      "IFN": 8,
+      "IFP": 8
+    },
+    {
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)",
+      "IFM": 7,
+      "IFF": 7,
+      "IFN": 7,
+      "IFP": 8
+    },
+    {
+      "type": "COURS - autres frais ",
+      "IFM": 6,
+      "IFF": 6,
+      "IFN": 6,
+      "IFP": 6
+    },
+    {
+      "type": "Service hébergement",
+      "IFM": 0,
+      "IFF": 11,
+      "IFN": 10,
+      "IFP": 0
+    },
+    {
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)",
+      "IFM": 4,
+      "IFF": 4,
+      "IFN": 4,
+      "IFP": 4
+    },
+    {
+      "type": "ATELIERS DE COURS",
+      "IFM": 3,
+      "IFF": 3,
+      "IFN": 3,
+      "IFP": 3
+    },
+    {
+      "type": "Frais d'inscription",
+      "IFM": 3,
+      "IFF": 3,
+      "IFN": 3,
+      "IFP": 3
+    },
+    {
+      "type": "CLASSES DECOUVERTE",
+      "IFM": 0,
+      "IFF": 6,
+      "IFN": 5,
+      "IFP": 0
+    },
+    {
+      "type": "COURS ÉCOLES ",
+      "IFM": 3,
+      "IFF": 2,
+      "IFN": 3,
+      "IFP": 1
+    },
+    {
+      "type": "SG- Autres locations 708.3",
+      "IFM": 2,
+      "IFF": 1,
+      "IFN": 1,
+      "IFP": 1
+    },
+    {
+      "type": "COURS COLLECTIFS DE FR GRL",
+      "IFM": 1,
+      "IFF": 1,
+      "IFN": 1,
+      "IFP": 1
+    },
+    {
+      "type": "SG - Revenus créances diverses",
+      "IFM": 1,
+      "IFF": 1,
+      "IFN": 1,
+      "IFP": 1
+    },
+    {
+      "type": "Service de traduction",
+      "IFM": 1,
+      "IFF": 1,
+      "IFN": 1,
+      "IFP": 1
+    },
+    {
+      "type": "Cinéma (hors billetterie)",
+      "IFM": 2,
+      "IFF": 0,
+      "IFN": 1,
+      "IFP": 0
+    },
+    {
+      "type": "Cours coll spe  (externe)",
+      "IFM": 1,
+      "IFF": 0,
+      "IFN": 0,
+      "IFP": 0
+    },
+    {
+      "type": "SG- Frais Divers",
+      "IFM": 1,
+      "IFF": 0,
+      "IFN": 0,
+      "IFP": 0
+    }
+  ],
+  "reducedScatter": [
+    {
+      "prix": 65.0,
+      "tarifReduit": 65.0,
+      "sede": "IFM",
+      "nom": "A1 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 75.0,
+      "tarifReduit": 75.0,
+      "sede": "IFM",
+      "nom": "A2 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 245.0,
+      "tarifReduit": 245.0,
+      "sede": "IFM",
+      "nom": "ABC DELF B1 (avec tuteur 3h)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 310.0,
+      "tarifReduit": 310.0,
+      "sede": "IFM",
+      "nom": "ABC DELF B2 (avec tuteur 4h)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 5.0,
+      "tarifReduit": 5.0,
+      "sede": "IFM",
+      "nom": "Accès Apolearn asynchone",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFM",
+      "nom": "Accès plateforme ABC DELF A2",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFM",
+      "nom": "Accès plateforme ABC DELF A2 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFM",
+      "nom": "Accès plateforme ABC DELF B1",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFM",
+      "nom": "Accès plateforme ABC DELF B1 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFM",
+      "nom": "Accès plateforme ABC DELF B2",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFM",
+      "nom": "Accès plateforme ABC DELF B2 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFM",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFM",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFM",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 105.0,
+      "tarifReduit": 105.0,
+      "sede": "IFM",
+      "nom": "B1 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 130.0,
+      "tarifReduit": 130.0,
+      "sede": "IFM",
+      "nom": "B2 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Bon cadeau Cinéma : 7 billets",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 60.0,
+      "tarifReduit": 60.0,
+      "sede": "IFM",
+      "nom": "Bon cadeau langue française : 3 ateliers thématiques",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Carte cinéma 7 places",
+      "type": "Cinéma (hors billetterie)"
+    },
+    {
+      "prix": 105.0,
+      "tarifReduit": 105.0,
+      "sede": "IFM",
+      "nom": "Cours de théâtre",
+      "type": "Cours coll spe  (externe)"
+    },
+    {
+      "prix": 480.0,
+      "tarifReduit": 480.0,
+      "sede": "IFM",
+      "nom": "Cours sur mesure de préparation DALF (8h cours+10h plateforme Apolearn)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Edito Pro (B1)",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFM",
+      "nom": "Frais de dossier / secrétariat",
+      "type": "Frais d'inscription"
+    },
+    {
+      "prix": 12.0,
+      "tarifReduit": 12.0,
+      "sede": "IFM",
+      "nom": "Frais de facturation électronique",
+      "type": "SG- Frais Divers"
+    },
+    {
+      "prix": 84.0,
+      "tarifReduit": 84.0,
+      "sede": "IFM",
+      "nom": "IFM Location petit stand événement",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFM",
+      "nom": "Plateforme Apolearn parcours 10h",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 300.0,
+      "tarifReduit": 300.0,
+      "sede": "IFM",
+      "nom": "Prestation de conseil, formation ou expertise",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 250.0,
+      "tarifReduit": 250.0,
+      "sede": "IFM",
+      "nom": "Prestation de traduction simultanée/consécutive",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFM",
+      "nom": "surveillance examens externes (tarif horaire)",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Voucher cinéma (marché de Noël)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFM",
+      "nom": "Voucher cinéma (marché de Noël) maxi",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFM",
+      "nom": "Atelier",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFM",
+      "nom": "Carte cadeau \"Coup de coeur\" ",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 3.5,
+      "tarifReduit": 3.5,
+      "sede": "IFM",
+      "nom": "Entrée cinéma scolaire",
+      "type": "Cinéma (hors billetterie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFM",
+      "nom": "Atelier \"PRONONCIATION\"",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 268.0,
+      "tarifReduit": 268.0,
+      "sede": "IFM",
+      "nom": "Bon cours rete ESABAC",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 222.0,
+      "tarifReduit": 222.0,
+      "sede": "IFM",
+      "nom": "Bon cours rete ESABAC 2023-2024",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFM",
+      "nom": "Carte cadeau \"Amour\"",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 650.0,
+      "tarifReduit": 650.0,
+      "sede": "IFM",
+      "nom": "Mon cours en ligne avec tuteur (9H-12 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFM",
+      "nom": "Contribution distribution Boissons",
+      "type": "SG- Autres locations 708.3"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFM",
+      "nom": "Contributions distribution boissons",
+      "type": "SG- Autres locations 708.3"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Cosmopolite 1 (A1) - livre + cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Cosmopolite 2 (A2) - livre + cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Cosmopolite 3 (B1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Cosmopolite 4 (B2) - livre + cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFM",
+      "nom": "Bon cadeau (20€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Cosmopolite 5 (C1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFM",
+      "nom": "Bon cadeau (1€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFM",
+      "nom": "Bon cadeau (10€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFM",
+      "nom": "Bon cadeau (50€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFM",
+      "nom": "Coupon cadeau pour un cours",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFM",
+      "nom": "Bon cadeau (100€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFM",
+      "nom": "Coupon cadeau pour un cours",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Edito (C1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 650.0,
+      "tarifReduit": 650.0,
+      "sede": "IFM",
+      "nom": "FRANÇAIS GÉNÉRAL - 10h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 975.0,
+      "tarifReduit": 975.0,
+      "sede": "IFM",
+      "nom": "FRANÇAIS GÉNÉRAL - 15h Cours individuel  ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1200.0,
+      "tarifReduit": 1200.0,
+      "sede": "IFM",
+      "nom": "FRANÇAIS GÉNÉRAL - 20h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1800.0,
+      "tarifReduit": 1800.0,
+      "sede": "IFM",
+      "nom": "FRANÇAIS GÉNÉRAL - 30h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 700.0,
+      "tarifReduit": 700.0,
+      "sede": "IFM",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 10h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1050.0,
+      "tarifReduit": 1050.0,
+      "sede": "IFM",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 15h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1300.0,
+      "tarifReduit": 1300.0,
+      "sede": "IFM",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 20h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1950.0,
+      "tarifReduit": 1950.0,
+      "sede": "IFM",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 30h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFM",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFM",
+      "nom": "Frais de dossier (inscription annuelle)",
+      "type": "Frais d'inscription"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFM",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFM",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFM",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFM",
+      "nom": "Frais d'envoi diplômes en Italie",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFM",
+      "nom": "Frais d'envoi diplômes hors Italie",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 470.0,
+      "tarifReduit": 470.0,
+      "sede": "IFM",
+      "nom": "Mon cours en ligne avec tuteur (8 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 400.0,
+      "tarifReduit": 400.0,
+      "sede": "IFM",
+      "nom": "IFM Location - partenaires",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 750.0,
+      "tarifReduit": 490.0,
+      "sede": "IFM",
+      "nom": "IFM Location cinéma demi-journée (plein/A)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Inspire (A1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1200.0,
+      "tarifReduit": 840.0,
+      "sede": "IFM",
+      "nom": "IFM Location cinéma soirée (plein / A)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 840.0,
+      "tarifReduit": 480.0,
+      "sede": "IFM",
+      "nom": "IFM Location cinéma soirée (B)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 600.0,
+      "tarifReduit": 600.0,
+      "sede": "IFM",
+      "nom": "IFM Location salle cinéma journée (B)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 1500.0,
+      "tarifReduit": 1050.0,
+      "sede": "IFM",
+      "nom": "IFM Location salle cinéma journée (plein/A )",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 1500.0,
+      "tarifReduit": 1500.0,
+      "sede": "IFM",
+      "nom": "IFM location galerie demi-journée ",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 350.0,
+      "tarifReduit": 350.0,
+      "sede": "IFM",
+      "nom": "IFM location salle de cours - demi-journée ",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 500.0,
+      "tarifReduit": 500.0,
+      "sede": "IFM",
+      "nom": "IFM location salle de cours - journée ",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 2000.0,
+      "tarifReduit": 2000.0,
+      "sede": "IFM",
+      "nom": "IFM location salle de cours - semaine",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 2100.0,
+      "tarifReduit": 2100.0,
+      "sede": "IFM",
+      "nom": "IFM location galerie à la journée - tarif A",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 3150.0,
+      "tarifReduit": 3150.0,
+      "sede": "IFM",
+      "nom": "IFM location galerie à la soirée - tarif A",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 2000.0,
+      "tarifReduit": 2000.0,
+      "sede": "IFM",
+      "nom": "IFM location médiathèque à la journée - plein tarif",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 1400.0,
+      "tarifReduit": 1400.0,
+      "sede": "IFM",
+      "nom": "IFM location médiathèque à la journée - tarif A",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 800.0,
+      "tarifReduit": 800.0,
+      "sede": "IFM",
+      "nom": "IFM location médiathèque à la journée - tarif B",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 1200.0,
+      "tarifReduit": 1200.0,
+      "sede": "IFM",
+      "nom": "IFM location galerie à la journée - tarif B",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 1800.0,
+      "tarifReduit": 1800.0,
+      "sede": "IFM",
+      "nom": "IFM location galerie à la soirée - tarif B",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 210.0,
+      "tarifReduit": 210.0,
+      "sede": "IFM",
+      "nom": "IFM location stand événement",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 147.0,
+      "tarifReduit": 147.0,
+      "sede": "IFM",
+      "nom": "IFM location stand événement (moyen)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Inspire (A2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Inspire (B1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Inspire (B2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFM",
+      "nom": "Intérêts bancaires",
+      "type": "SG - Revenus créances diverses"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "L'Atelier A1(+) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "L'Atelier 2 (A2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "L'Atelier 3 (B1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFM",
+      "nom": "Test paiement en ligne",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "L'Atelier 4 (B2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 8.0,
+      "sede": "IFM",
+      "nom": "Matinée à l'IFM",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 90.0,
+      "tarifReduit": 90.0,
+      "sede": "IFM",
+      "nom": "Matinée à l'Institut 1h30",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Matériel pédagogique (livre+cahier)",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 290.0,
+      "tarifReduit": 145.0,
+      "sede": "IFM",
+      "nom": "Mon cours en ligne en autonomie (60h sur plateforme)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Objectif Express 1 - livre +cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Objectif Express 2 - livre +cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFM",
+      "nom": "Prestation technique /h ",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 1400.0,
+      "tarifReduit": 1400.0,
+      "sede": "IFM",
+      "nom": "Projet \"Au travail\" PCTO",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 120.0,
+      "tarifReduit": 120.0,
+      "sede": "IFM",
+      "nom": "RIPASSO GRAMMATICALE (10h autonomia +1h30 lezione)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFM",
+      "nom": "Frais de modification données DELF DALF",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFM",
+      "nom": "Réimpression diplômes DELF DALF",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFM",
+      "nom": "Sanification espaces",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFM",
+      "nom": "Dossier 1500 caractères - espaces inclus",
+      "type": "Service de traduction"
+    },
+    {
+      "prix": 2.0,
+      "tarifReduit": 2.0,
+      "sede": "IFM",
+      "nom": "Timbre fiscal",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 65.0,
+      "tarifReduit": 65.0,
+      "sede": "IFF",
+      "nom": "A1 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 75.0,
+      "tarifReduit": 75.0,
+      "sede": "IFF",
+      "nom": "A2 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 245.0,
+      "tarifReduit": 245.0,
+      "sede": "IFF",
+      "nom": "ABC DELF B1 (avec tuteur 3h)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 310.0,
+      "tarifReduit": 310.0,
+      "sede": "IFF",
+      "nom": "ABC DELF B2 (avec tuteur 4h)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 5.0,
+      "tarifReduit": 5.0,
+      "sede": "IFF",
+      "nom": "Accès Apolearn asynchone",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFF",
+      "nom": "Accès plateforme ABC DELF A2",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFF",
+      "nom": "Accès plateforme ABC DELF A2 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFF",
+      "nom": "Accès plateforme ABC DELF B1",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFF",
+      "nom": "Accès plateforme ABC DELF B1 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFF",
+      "nom": "Accès plateforme ABC DELF B2",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFF",
+      "nom": "Accès plateforme ABC DELF B2 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 12.5,
+      "tarifReduit": 12.5,
+      "sede": "IFF",
+      "nom": "Atelier 3h CLASSES DÉCOUVERTE (gruppi da 15 part e oltre)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFF",
+      "nom": "Atelier CLASSES DÉCOUVERTE (gruppi inferiori a 15 part)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFF",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFF",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFF",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 105.0,
+      "tarifReduit": 105.0,
+      "sede": "IFF",
+      "nom": "B1 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 130.0,
+      "tarifReduit": 130.0,
+      "sede": "IFF",
+      "nom": "B2 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 1000.0,
+      "tarifReduit": 500.0,
+      "sede": "IFF",
+      "nom": "Chambre 1-2 / mois",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 90.0,
+      "tarifReduit": 45.0,
+      "sede": "IFF",
+      "nom": "Chambre 1-2 / nuit",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 420.0,
+      "tarifReduit": 210.0,
+      "sede": "IFF",
+      "nom": "Chambre 1-2 / semaine",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Chambre 2 / nuit",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 300.0,
+      "tarifReduit": 170.0,
+      "sede": "IFF",
+      "nom": "Chambre 2 / semaine",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 480.0,
+      "tarifReduit": 480.0,
+      "sede": "IFF",
+      "nom": "Cours sur mesure de préparation DALF (8h cours+10h plateforme Apolearn)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Edito Pro (B1)",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFF",
+      "nom": "Frais de dossier / secrétariat",
+      "type": "Frais d'inscription"
+    },
+    {
+      "prix": 250.0,
+      "tarifReduit": 250.0,
+      "sede": "IFF",
+      "nom": "IFF Location salle de lecture /jr",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 20.0,
+      "sede": "IFF",
+      "nom": "IFF Location tarif horaire",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 500.0,
+      "tarifReduit": 500.0,
+      "sede": "IFF",
+      "nom": "IFF Location théâtre /jr",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 250.0,
+      "tarifReduit": 250.0,
+      "sede": "IFF",
+      "nom": "IFF Location théâtre demi-jr",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFF",
+      "nom": "IFF Location théâtre la semaine (usage cours) (tarif horaire)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "IFF Location théâtre le week-end (usage cours) (tarif horaire)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 2.0,
+      "tarifReduit": 2.0,
+      "sede": "IFF",
+      "nom": "Location oreillette pour visite ",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 1000.0,
+      "tarifReduit": 500.0,
+      "sede": "IFF",
+      "nom": "Mezzanine / mois",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 50.0,
+      "sede": "IFF",
+      "nom": "Mezzanine / nuit",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 500.0,
+      "tarifReduit": 250.0,
+      "sede": "IFF",
+      "nom": "Mezzanine / semaine",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFF",
+      "nom": "Plateforme Apolearn parcours 10h",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 300.0,
+      "tarifReduit": 300.0,
+      "sede": "IFF",
+      "nom": "Prestation de conseil, formation ou expertise",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 250.0,
+      "tarifReduit": 250.0,
+      "sede": "IFF",
+      "nom": "Prestation de traduction simultanée/consécutive",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFF",
+      "nom": "Supplément 3ème pers / mois",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFF",
+      "nom": "Supplément 3ème pers / nuit",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFF",
+      "nom": "Supplément 3ème pers / semaine",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFF",
+      "nom": "surveillance examens externes (tarif horaire)",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 12.5,
+      "tarifReduit": 12.5,
+      "sede": "IFF",
+      "nom": "Visite 2h Classe Découverte (gruppi da 15 part e oltre)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFF",
+      "nom": "Visite 2h Classe Découverte (gruppi inferiori a 15 part)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFF",
+      "nom": "Visite 3h Classe Découverte (gruppi da 15 part e oltre)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFF",
+      "nom": "Atelier",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFF",
+      "nom": "Carte cadeau \"Coup de coeur\" ",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFF",
+      "nom": "Atelier \"PRONONCIATION\"",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFF",
+      "nom": "Carte cadeau \"Amour\"",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 650.0,
+      "tarifReduit": 650.0,
+      "sede": "IFF",
+      "nom": "Mon cours en ligne avec tuteur (9H-12 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFF",
+      "nom": "Contribution distribution Boissons",
+      "type": "SG- Autres locations 708.3"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Cosmopolite 4 (B2) - livre + cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFF",
+      "nom": "Bon cadeau (20€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Cosmopolite 5 (C1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFF",
+      "nom": "Bon cadeau (1€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFF",
+      "nom": "Bon cadeau (10€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFF",
+      "nom": "Bon cadeau (50€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFF",
+      "nom": "Coupon cadeau pour un cours",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFF",
+      "nom": "Bon cadeau (100€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFF",
+      "nom": "Coupon cadeau pour un cours",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Edito (B1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Edito (B2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 650.0,
+      "tarifReduit": 650.0,
+      "sede": "IFF",
+      "nom": "FRANÇAIS GÉNÉRAL - 10h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 975.0,
+      "tarifReduit": 975.0,
+      "sede": "IFF",
+      "nom": "FRANÇAIS GÉNÉRAL - 15h Cours individuel  ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1200.0,
+      "tarifReduit": 1200.0,
+      "sede": "IFF",
+      "nom": "FRANÇAIS GÉNÉRAL - 20h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1800.0,
+      "tarifReduit": 1800.0,
+      "sede": "IFF",
+      "nom": "FRANÇAIS GÉNÉRAL - 30h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 700.0,
+      "tarifReduit": 700.0,
+      "sede": "IFF",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 10h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1050.0,
+      "tarifReduit": 1050.0,
+      "sede": "IFF",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 15h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1300.0,
+      "tarifReduit": 1300.0,
+      "sede": "IFF",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 20h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1950.0,
+      "tarifReduit": 1950.0,
+      "sede": "IFF",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 30h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFF",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFF",
+      "nom": "Frais de dossier (inscription annuelle)",
+      "type": "Frais d'inscription"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFF",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFF",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFF",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFF",
+      "nom": "Frais d'envoi diplômes en Italie",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFF",
+      "nom": "Frais d'envoi diplômes hors Italie",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 470.0,
+      "tarifReduit": 470.0,
+      "sede": "IFF",
+      "nom": "Mon cours en ligne avec tuteur (8 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Inspire (A1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Inspire (A2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Inspire (B1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Inspire (B2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFF",
+      "nom": "Intérêts bancaires",
+      "type": "SG - Revenus créances diverses"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFF",
+      "nom": "Test paiement en ligne",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 8.0,
+      "sede": "IFF",
+      "nom": "Matinée à l'IFF",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 90.0,
+      "tarifReduit": 90.0,
+      "sede": "IFF",
+      "nom": "Matinée à l'Institut 1h30",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 290.0,
+      "tarifReduit": 145.0,
+      "sede": "IFF",
+      "nom": "Mon cours en ligne en autonomie (60h sur plateforme)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Objectif Express 1 - livre +cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Objectif Express 2 - livre +cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 120.0,
+      "tarifReduit": 120.0,
+      "sede": "IFF",
+      "nom": "RIPASSO GRAMMATICALE (10h autonomia +1h30 lezione)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFF",
+      "nom": "Frais de modification données DELF DALF",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFF",
+      "nom": "Réimpression diplômes DELF DALF",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFF",
+      "nom": "Dossier 1500 caractères - espaces inclus",
+      "type": "Service de traduction"
+    },
+    {
+      "prix": 2.0,
+      "tarifReduit": 2.0,
+      "sede": "IFF",
+      "nom": "Timbre fiscal",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 65.0,
+      "tarifReduit": 65.0,
+      "sede": "IFN",
+      "nom": "A1 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 75.0,
+      "tarifReduit": 75.0,
+      "sede": "IFN",
+      "nom": "A2 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 245.0,
+      "tarifReduit": 245.0,
+      "sede": "IFN",
+      "nom": "ABC DELF B1 (avec tuteur 3h)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 310.0,
+      "tarifReduit": 310.0,
+      "sede": "IFN",
+      "nom": "ABC DELF B2 (avec tuteur 4h)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 5.0,
+      "tarifReduit": 5.0,
+      "sede": "IFN",
+      "nom": "Accès Apolearn asynchone",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFN",
+      "nom": "Accès plateforme ABC DELF A2",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFN",
+      "nom": "Accès plateforme ABC DELF A2 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFN",
+      "nom": "Accès plateforme ABC DELF B1",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFN",
+      "nom": "Accès plateforme ABC DELF B1 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFN",
+      "nom": "Accès plateforme ABC DELF B2",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFN",
+      "nom": "Accès plateforme ABC DELF B2 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 12.5,
+      "tarifReduit": 12.5,
+      "sede": "IFN",
+      "nom": "Atelier 3h CLASSES DÉCOUVERTE (gruppi da 15 part e oltre)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFN",
+      "nom": "Atelier CLASSES DÉCOUVERTE (gruppi inferiori a 15 part)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFN",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFN",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFN",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 105.0,
+      "tarifReduit": 105.0,
+      "sede": "IFN",
+      "nom": "B1 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 130.0,
+      "tarifReduit": 130.0,
+      "sede": "IFN",
+      "nom": "B2 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFN",
+      "nom": "Carte annuelle ciné-club IFN",
+      "type": "Cinéma (hors billetterie)"
+    },
+    {
+      "prix": 75.0,
+      "tarifReduit": 75.0,
+      "sede": "IFN",
+      "nom": "Chambre n°2 ou 4 simple / nuit ",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 40.0,
+      "tarifReduit": 40.0,
+      "sede": "IFN",
+      "nom": "Chambre n°2 ou 4 simple / nuit (partenaire)",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 65.0,
+      "tarifReduit": 65.0,
+      "sede": "IFN",
+      "nom": "Chambre n°2 ou 4 simple / nuit (tarif réduit)",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 80.0,
+      "tarifReduit": 80.0,
+      "sede": "IFN",
+      "nom": "Chambre n°3 double / nuit ",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFN",
+      "nom": "Chambre n°3 double / nuit (partenaire)",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFN",
+      "nom": "Chambre n°3 simple / nuit (tarif réduit)",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFN",
+      "nom": "Chambre n°5 double / nuit ",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 65.0,
+      "tarifReduit": 65.0,
+      "sede": "IFN",
+      "nom": "Chambre n°5 double / nuit (partenaire)",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 90.0,
+      "tarifReduit": 90.0,
+      "sede": "IFN",
+      "nom": "Chambre n°5 double/ nuit (réduit)",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 480.0,
+      "tarifReduit": 480.0,
+      "sede": "IFN",
+      "nom": "Cours sur mesure de préparation DALF (8h cours+10h plateforme Apolearn)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Edito Pro (B1)",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFN",
+      "nom": "Frais de dossier / secrétariat",
+      "type": "Frais d'inscription"
+    },
+    {
+      "prix": 400.0,
+      "tarifReduit": 300.0,
+      "sede": "IFN",
+      "nom": "IFN Location jardin (journée)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 300.0,
+      "tarifReduit": 200.0,
+      "sede": "IFN",
+      "nom": "IFN Location jardin (mi-journée)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFN",
+      "nom": "IFN Location jardin (tarif associatif)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 200.0,
+      "tarifReduit": 200.0,
+      "sede": "IFN",
+      "nom": "IFN Location médiathèque (tarif journalier)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 40.0,
+      "tarifReduit": 40.0,
+      "sede": "IFN",
+      "nom": "IFN Location salle de cours (tarif horaire)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 450.0,
+      "tarifReduit": 450.0,
+      "sede": "IFN",
+      "nom": "IFN Location salle Dumas /salle Dada (forfait 2 jours)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 800.0,
+      "tarifReduit": 350.0,
+      "sede": "IFN",
+      "nom": "IFN Location salle Dumas /salle Dada (journée)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 600.0,
+      "tarifReduit": 600.0,
+      "sede": "IFN",
+      "nom": "IFN Location salle Dumas /salle Dada (mi-journée)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 500.0,
+      "tarifReduit": 500.0,
+      "sede": "IFN",
+      "nom": "IFN Location salle Dumas /salle Dada (mi-journée)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 250.0,
+      "tarifReduit": 250.0,
+      "sede": "IFN",
+      "nom": "IFN Location salle Dumas /salle Dada (tarif associatif)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 250.0,
+      "tarifReduit": 250.0,
+      "sede": "IFN",
+      "nom": "IFN Location salle Dumas /salle Dada (tarif par jour - forfait à partir de 3 jours)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 500.0,
+      "tarifReduit": 400.0,
+      "sede": "IFN",
+      "nom": "IFN Location Salon du 2ème étage et terrasse (journée)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 400.0,
+      "tarifReduit": 300.0,
+      "sede": "IFN",
+      "nom": "IFN Location Salon du 2ème étage et terrasse (mi-journée)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 150.0,
+      "tarifReduit": 150.0,
+      "sede": "IFN",
+      "nom": "IFN Location Salon du 2ème étage et terrasse (tarif associatif)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFN",
+      "nom": "Plateforme Apolearn parcours 10h",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 300.0,
+      "tarifReduit": 300.0,
+      "sede": "IFN",
+      "nom": "Prestation de conseil, formation ou expertise",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 250.0,
+      "tarifReduit": 250.0,
+      "sede": "IFN",
+      "nom": "Prestation de traduction simultanée/consécutive",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFN",
+      "nom": "Supplément lit enfant",
+      "type": "Service hébergement"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFN",
+      "nom": "surveillance examens externes (tarif horaire)",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 12.5,
+      "tarifReduit": 12.5,
+      "sede": "IFN",
+      "nom": "Visite 2h Classe Découverte (gruppi da 15 part e oltre)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFN",
+      "nom": "Visite 2h Classe Découverte (gruppi inferiori a 15 part)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFN",
+      "nom": "Visite 3h Classe Découverte (gruppi da 15 part e oltre)",
+      "type": "CLASSES DECOUVERTE"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFN",
+      "nom": "Atelier",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFN",
+      "nom": "Carte cadeau \"Coup de coeur\" ",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFN",
+      "nom": "Atelier \"PRONONCIATION\"",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFN",
+      "nom": "Carte cadeau \"Amour\"",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 650.0,
+      "tarifReduit": 650.0,
+      "sede": "IFN",
+      "nom": "Mon cours en ligne avec tuteur (9H-12 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFN",
+      "nom": "Contribution distribution Boissons",
+      "type": "SG- Autres locations 708.3"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Cosmopolite 4 (B2) - livre + cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFN",
+      "nom": "Bon cadeau (20€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Cosmopolite 5 (C1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFN",
+      "nom": "Bon cadeau (1€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFN",
+      "nom": "Bon cadeau (10€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFN",
+      "nom": "Bon cadeau (50€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFN",
+      "nom": "Coupon cadeau pour un cours",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFN",
+      "nom": "Bon cadeau (100€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFN",
+      "nom": "Coupon cadeau pour un cours",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Edito (A1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Edito (A2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Edito (B1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Edito (B2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 650.0,
+      "tarifReduit": 650.0,
+      "sede": "IFN",
+      "nom": "FRANÇAIS GÉNÉRAL - 10h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 975.0,
+      "tarifReduit": 975.0,
+      "sede": "IFN",
+      "nom": "FRANÇAIS GÉNÉRAL - 15h Cours individuel  ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1200.0,
+      "tarifReduit": 1200.0,
+      "sede": "IFN",
+      "nom": "FRANÇAIS GÉNÉRAL - 20h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1800.0,
+      "tarifReduit": 1800.0,
+      "sede": "IFN",
+      "nom": "FRANÇAIS GÉNÉRAL - 30h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 700.0,
+      "tarifReduit": 700.0,
+      "sede": "IFN",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 10h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1050.0,
+      "tarifReduit": 1050.0,
+      "sede": "IFN",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 15h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1300.0,
+      "tarifReduit": 1300.0,
+      "sede": "IFN",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 20h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1950.0,
+      "tarifReduit": 1950.0,
+      "sede": "IFN",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 30h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFN",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFN",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFN",
+      "nom": "Frais de dossier (inscription annuelle)",
+      "type": "Frais d'inscription"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFN",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFN",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFN",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFN",
+      "nom": "Frais d'envoi diplômes en Italie",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFN",
+      "nom": "Frais d'envoi diplômes hors Italie",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 470.0,
+      "tarifReduit": 470.0,
+      "sede": "IFN",
+      "nom": "Mon cours en ligne avec tuteur (8 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Inspire (A1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Inspire (A2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Inspire (B1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Inspire (B2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFN",
+      "nom": "Intérêts bancaires",
+      "type": "SG - Revenus créances diverses"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFN",
+      "nom": "Test paiement en ligne",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 8.0,
+      "tarifReduit": 6.0,
+      "sede": "IFN",
+      "nom": "Matinée à l'IFN",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 8.0,
+      "tarifReduit": 6.0,
+      "sede": "IFN",
+      "nom": "Matinée à l'IFP",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 90.0,
+      "tarifReduit": 90.0,
+      "sede": "IFN",
+      "nom": "Matinée à l'Institut 1h30",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 290.0,
+      "tarifReduit": 145.0,
+      "sede": "IFN",
+      "nom": "Mon cours en ligne en autonomie (60h sur plateforme)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Objectif Express 1 - livre +cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Objectif Express 2 - livre +cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 120.0,
+      "tarifReduit": 120.0,
+      "sede": "IFN",
+      "nom": "RIPASSO GRAMMATICALE (10h autonomia +1h30 lezione)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFN",
+      "nom": "Frais de modification données DELF DALF",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFN",
+      "nom": "Réimpression diplômes DELF DALF",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFN",
+      "nom": "Dossier 1500 caractères - espaces inclus",
+      "type": "Service de traduction"
+    },
+    {
+      "prix": 2.0,
+      "tarifReduit": 2.0,
+      "sede": "IFN",
+      "nom": "Timbre fiscal",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 65.0,
+      "tarifReduit": 65.0,
+      "sede": "IFP",
+      "nom": "A1 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 75.0,
+      "tarifReduit": 75.0,
+      "sede": "IFP",
+      "nom": "A2 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 245.0,
+      "tarifReduit": 245.0,
+      "sede": "IFP",
+      "nom": "ABC DELF B1 (avec tuteur 3h)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 310.0,
+      "tarifReduit": 310.0,
+      "sede": "IFP",
+      "nom": "ABC DELF B2 (avec tuteur 4h)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 5.0,
+      "tarifReduit": 5.0,
+      "sede": "IFP",
+      "nom": "Accès Apolearn asynchone",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFP",
+      "nom": "Accès plateforme ABC DELF A2",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Accès plateforme ABC DELF A2 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFP",
+      "nom": "Accès plateforme ABC DELF B1",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Accès plateforme ABC DELF B1 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 70.0,
+      "tarifReduit": 70.0,
+      "sede": "IFP",
+      "nom": "Accès plateforme ABC DELF B2",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Accès plateforme ABC DELF B2 (ECOLES)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFP",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFP",
+      "nom": "Attestation de niveau",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 105.0,
+      "tarifReduit": 105.0,
+      "sede": "IFP",
+      "nom": "B1 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 130.0,
+      "tarifReduit": 130.0,
+      "sede": "IFP",
+      "nom": "B2 SCO",
+      "type": "EXAMENS DELF SCOLAIRE (GP fact)"
+    },
+    {
+      "prix": 480.0,
+      "tarifReduit": 480.0,
+      "sede": "IFP",
+      "nom": "Cours sur mesure de préparation DALF (8h cours+10h plateforme Apolearn)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Edito Pro (B1)",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFP",
+      "nom": "Frais de dossier / secrétariat",
+      "type": "Frais d'inscription"
+    },
+    {
+      "prix": 200.0,
+      "tarifReduit": 100.0,
+      "sede": "IFP",
+      "nom": "IFP location médiathèque (/jr)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 12.5,
+      "tarifReduit": 12.5,
+      "sede": "IFP",
+      "nom": "IFP location salle (/h)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 80.0,
+      "tarifReduit": 80.0,
+      "sede": "IFP",
+      "nom": "IFP location salle (/jr)",
+      "type": "Service location espaces"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFP",
+      "nom": "Plateforme Apolearn parcours 10h",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 300.0,
+      "tarifReduit": 300.0,
+      "sede": "IFP",
+      "nom": "Prestation de conseil, formation ou expertise",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 250.0,
+      "tarifReduit": 250.0,
+      "sede": "IFP",
+      "nom": "Prestation de traduction simultanée/consécutive",
+      "type": "COURS - autres frais "
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "surveillance examens externes (tarif horaire)",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFP",
+      "nom": "Atelier",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFP",
+      "nom": "Carte cadeau \"Coup de coeur\" ",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Atelier \"PRONONCIATION\"",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFP",
+      "nom": "Carte cadeau \"Amour\"",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 650.0,
+      "tarifReduit": 650.0,
+      "sede": "IFP",
+      "nom": "Mon cours en ligne avec tuteur (9H-12 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFP",
+      "nom": "Contribution distribution Boissons",
+      "type": "SG- Autres locations 708.3"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Cosmopolite 4 (B2) - livre + cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFP",
+      "nom": "Bon cadeau (20€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Cosmopolite 5 (C1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFP",
+      "nom": "Bon cadeau (1€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFP",
+      "nom": "Bon cadeau (10€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFP",
+      "nom": "Bon cadeau (50€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFP",
+      "nom": "Coupon cadeau pour un cours",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFP",
+      "nom": "Bon cadeau (100€)",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 100.0,
+      "tarifReduit": 100.0,
+      "sede": "IFP",
+      "nom": "Coupon cadeau pour un cours",
+      "type": "Bons cadeaux"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Edito (A1) - livre",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Edito (A2) - livre ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Edito (B1) - livre",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Edito (B2) - livre",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 650.0,
+      "tarifReduit": 650.0,
+      "sede": "IFP",
+      "nom": "FRANÇAIS GÉNÉRAL - 10h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 975.0,
+      "tarifReduit": 975.0,
+      "sede": "IFP",
+      "nom": "FRANÇAIS GÉNÉRAL - 15h Cours individuel  ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1200.0,
+      "tarifReduit": 1200.0,
+      "sede": "IFP",
+      "nom": "FRANÇAIS GÉNÉRAL - 20h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1800.0,
+      "tarifReduit": 1800.0,
+      "sede": "IFP",
+      "nom": "FRANÇAIS GÉNÉRAL - 30h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 700.0,
+      "tarifReduit": 700.0,
+      "sede": "IFP",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 10h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1050.0,
+      "tarifReduit": 1050.0,
+      "sede": "IFP",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 15h Cours individuel ",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1300.0,
+      "tarifReduit": 1300.0,
+      "sede": "IFP",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 20h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 1950.0,
+      "tarifReduit": 1950.0,
+      "sede": "IFP",
+      "nom": "FRANÇAIS SPÉCIFIQUE - 30h Cours individuel",
+      "type": "COURS PARTICULIERS"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFP",
+      "nom": "Frais de dossier (inscription annuelle)",
+      "type": "Frais d'inscription"
+    },
+    {
+      "prix": 50.0,
+      "tarifReduit": 50.0,
+      "sede": "IFP",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFP",
+      "nom": "Matériel pédagogique (Cahier d'activités)",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 25.0,
+      "tarifReduit": 25.0,
+      "sede": "IFP",
+      "nom": "Matériel pédagogique (Manuel de cours)",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 15.0,
+      "tarifReduit": 15.0,
+      "sede": "IFP",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFP",
+      "nom": "Frais d'envoi diplômes",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFP",
+      "nom": "Frais d'envoi diplômes en Italie",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 20.0,
+      "tarifReduit": 20.0,
+      "sede": "IFP",
+      "nom": "Frais d'envoi diplômes hors Italie",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 470.0,
+      "tarifReduit": 470.0,
+      "sede": "IFP",
+      "nom": "Mon cours en ligne avec tuteur (8 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 490.0,
+      "tarifReduit": 490.0,
+      "sede": "IFP",
+      "nom": "Mon cours en ligne avec tuteur (DUO-12 entretiens)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Inspire (A1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Inspire (A2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Inspire (B1) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Inspire (B2) - livre + cahier ",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFP",
+      "nom": "Intérêts bancaires",
+      "type": "SG - Revenus créances diverses"
+    },
+    {
+      "prix": 1.0,
+      "tarifReduit": 1.0,
+      "sede": "IFP",
+      "nom": "Test paiement en ligne",
+      "type": "ATELIERS DE COURS"
+    },
+    {
+      "prix": 90.0,
+      "tarifReduit": 90.0,
+      "sede": "IFP",
+      "nom": "Matinée à l'Institut 1h30",
+      "type": "COURS ÉCOLES "
+    },
+    {
+      "prix": 580.0,
+      "tarifReduit": 580.0,
+      "sede": "IFP",
+      "nom": "DUO St Valentin - 2 cours en ligne en autonomie ",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 290.0,
+      "tarifReduit": 145.0,
+      "sede": "IFP",
+      "nom": "Mon cours en ligne en autonomie (60h sur plateforme)",
+      "type": "COURS EN LIGNE (plateforme / en autonomie)"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Objectif Express 1 - livre +cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Objectif Express 2 - livre +cahier",
+      "type": "Matériel pédagogique"
+    },
+    {
+      "prix": 120.0,
+      "tarifReduit": 120.0,
+      "sede": "IFP",
+      "nom": "RIPASSO GRAMMATICALE (10h autonomia +1h30 lezione)",
+      "type": "COURS EN LIGNE (plateforme / avec tuteur)"
+    },
+    {
+      "prix": 10.0,
+      "tarifReduit": 10.0,
+      "sede": "IFP",
+      "nom": "Frais de modification données DELF DALF",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 30.0,
+      "tarifReduit": 30.0,
+      "sede": "IFP",
+      "nom": "Réimpression diplômes DELF DALF",
+      "type": "EXAMENS - frais divers"
+    },
+    {
+      "prix": 35.0,
+      "tarifReduit": 35.0,
+      "sede": "IFP",
+      "nom": "Dossier 1500 caractères - espaces inclus",
+      "type": "Service de traduction"
+    },
+    {
+      "prix": 2.0,
+      "tarifReduit": 2.0,
+      "sede": "IFP",
+      "nom": "Timbre fiscal",
+      "type": "COURS - autres frais "
+    }
+  ],
+  "reducedKpis": {
+    "nb": 394,
+    "avgPct": 2.7,
+    "maxPct": 56.2
+  },
+  "memberKpis": {
+    "nb": 417,
+    "avgPct": 0.0
+  }
+}

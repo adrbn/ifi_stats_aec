@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   OSCAR design tokens — ported verbatim from design-system.css
+   (Claude Design handoff bundle). Single source of truth.
+   ============================================================ */
+:root {
+  /* Neutrals */
+  --neutral-900: #0f172a;
+  --neutral-800: #1e293b;
+  --neutral-700: #334155;
+  --neutral-600: #475569;
+  --neutral-500: #64748b;
+  --neutral-400: #94a3b8;
+  --neutral-300: #cbd5e1;
+  --neutral-200: #e2e8f0;
+  --neutral-100: #f1f5f9;
+  --neutral-50: #f8fafc;
+  --surface: #ffffff;
+  --page-bg: #f7f8fa;
+
+  /* Accent = IFI blue */
+  --accent-500: #3b82f6;
+  --accent-600: #2563eb;
+  --accent-700: #1d4ed8;
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
+
+  /* Semantic */
+  --success-500: #16a34a;
+  --success-50: #dcfce7;
+  --info-500: #0891b2;
+  --info-50: #cffafe;
+  --warning-500: #d97706;
+  --warning-50: #fef3c7;
+  --error-500: #dc2626;
+  --error-50: #fee2e2;
+
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--neutral-900);
+  background: var(--page-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle scrollbar for nav rail / panels */
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--neutral-200);
+  border-radius: 999px;
+}
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--neutral-300);
+}
+
+/* Recharts tweaks to match the OSCAR Plotly theme rules */
+.recharts-cartesian-grid line {
+  stroke: var(--neutral-100);
+}
+.recharts-cartesian-axis-line {
+  stroke: var(--neutral-300);
+}
+.recharts-text {
+  fill: var(--neutral-500);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes oscar-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

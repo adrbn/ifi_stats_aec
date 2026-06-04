@@ -1,0 +1,1521 @@
+{
+  "available": true,
+  "meta": {
+    "source": "computed",
+    "updated": "2026-06-01T22:09:57Z",
+    "total": 8497
+  },
+  "kpis": [
+    {
+      "key": "clients",
+      "label": "Clients",
+      "value": 8497,
+      "format": "int"
+    },
+    {
+      "key": "antennes",
+      "label": "Antennes",
+      "value": 4,
+      "format": "int"
+    },
+    {
+      "key": "femmes",
+      "label": "% Femmes",
+      "value": 66.2,
+      "format": "pct1"
+    },
+    {
+      "key": "hommes",
+      "label": "% Hommes",
+      "value": 32.4,
+      "format": "pct1"
+    },
+    {
+      "key": "nonspec",
+      "label": "% Non spécifié",
+      "value": 1.4,
+      "format": "pct1"
+    },
+    {
+      "key": "age",
+      "label": "Âge moyen",
+      "value": 34.8,
+      "format": "dec1"
+    }
+  ],
+  "bySede": [
+    {
+      "code": "IFM",
+      "name": "IFM Milano",
+      "color": "#FF8C00",
+      "clients": 3975,
+      "femmes": 2597,
+      "hommes": 1375,
+      "nonSpec": 3,
+      "ageMoyen": 36.8,
+      "ageMedian": 33.0
+    },
+    {
+      "code": "IFF",
+      "name": "IFF Firenze",
+      "color": "#8B5CF6",
+      "clients": 2113,
+      "femmes": 1346,
+      "hommes": 657,
+      "nonSpec": 110,
+      "ageMoyen": 36.2,
+      "ageMedian": 32.0
+    },
+    {
+      "code": "IFN",
+      "name": "IFN Napoli",
+      "color": "#22C55E",
+      "clients": 1713,
+      "femmes": 1196,
+      "hommes": 514,
+      "nonSpec": 3,
+      "ageMoyen": 29.4,
+      "ageMedian": 24.0
+    },
+    {
+      "code": "IFP",
+      "name": "IFP Palermo",
+      "color": "#EF4444",
+      "clients": 695,
+      "femmes": 489,
+      "hommes": 206,
+      "nonSpec": 0,
+      "ageMoyen": 31.0,
+      "ageMedian": 24.0
+    }
+  ],
+  "tranches": [
+    {
+      "label": "Enfants / jeunes ados (3-13)",
+      "count": 282,
+      "pct": 3.3
+    },
+    {
+      "label": "Lycéens (14-18)",
+      "count": 631,
+      "pct": 7.4
+    },
+    {
+      "label": "Jeunes U25 (19-25)",
+      "count": 1394,
+      "pct": 16.4
+    },
+    {
+      "label": "Jeunes adultes U35 (26-35)",
+      "count": 1837,
+      "pct": 21.6
+    },
+    {
+      "label": "Adultes actifs (36-50)",
+      "count": 1393,
+      "pct": 16.4
+    },
+    {
+      "label": "Adultes confirmés (51-65)",
+      "count": 963,
+      "pct": 11.3
+    },
+    {
+      "label": "Seniors (65+)",
+      "count": 368,
+      "pct": 4.3
+    }
+  ],
+  "typesCours": [
+    {
+      "label": "Cours programmés",
+      "count": 4700,
+      "pct": 55.5
+    },
+    {
+      "label": "Entreprises (organismes)",
+      "count": 2870,
+      "pct": 33.9
+    },
+    {
+      "label": "À la carte",
+      "count": 902,
+      "pct": 10.6
+    }
+  ],
+  "genderBySede": [
+    {
+      "code": "IFM",
+      "F": 2597,
+      "M": 1375,
+      "NS": 3
+    },
+    {
+      "code": "IFF",
+      "F": 1346,
+      "M": 657,
+      "NS": 110
+    },
+    {
+      "code": "IFN",
+      "F": 1196,
+      "M": 514,
+      "NS": 3
+    },
+    {
+      "code": "IFP",
+      "F": 489,
+      "M": 206,
+      "NS": 0
+    }
+  ],
+  "nationalities": {
+    "nbNationalities": 60,
+    "principal": {
+      "label": "ITALIENNE",
+      "pct": 95.4
+    },
+    "nonSpecified": 3701,
+    "top": [
+      {
+        "label": "ITALIENNE",
+        "count": 4576,
+        "pct": 95.4
+      },
+      {
+        "label": "FRANÇAISE",
+        "count": 40,
+        "pct": 0.8
+      },
+      {
+        "label": "CHINOISE",
+        "count": 17,
+        "pct": 0.4
+      },
+      {
+        "label": "RUSSE",
+        "count": 16,
+        "pct": 0.3
+      },
+      {
+        "label": "ESPAGNOLE",
+        "count": 13,
+        "pct": 0.3
+      },
+      {
+        "label": "AMÉRICAINE",
+        "count": 13,
+        "pct": 0.3
+      },
+      {
+        "label": "ROUMAINE",
+        "count": 7,
+        "pct": 0.1
+      },
+      {
+        "label": "BRITANNIQUE",
+        "count": 6,
+        "pct": 0.1
+      },
+      {
+        "label": "POLONAISE",
+        "count": 6,
+        "pct": 0.1
+      },
+      {
+        "label": "ALLEMANDE",
+        "count": 5,
+        "pct": 0.1
+      },
+      {
+        "label": "MEXICAINE",
+        "count": 5,
+        "pct": 0.1
+      },
+      {
+        "label": "PÉRUVIENNE",
+        "count": 4,
+        "pct": 0.1
+      },
+      {
+        "label": "SUISSE",
+        "count": 4,
+        "pct": 0.1
+      },
+      {
+        "label": "UKRAINIENNE",
+        "count": 4,
+        "pct": 0.1
+      },
+      {
+        "label": "ALGÉRIENNE",
+        "count": 4,
+        "pct": 0.1
+      },
+      {
+        "label": "INDIENNE",
+        "count": 4,
+        "pct": 0.1
+      },
+      {
+        "label": "MAROCAINE",
+        "count": 4,
+        "pct": 0.1
+      },
+      {
+        "label": "BIÉLORUSSE",
+        "count": 3,
+        "pct": 0.1
+      },
+      {
+        "label": "COLOMBIENNE",
+        "count": 3,
+        "pct": 0.1
+      },
+      {
+        "label": "SLOVÈNE",
+        "count": 3,
+        "pct": 0.1
+      }
+    ]
+  },
+  "motivation": [
+    {
+      "label": "1. Utilité professionnelle",
+      "count": 877,
+      "pct": 34.5
+    },
+    {
+      "label": "4. Intérêt personnel / plaisir",
+      "count": 739,
+      "pct": 29.1
+    },
+    {
+      "label": "2. Parcours scolaire/universitaire",
+      "count": 425,
+      "pct": 16.7
+    },
+    {
+      "label": "3. Obtenir une certification",
+      "count": 243,
+      "pct": 9.6
+    },
+    {
+      "label": "8. Autres",
+      "count": 85,
+      "pct": 3.3
+    },
+    {
+      "label": "6. Voyages / Séjours fréquents en France",
+      "count": 85,
+      "pct": 3.3
+    },
+    {
+      "label": "7. Emigration / Mobilité / Expatriation en France",
+      "count": 60,
+      "pct": 2.4
+    },
+    {
+      "label": "5. Raisons familiales (conjoint ou parent francophone, ...)",
+      "count": 29,
+      "pct": 1.1
+    }
+  ],
+  "canal": [
+    {
+      "label": "01. Recherche sur Internet",
+      "count": 1666,
+      "pct": 39.1
+    },
+    {
+      "label": "03. Réputation/bouche à oreille",
+      "count": 1497,
+      "pct": 35.1
+    },
+    {
+      "label": "11. Établissements éducatifs (scolaires, universitaires, écoles supérieures, ... )",
+      "count": 408,
+      "pct": 9.6
+    },
+    {
+      "label": "02. Réseaux sociaux",
+      "count": 180,
+      "pct": 4.2
+    },
+    {
+      "label": "10. Proximité",
+      "count": 133,
+      "pct": 3.1
+    },
+    {
+      "label": "04. Publicité sur internet",
+      "count": 119,
+      "pct": 2.8
+    },
+    {
+      "label": "12. Autres organismes conventionnés avec l'Institut / autres institutions françaises",
+      "count": 84,
+      "pct": 2.0
+    },
+    {
+      "label": "06. Affiche publicitaire",
+      "count": 46,
+      "pct": 1.1
+    },
+    {
+      "label": "08. Médiathèque de l'IF",
+      "count": 37,
+      "pct": 0.9
+    },
+    {
+      "label": "05. Publicité média (radio, télévision, presse)",
+      "count": 28,
+      "pct": 0.7
+    },
+    {
+      "label": "13. Carta Giovani Nazionale",
+      "count": 27,
+      "pct": 0.6
+    },
+    {
+      "label": "07. Prospectus, flyer",
+      "count": 23,
+      "pct": 0.5
+    },
+    {
+      "label": "09. Foire, salon, événement culturel",
+      "count": 16,
+      "pct": 0.4
+    }
+  ],
+  "csp": [
+    {
+      "label": "employé administratif/technique",
+      "count": 89,
+      "pct": 17.0
+    },
+    {
+      "label": "0",
+      "count": 83,
+      "pct": 15.9
+    },
+    {
+      "label": "Professeurs, enseignants",
+      "count": 43,
+      "pct": 8.2
+    },
+    {
+      "label": "étudiant (université)",
+      "count": 38,
+      "pct": 7.3
+    },
+    {
+      "label": "cadre administratif/technique",
+      "count": 31,
+      "pct": 5.9
+    },
+    {
+      "label": "profession libérale",
+      "count": 30,
+      "pct": 5.7
+    },
+    {
+      "label": "scolaire",
+      "count": 27,
+      "pct": 5.2
+    },
+    {
+      "label": "Etudiant (université)",
+      "count": 16,
+      "pct": 3.1
+    },
+    {
+      "label": "Étudiants (études supérieures)",
+      "count": 15,
+      "pct": 2.9
+    },
+    {
+      "label": "retraité",
+      "count": 13,
+      "pct": 2.5
+    },
+    {
+      "label": "Profession de la santé, travail social",
+      "count": 12,
+      "pct": 2.3
+    },
+    {
+      "label": "Scolaire",
+      "count": 12,
+      "pct": 2.3
+    },
+    {
+      "label": "profession de l'information, des arts, des spectacles",
+      "count": 11,
+      "pct": 2.1
+    },
+    {
+      "label": "Retraité",
+      "count": 9,
+      "pct": 1.7
+    },
+    {
+      "label": "sans activité prof.",
+      "count": 8,
+      "pct": 1.5
+    }
+  ],
+  "ageHistogram": [
+    {
+      "bin": "3-5",
+      "count": 3
+    },
+    {
+      "bin": "5-7",
+      "count": 53
+    },
+    {
+      "bin": "7-9",
+      "count": 67
+    },
+    {
+      "bin": "9-11",
+      "count": 55
+    },
+    {
+      "bin": "11-13",
+      "count": 54
+    },
+    {
+      "bin": "13-15",
+      "count": 139
+    },
+    {
+      "bin": "15-17",
+      "count": 203
+    },
+    {
+      "bin": "17-19",
+      "count": 334
+    },
+    {
+      "bin": "19-21",
+      "count": 473
+    },
+    {
+      "bin": "21-23",
+      "count": 362
+    },
+    {
+      "bin": "23-25",
+      "count": 352
+    },
+    {
+      "bin": "25-27",
+      "count": 434
+    },
+    {
+      "bin": "27-29",
+      "count": 452
+    },
+    {
+      "bin": "29-31",
+      "count": 374
+    },
+    {
+      "bin": "31-33",
+      "count": 321
+    },
+    {
+      "bin": "33-35",
+      "count": 311
+    },
+    {
+      "bin": "35-37",
+      "count": 280
+    },
+    {
+      "bin": "37-39",
+      "count": 212
+    },
+    {
+      "bin": "39-41",
+      "count": 190
+    },
+    {
+      "bin": "41-43",
+      "count": 199
+    },
+    {
+      "bin": "43-45",
+      "count": 179
+    },
+    {
+      "bin": "45-47",
+      "count": 163
+    },
+    {
+      "bin": "47-49",
+      "count": 158
+    },
+    {
+      "bin": "49-51",
+      "count": 164
+    },
+    {
+      "bin": "51-53",
+      "count": 179
+    },
+    {
+      "bin": "53-55",
+      "count": 162
+    },
+    {
+      "bin": "55-57",
+      "count": 142
+    },
+    {
+      "bin": "57-59",
+      "count": 117
+    },
+    {
+      "bin": "59-61",
+      "count": 113
+    },
+    {
+      "bin": "61-63",
+      "count": 107
+    },
+    {
+      "bin": "63-65",
+      "count": 84
+    },
+    {
+      "bin": "65-67",
+      "count": 95
+    },
+    {
+      "bin": "67-69",
+      "count": 81
+    },
+    {
+      "bin": "69-71",
+      "count": 70
+    },
+    {
+      "bin": "71-73",
+      "count": 50
+    },
+    {
+      "bin": "73-75",
+      "count": 42
+    },
+    {
+      "bin": "75-77",
+      "count": 34
+    },
+    {
+      "bin": "77-79",
+      "count": 20
+    },
+    {
+      "bin": "79-81",
+      "count": 11
+    }
+  ],
+  "ageBySede": [
+    {
+      "code": "IFM",
+      "name": "IFM Milano",
+      "color": "#FF8C00",
+      "histogram": [
+        {
+          "bin": "3-5",
+          "count": 2
+        },
+        {
+          "bin": "5-7",
+          "count": 29
+        },
+        {
+          "bin": "7-9",
+          "count": 30
+        },
+        {
+          "bin": "9-11",
+          "count": 23
+        },
+        {
+          "bin": "11-13",
+          "count": 25
+        },
+        {
+          "bin": "13-15",
+          "count": 44
+        },
+        {
+          "bin": "15-17",
+          "count": 74
+        },
+        {
+          "bin": "17-19",
+          "count": 84
+        },
+        {
+          "bin": "19-21",
+          "count": 122
+        },
+        {
+          "bin": "21-23",
+          "count": 185
+        },
+        {
+          "bin": "23-25",
+          "count": 192
+        },
+        {
+          "bin": "25-27",
+          "count": 292
+        },
+        {
+          "bin": "27-29",
+          "count": 302
+        },
+        {
+          "bin": "29-31",
+          "count": 252
+        },
+        {
+          "bin": "31-33",
+          "count": 208
+        },
+        {
+          "bin": "33-35",
+          "count": 199
+        },
+        {
+          "bin": "35-37",
+          "count": 190
+        },
+        {
+          "bin": "37-39",
+          "count": 154
+        },
+        {
+          "bin": "39-41",
+          "count": 133
+        },
+        {
+          "bin": "41-43",
+          "count": 138
+        },
+        {
+          "bin": "43-45",
+          "count": 107
+        },
+        {
+          "bin": "45-47",
+          "count": 101
+        },
+        {
+          "bin": "47-49",
+          "count": 98
+        },
+        {
+          "bin": "49-51",
+          "count": 97
+        },
+        {
+          "bin": "51-53",
+          "count": 118
+        },
+        {
+          "bin": "53-55",
+          "count": 109
+        },
+        {
+          "bin": "55-57",
+          "count": 82
+        },
+        {
+          "bin": "57-59",
+          "count": 65
+        },
+        {
+          "bin": "59-61",
+          "count": 65
+        },
+        {
+          "bin": "61-63",
+          "count": 64
+        },
+        {
+          "bin": "63-65",
+          "count": 60
+        },
+        {
+          "bin": "65-67",
+          "count": 66
+        },
+        {
+          "bin": "67-69",
+          "count": 53
+        },
+        {
+          "bin": "69-71",
+          "count": 43
+        },
+        {
+          "bin": "71-73",
+          "count": 30
+        },
+        {
+          "bin": "73-75",
+          "count": 18
+        },
+        {
+          "bin": "75-77",
+          "count": 19
+        },
+        {
+          "bin": "77-79",
+          "count": 11
+        },
+        {
+          "bin": "79-81",
+          "count": 7
+        }
+      ],
+      "box": {
+        "min": 1.0,
+        "q1": 26.0,
+        "median": 33.0,
+        "q3": 47.0,
+        "max": 87.0
+      }
+    },
+    {
+      "code": "IFF",
+      "name": "IFF Firenze",
+      "color": "#8B5CF6",
+      "histogram": [
+        {
+          "bin": "3-5",
+          "count": 0
+        },
+        {
+          "bin": "5-7",
+          "count": 8
+        },
+        {
+          "bin": "7-9",
+          "count": 9
+        },
+        {
+          "bin": "9-11",
+          "count": 13
+        },
+        {
+          "bin": "11-13",
+          "count": 10
+        },
+        {
+          "bin": "13-15",
+          "count": 22
+        },
+        {
+          "bin": "15-17",
+          "count": 42
+        },
+        {
+          "bin": "17-19",
+          "count": 34
+        },
+        {
+          "bin": "19-21",
+          "count": 50
+        },
+        {
+          "bin": "21-23",
+          "count": 49
+        },
+        {
+          "bin": "23-25",
+          "count": 56
+        },
+        {
+          "bin": "25-27",
+          "count": 58
+        },
+        {
+          "bin": "27-29",
+          "count": 67
+        },
+        {
+          "bin": "29-31",
+          "count": 59
+        },
+        {
+          "bin": "31-33",
+          "count": 50
+        },
+        {
+          "bin": "33-35",
+          "count": 57
+        },
+        {
+          "bin": "35-37",
+          "count": 47
+        },
+        {
+          "bin": "37-39",
+          "count": 27
+        },
+        {
+          "bin": "39-41",
+          "count": 20
+        },
+        {
+          "bin": "41-43",
+          "count": 23
+        },
+        {
+          "bin": "43-45",
+          "count": 26
+        },
+        {
+          "bin": "45-47",
+          "count": 26
+        },
+        {
+          "bin": "47-49",
+          "count": 26
+        },
+        {
+          "bin": "49-51",
+          "count": 23
+        },
+        {
+          "bin": "51-53",
+          "count": 26
+        },
+        {
+          "bin": "53-55",
+          "count": 25
+        },
+        {
+          "bin": "55-57",
+          "count": 22
+        },
+        {
+          "bin": "57-59",
+          "count": 16
+        },
+        {
+          "bin": "59-61",
+          "count": 19
+        },
+        {
+          "bin": "61-63",
+          "count": 19
+        },
+        {
+          "bin": "63-65",
+          "count": 15
+        },
+        {
+          "bin": "65-67",
+          "count": 16
+        },
+        {
+          "bin": "67-69",
+          "count": 14
+        },
+        {
+          "bin": "69-71",
+          "count": 11
+        },
+        {
+          "bin": "71-73",
+          "count": 10
+        },
+        {
+          "bin": "73-75",
+          "count": 16
+        },
+        {
+          "bin": "75-77",
+          "count": 12
+        },
+        {
+          "bin": "77-79",
+          "count": 5
+        },
+        {
+          "bin": "79-81",
+          "count": 1
+        }
+      ],
+      "box": {
+        "min": 0.0,
+        "q1": 23.0,
+        "median": 32.0,
+        "q3": 48.0,
+        "max": 91.0
+      }
+    },
+    {
+      "code": "IFN",
+      "name": "IFN Napoli",
+      "color": "#22C55E",
+      "histogram": [
+        {
+          "bin": "3-5",
+          "count": 0
+        },
+        {
+          "bin": "5-7",
+          "count": 4
+        },
+        {
+          "bin": "7-9",
+          "count": 10
+        },
+        {
+          "bin": "9-11",
+          "count": 11
+        },
+        {
+          "bin": "11-13",
+          "count": 4
+        },
+        {
+          "bin": "13-15",
+          "count": 51
+        },
+        {
+          "bin": "15-17",
+          "count": 68
+        },
+        {
+          "bin": "17-19",
+          "count": 146
+        },
+        {
+          "bin": "19-21",
+          "count": 207
+        },
+        {
+          "bin": "21-23",
+          "count": 56
+        },
+        {
+          "bin": "23-25",
+          "count": 76
+        },
+        {
+          "bin": "25-27",
+          "count": 63
+        },
+        {
+          "bin": "27-29",
+          "count": 61
+        },
+        {
+          "bin": "29-31",
+          "count": 48
+        },
+        {
+          "bin": "31-33",
+          "count": 41
+        },
+        {
+          "bin": "33-35",
+          "count": 42
+        },
+        {
+          "bin": "35-37",
+          "count": 24
+        },
+        {
+          "bin": "37-39",
+          "count": 21
+        },
+        {
+          "bin": "39-41",
+          "count": 28
+        },
+        {
+          "bin": "41-43",
+          "count": 21
+        },
+        {
+          "bin": "43-45",
+          "count": 28
+        },
+        {
+          "bin": "45-47",
+          "count": 24
+        },
+        {
+          "bin": "47-49",
+          "count": 18
+        },
+        {
+          "bin": "49-51",
+          "count": 20
+        },
+        {
+          "bin": "51-53",
+          "count": 22
+        },
+        {
+          "bin": "53-55",
+          "count": 15
+        },
+        {
+          "bin": "55-57",
+          "count": 21
+        },
+        {
+          "bin": "57-59",
+          "count": 21
+        },
+        {
+          "bin": "59-61",
+          "count": 17
+        },
+        {
+          "bin": "61-63",
+          "count": 14
+        },
+        {
+          "bin": "63-65",
+          "count": 5
+        },
+        {
+          "bin": "65-67",
+          "count": 7
+        },
+        {
+          "bin": "67-69",
+          "count": 9
+        },
+        {
+          "bin": "69-71",
+          "count": 9
+        },
+        {
+          "bin": "71-73",
+          "count": 2
+        },
+        {
+          "bin": "73-75",
+          "count": 4
+        },
+        {
+          "bin": "75-77",
+          "count": 2
+        },
+        {
+          "bin": "77-79",
+          "count": 3
+        },
+        {
+          "bin": "79-81",
+          "count": 1
+        }
+      ],
+      "box": {
+        "min": 5.0,
+        "q1": 19.0,
+        "median": 24.0,
+        "q3": 38.0,
+        "max": 86.0
+      }
+    },
+    {
+      "code": "IFP",
+      "name": "IFP Palermo",
+      "color": "#EF4444",
+      "histogram": [
+        {
+          "bin": "3-5",
+          "count": 1
+        },
+        {
+          "bin": "5-7",
+          "count": 12
+        },
+        {
+          "bin": "7-9",
+          "count": 18
+        },
+        {
+          "bin": "9-11",
+          "count": 8
+        },
+        {
+          "bin": "11-13",
+          "count": 15
+        },
+        {
+          "bin": "13-15",
+          "count": 22
+        },
+        {
+          "bin": "15-17",
+          "count": 19
+        },
+        {
+          "bin": "17-19",
+          "count": 70
+        },
+        {
+          "bin": "19-21",
+          "count": 94
+        },
+        {
+          "bin": "21-23",
+          "count": 72
+        },
+        {
+          "bin": "23-25",
+          "count": 28
+        },
+        {
+          "bin": "25-27",
+          "count": 21
+        },
+        {
+          "bin": "27-29",
+          "count": 22
+        },
+        {
+          "bin": "29-31",
+          "count": 15
+        },
+        {
+          "bin": "31-33",
+          "count": 22
+        },
+        {
+          "bin": "33-35",
+          "count": 13
+        },
+        {
+          "bin": "35-37",
+          "count": 19
+        },
+        {
+          "bin": "37-39",
+          "count": 10
+        },
+        {
+          "bin": "39-41",
+          "count": 9
+        },
+        {
+          "bin": "41-43",
+          "count": 17
+        },
+        {
+          "bin": "43-45",
+          "count": 18
+        },
+        {
+          "bin": "45-47",
+          "count": 12
+        },
+        {
+          "bin": "47-49",
+          "count": 16
+        },
+        {
+          "bin": "49-51",
+          "count": 24
+        },
+        {
+          "bin": "51-53",
+          "count": 13
+        },
+        {
+          "bin": "53-55",
+          "count": 13
+        },
+        {
+          "bin": "55-57",
+          "count": 17
+        },
+        {
+          "bin": "57-59",
+          "count": 15
+        },
+        {
+          "bin": "59-61",
+          "count": 12
+        },
+        {
+          "bin": "61-63",
+          "count": 10
+        },
+        {
+          "bin": "63-65",
+          "count": 4
+        },
+        {
+          "bin": "65-67",
+          "count": 6
+        },
+        {
+          "bin": "67-69",
+          "count": 5
+        },
+        {
+          "bin": "69-71",
+          "count": 7
+        },
+        {
+          "bin": "71-73",
+          "count": 8
+        },
+        {
+          "bin": "73-75",
+          "count": 4
+        },
+        {
+          "bin": "75-77",
+          "count": 1
+        },
+        {
+          "bin": "77-79",
+          "count": 1
+        },
+        {
+          "bin": "79-81",
+          "count": 2
+        }
+      ],
+      "box": {
+        "min": 4.0,
+        "q1": 19.0,
+        "median": 24.0,
+        "q3": 44.0,
+        "max": 79.0
+      }
+    }
+  ],
+  "tranchesBySede": [
+    {
+      "code": "Enfants / jeunes ados (3-13)",
+      "IFM": 129,
+      "IFF": 48,
+      "IFN": 38,
+      "IFP": 67
+    },
+    {
+      "code": "Lycéens (14-18)",
+      "IFM": 186,
+      "IFF": 91,
+      "IFN": 256,
+      "IFP": 98
+    },
+    {
+      "code": "Jeunes U25 (19-25)",
+      "IFM": 631,
+      "IFF": 184,
+      "IFN": 378,
+      "IFP": 201
+    },
+    {
+      "code": "Jeunes adultes U35 (26-35)",
+      "IFM": 1223,
+      "IFF": 287,
+      "IFN": 229,
+      "IFP": 98
+    },
+    {
+      "code": "Adultes actifs (36-50)",
+      "IFM": 916,
+      "IFF": 193,
+      "IFN": 171,
+      "IFP": 113
+    },
+    {
+      "code": "Adultes confirmés (51-65)",
+      "IFM": 604,
+      "IFF": 151,
+      "IFN": 121,
+      "IFP": 87
+    },
+    {
+      "code": "Seniors (65+)",
+      "IFM": 220,
+      "IFF": 83,
+      "IFN": 34,
+      "IFP": 31
+    }
+  ],
+  "levels": [
+    {
+      "label": "A1",
+      "count": 462
+    },
+    {
+      "label": "A2",
+      "count": 1464
+    },
+    {
+      "label": "B1",
+      "count": 1328
+    },
+    {
+      "label": "B2",
+      "count": 1188
+    },
+    {
+      "label": "C1",
+      "count": 471
+    },
+    {
+      "label": "C2",
+      "count": 44
+    },
+    {
+      "label": "Autre",
+      "count": 3540
+    }
+  ],
+  "nationalityBySede": [
+    {
+      "nationality": "ITALIENNE",
+      "IFM": 2345,
+      "IFF": 623,
+      "IFN": 993,
+      "IFP": 615
+    },
+    {
+      "nationality": "FRANÇAISE",
+      "IFM": 35,
+      "IFF": 3,
+      "IFN": 1,
+      "IFP": 1
+    },
+    {
+      "nationality": "CHINOISE",
+      "IFM": 8,
+      "IFF": 6,
+      "IFN": 2,
+      "IFP": 1
+    },
+    {
+      "nationality": "RUSSE",
+      "IFM": 13,
+      "IFF": 2,
+      "IFN": 0,
+      "IFP": 1
+    },
+    {
+      "nationality": "ESPAGNOLE",
+      "IFM": 7,
+      "IFF": 3,
+      "IFN": 3,
+      "IFP": 0
+    }
+  ],
+  "motivationBySede": [
+    {
+      "label": "1. Utilité professionnelle",
+      "IFM": 30.0,
+      "IFF": 28.8,
+      "IFN": 54.8,
+      "IFP": 29.5
+    },
+    {
+      "label": "4. Intérêt personnel / plaisir",
+      "IFM": 33.1,
+      "IFF": 30.5,
+      "IFN": 15.7,
+      "IFP": 30.9
+    },
+    {
+      "label": "2. Parcours scolaire/universitaire",
+      "IFM": 16.2,
+      "IFF": 15.8,
+      "IFN": 12.8,
+      "IFP": 25.1
+    },
+    {
+      "label": "3. Obtenir une certification",
+      "IFM": 8.6,
+      "IFF": 14.4,
+      "IFN": 7.8,
+      "IFP": 9.5
+    },
+    {
+      "label": "8. Autres",
+      "IFM": 2.9,
+      "IFF": 3.3,
+      "IFN": 6.6,
+      "IFP": 0.3
+    },
+    {
+      "label": "6. Voyages / Séjours fréquents en France",
+      "IFM": 5.4,
+      "IFF": 1.9,
+      "IFN": 1.6,
+      "IFP": 0.0
+    },
+    {
+      "label": "7. Emigration / Mobilité / Expatriation en France",
+      "IFM": 2.6,
+      "IFF": 3.3,
+      "IFN": 0.2,
+      "IFP": 3.5
+    },
+    {
+      "label": "5. Raisons familiales (conjoint ou parent francophone, ...)",
+      "IFM": 1.2,
+      "IFF": 1.9,
+      "IFN": 0.4,
+      "IFP": 1.2
+    }
+  ],
+  "canalBySede": [
+    {
+      "label": "01. Recherche sur Internet",
+      "IFM": 48.6,
+      "IFF": 29.1,
+      "IFN": 42.1,
+      "IFP": 27.3
+    },
+    {
+      "label": "03. Réputation/bouche à oreille",
+      "IFM": 39.9,
+      "IFF": 38.5,
+      "IFN": 29.8,
+      "IFP": 43.2
+    },
+    {
+      "label": "11. Établissements éducatifs (scolaires, universitaires, écoles supérieures, ... )",
+      "IFM": 5.9,
+      "IFF": 15.7,
+      "IFN": 16.4,
+      "IFP": 23.5
+    },
+    {
+      "label": "02. Réseaux sociaux",
+      "IFM": 2.7,
+      "IFF": 11.0,
+      "IFN": 7.0,
+      "IFP": 3.8
+    },
+    {
+      "label": "10. Proximité",
+      "IFM": 2.8,
+      "IFF": 5.6,
+      "IFN": 4.6,
+      "IFP": 2.2
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+pandas>=2.0
+openpyxl
+numpy
