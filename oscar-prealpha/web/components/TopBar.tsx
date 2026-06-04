@@ -49,13 +49,24 @@ export function TopBar() {
             </span>
           )}
         </div>
-        <button
-          onClick={() => setAiOpen(true)}
-          className="inline-flex items-center gap-2 rounded-md border border-accent-100 bg-accent-50 px-3 py-1.5 text-body-sm font-semibold text-accent-700 transition-colors hover:bg-accent-100"
-        >
-          <IconSparkles className="h-4 w-4" />
-          Assistant OSCAR
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setAiOpen(true)}
+            className="inline-flex items-center gap-2 rounded-md border border-accent-100 bg-accent-50 px-3 py-1.5 text-body-sm font-semibold text-accent-700 transition-colors hover:bg-accent-100"
+          >
+            <IconSparkles className="h-4 w-4" />
+            Assistant OSCAR
+          </button>
+          <button
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              location.href = "/login";
+            }}
+            className="rounded-md border border-neutral-200 bg-surface px-3 py-1.5 text-body-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+          >
+            Déconnexion
+          </button>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-neutral-100 px-6 py-2.5">
         <FilterField label="Année">
@@ -105,7 +116,7 @@ export function TopBar() {
           <span className="font-semibold">Backend hors-ligne.</span>
           <span className="text-neutral-700">
             Aucune donnée affichée (pas de données fictives). Démarrez l'API :
-            <code className="mx-1 rounded-xs bg-surface px-1.5 py-0.5 text-neutral-800">cd oscar-prealpha/web/api && ./run.sh</code>
+            <code className="mx-1 rounded-xs bg-surface px-1.5 py-0.5 text-neutral-800">cd oscar-prealpha/web/server && ./run.sh</code>
           </span>
         </div>
       )}

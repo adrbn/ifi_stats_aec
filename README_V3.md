@@ -22,7 +22,7 @@ récupérable si besoin.
 
 > Note : le module autonome `aec_parser_v3.py` et `dashboard_aec_v2_legacy_backup.py`
 > ont été archivés (branche `archive/desktop-oscar`) — le dashboard ne les importait pas
-> (logique du parser inlinée). La v3 Next.js garde sa propre copie dans `oscar-prealpha/web/api/`.
+> (logique du parser inlinée). La v3 Next.js garde sa propre copie dans `oscar-prealpha/web/server/`.
 
 ## Ce que fait `aec_parser_v3.py`
 

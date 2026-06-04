@@ -28,7 +28,7 @@ from datetime import datetime, timezone
 import oscar_core as core
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-# Prod (Vercel): data bundled at web/api/data ; dev: fall back to repo-root data/.
+# Prod (Vercel): data bundled at web/server/data ; dev: fall back to repo-root data/.
 DATA_DIR = os.path.join(HERE, "data")
 if not os.path.isdir(DATA_DIR):
     DATA_DIR = os.path.join(HERE, "..", "..", "..", "data")

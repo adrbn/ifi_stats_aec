@@ -44,7 +44,7 @@ Two processes. Backend first:
 
 ```bash
 # 1) Backend (FastAPI) — http://localhost:8000
-cd oscar-prealpha/web/api && ./run.sh
+cd oscar-prealpha/web/server && ./run.sh
 
 # 2) Frontend (Next.js) — http://localhost:3000
 cd oscar-prealpha/web && npm install && npm run dev

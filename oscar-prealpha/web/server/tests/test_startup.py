@@ -1,6 +1,3 @@
-import importlib
-
-
 def test_startup_loads_fixture_without_recompute(monkeypatch):
     called = {"build": False}
 

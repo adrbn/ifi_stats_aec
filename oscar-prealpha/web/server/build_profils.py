@@ -24,7 +24,7 @@ import oscar_core as oc
 # Paths
 # ---------------------------------------------------------------------------
 API_DIR = os.path.dirname(os.path.abspath(__file__))
-# Prod (Vercel): data bundled at web/api/data ; dev: fall back to repo-root data/.
+# Prod (Vercel): data bundled at web/server/data ; dev: fall back to repo-root data/.
 DATA_DIR = os.path.join(API_DIR, "data")
 if not os.path.isdir(DATA_DIR):
     DATA_DIR = os.path.join(API_DIR, "..", "..", "..", "data")
