@@ -28,7 +28,10 @@ from datetime import datetime, timezone
 import oscar_core as core
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(HERE, "..", "..", "data")
+# Prod (Vercel): data bundled at web/api/data ; dev: fall back to repo-root data/.
+DATA_DIR = os.path.join(HERE, "data")
+if not os.path.isdir(DATA_DIR):
+    DATA_DIR = os.path.join(HERE, "..", "..", "..", "data")
 FIXTURE_PATH = os.path.join(HERE, "fixtures", "snapshot.json")
 # Pristine fallback copy (never overwritten); falls back to FIXTURE_PATH if absent.
 PRISTINE_PATH = os.path.join(HERE, "fixtures", "snapshot.fixture.json")
