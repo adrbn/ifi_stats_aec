@@ -72,6 +72,30 @@ Détails et choix de stack : [`oscar-prealpha/README.md`](oscar-prealpha/README.
 
 ---
 
+## Comparer v2 et v3 côte à côte (un seul site, local)
+
+Un **comparateur** sert les deux versions sous une seule URL, avec un toggle façon Apple
+en haut pour basculer instantanément de l'une à l'autre. Les deux sont chargées dans des
+iframes persistantes → **chaque version conserve son état** quand on switche (filtres,
+scroll, session). La v2 est embarquée **en live** depuis Streamlit Cloud ; la v3 tourne
+en local.
+
+```bash
+cd oscar-prealpha
+./start-compare.sh        # démarre backend (:8000) + front (:3000) + coque (:8080)
+```
+
+Puis ouvre **http://localhost:8080**. Toggle au clavier : `1` (v2) / `2` (v3).
+
+- `oscar-prealpha/shell/index.html` — la coque (toggle + 2 iframes), surchargeable
+  via l'URL : `?v2=<url>&v3=<url>` (ex. si tu lances le front sur un autre port).
+
+> ⚠️ « Un seul site » est ici **local** : la v3 a besoin de son backend Python pour
+> servir des données (elle est entièrement dynamique). Un comparateur **public** est
+> possible mais suppose d'héberger ce backend — c'est le sujet de design à venir.
+
+---
+
 ## Format des fichiers d'entrée AEC
 
 ```
