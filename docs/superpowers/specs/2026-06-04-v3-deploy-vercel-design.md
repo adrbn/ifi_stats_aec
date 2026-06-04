@@ -152,6 +152,11 @@ déploiement intégrée).
 
 ## 12. Décisions actées
 
+- **Repo** : **repo actuel** `adrbn/ifi_stats_aec` (monorepo) ; Vercel pointe sur
+  `oscar-prealpha/`. « Ignored Build Step » pour ne pas rebuild sur les changements v2.
+- **Upload** : **exigence centrale, non négociable** — la v3 doit recevoir les fichiers
+  exactement comme la v2 (`.xlsx`/`.zip`, même comportement). Ce n'est pas optionnel ;
+  M1 est juste le socle (mise en ligne + auth), M2 livre cet upload.
 - Hébergement : **tout Vercel** (front + Python serverless). Pas de Render.
 - Auth : **mot de passe partagé unique** (env var hashée) pour M1.
 - v2 : **reste sur Streamlit Cloud**, embarquée en iframe ; retirée à terme (M4).
