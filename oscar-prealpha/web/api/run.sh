@@ -20,4 +20,4 @@ pip install --upgrade pip >/dev/null
 pip install -r requirements.txt
 
 echo "[run.sh] starting uvicorn on http://localhost:8000"
-exec uvicorn main:app --reload --port 8000
+exec uvicorn index:app --reload --port 8000

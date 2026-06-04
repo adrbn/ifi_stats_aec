@@ -105,7 +105,7 @@ export function TopBar() {
           <span className="font-semibold">Backend hors-ligne.</span>
           <span className="text-neutral-700">
             Aucune donnée affichée (pas de données fictives). Démarrez l'API :
-            <code className="mx-1 rounded-xs bg-surface px-1.5 py-0.5 text-neutral-800">cd oscar-prealpha/api && ./run.sh</code>
+            <code className="mx-1 rounded-xs bg-surface px-1.5 py-0.5 text-neutral-800">cd oscar-prealpha/web/api && ./run.sh</code>
           </span>
         </div>
       )}

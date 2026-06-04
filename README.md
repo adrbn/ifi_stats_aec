@@ -54,13 +54,13 @@ Expérience locale et **non destructive** qui reconstruit l'UI hors de Streamlit
 Vit entièrement dans [`oscar-prealpha/`](oscar-prealpha/). Ne touche rien de la v2.
 
 - `oscar-prealpha/web/` — Next.js 14 + Tailwind + Recharts + react-three-fiber
-- `oscar-prealpha/api/` — FastAPI qui **réutilise** la logique pandas (`oscar_core.py`,
+- `oscar-prealpha/web/api/` — FastAPI qui **réutilise** la logique pandas (`oscar_core.py`,
   copiée du dashboard et nettoyée des appels `st.*`)
 
 ### Lancer en local (deux process)
 ```bash
 # 1) Backend FastAPI — http://localhost:8000
-cd oscar-prealpha/api && ./run.sh
+cd oscar-prealpha/web/api && ./run.sh
 
 # 2) Frontend Next.js — http://localhost:3000
 cd oscar-prealpha/web && npm install && npm run dev
