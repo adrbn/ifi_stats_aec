@@ -1,198 +1,108 @@
 # OSCAR — Outil de Suivi des Cours et d'Analyse du Réseau
 
-**v3.0** · Dashboard analytique pour l'Institut français Italia (données AEC)
+Dashboard analytique pour l'Institut français Italia (données AEC).
 
 ---
 
-## Deux modes de déploiement
+## Vocabulaire des versions (à lire en premier)
 
-### 1. Streamlit Cloud (test en ligne)
+Le repo contient **deux UIs distinctes** de la même donnée, plus une app desktop archivée.
+Pour lever toute ambiguïté, voici les termes utilisés partout :
 
-Chaque push sur `main` met automatiquement à jour l'app Streamlit Cloud.
-Le dossier `DEPLOYMENT STREAMLIT/` est la source de vérité pour ce déploiement.
+| Nom | Ce que c'est | Techno | Où ça tourne | État |
+|---|---|---|---|---|
+| **v2** | L'app actuelle, en production | Streamlit (Python) | [ifi-stats-aec.streamlit.app](https://ifi-stats-aec.streamlit.app) | ✅ **prod, déployée** |
+| **v3** | Nouvelle UI (test d'un nouvel UI) | Next.js + FastAPI | local seulement (`:3000` web / `:8000` api) | 🧪 **pré-alpha, locale** |
+| *(desktop)* | Ancienne app native OSCAR (licences RSA) | PyInstaller | — | 📦 **archivée** (voir plus bas) |
 
-> **Workflow** : modifier `dashboard_aec_v2.py` → copier dans `DEPLOYMENT STREAMLIT/` → `git push origin main` → Streamlit Cloud redéploie automatiquement.
-
-### 2. Application desktop OSCAR (distribution clients)
-
-Builds natifs macOS / Windows / Linux générés via GitHub Actions.
-Voir la section [Releases GitHub](#releases-github) ci-dessous.
-
----
-
-## Fonctionnalités
-
-- Analyse multi-années et multi-sedes (Milano, Firenze, Napoli, Palermo, Roma)
-- Vues : Panoramica, IFI Global, Par secteur, Comparaisons, Assistant IA
-- Upload Excel individuel ou ZIP multi-fichiers
-- **Fichiers récents** : les sessions uploadées sont sauvegardées localement et réouvrables
-- Interface FR/IT, mode nuit/jour
-- Export PDF/Excel des graphiques
-- Licence hors-ligne (RSA-2048) — pas de connexion internet requise
+> ⚠️ **Piège de nommage historique** : le fichier `dashboard_aec_v2.py` était étiqueté « v3.0 »
+> dans d'anciennes docs. Ce « v3 »-là désignait la **génération du parser AEC** (lecture du
+> nouvel export « Tous les cours »), **pas** l'UI. Dans ce README, **v2 = l'app Streamlit**
+> et **v3 = la nouvelle app Next.js**. C'est le vocabulaire qui fait foi.
 
 ---
 
-## Format des fichiers d'entrée
+## v2 — App Streamlit (production)
 
-```
-export AEC semestre 1 2024 IFM.xlsx
-export AEC semestre 2 2024 IFF.xlsx
-...
-```
+Point d'entrée : **`dashboard_aec_v2.py`** (à la racine). Contient toute la logique
+de calcul (pandas) et le parser AEC inliné. Données dans `data/`.
 
-Ou une archive ZIP contenant plusieurs de ces fichiers :
+### Déploiement
+Streamlit Cloud est configuré pour exécuter `dashboard_aec_v2.py` à la racine.
+**Chaque `git push origin main` redéploie automatiquement.** Aucun dossier ou étape
+de copie intermédiaire (l'ancien `DEPLOYMENT STREAMLIT/` a été supprimé — il était vide
+et périmé).
 
-```
-exports_AEC_2024.zip
-├── export AEC semestre 1 2024 IFM.xlsx
-├── export AEC semestre 1 2024 IFF.xlsx
-└── export AEC semestre 2 2024 IFM.xlsx
-```
-
----
-
-## Releases GitHub
-
-### Builds automatiques (chaque push sur `main`)
-
-GitHub Actions compile les trois plateformes à chaque push.
-Les artefacts (DMG, EXE, AppImage) sont disponibles 30 jours dans l'onglet **Actions** du repo.
-
-### Créer une Release officielle
-
-Pour publier une release avec les installateurs en téléchargement :
-
-```bash
-git tag v3.0.1
-git push origin v3.0.1
-```
-
-GitHub Actions crée automatiquement la release avec les trois fichiers attachés :
-- `OSCAR-3.0.1-macOS.dmg`
-- `OSCAR-3.0.1-Windows-Setup.exe`
-- `OSCAR-3.0.1-Linux-x86_64.AppImage`
-
----
-
-## Installation desktop (utilisateurs finaux)
-
-### 1. Installer l'application
-
-| Plateforme | Fichier | Procédure |
-|---|---|---|
-| macOS 12+ | `OSCAR-*.dmg` | Ouvrir le DMG → glisser OSCAR dans Applications |
-| Windows 10/11 | `OSCAR-*-Windows-Setup.exe` | Exécuter l'installateur (admin non requis) |
-| Linux x86_64 | `OSCAR-*-Linux-x86_64.AppImage` | `chmod +x OSCAR-*.AppImage && ./OSCAR-*.AppImage` |
-
-### 2. Placer le fichier de licence
-
-Déposez `oscar_license.lic` dans le dossier correspondant à votre OS :
-
-| OS | Emplacement |
-|---|---|
-| macOS | `~/Library/Application Support/OSCAR/oscar_license.lic` |
-| Windows | `%APPDATA%\OSCAR\oscar_license.lic` |
-| Linux | `~/.config/oscar/oscar_license.lic` |
-
-Sans licence valide, l'application refusera de démarrer.
-
----
-
-## Gestion des licences (administrateurs)
-
-### Générer une licence client
-
-```bash
-# Requis : oscar_private_key.pem (ne jamais committer ni distribuer)
-python keygen.py \
-  --customer "Institut français de Naples" \
-  --org IFN \
-  --email admin@ifnapoli.it \
-  --expiry 2027-12-31 \
-  --output licenses/ifn_2027.lic
-```
-
-Mode interactif : `python keygen.py -i`
-
-### Générer la paire de clés RSA (une seule fois, déjà fait)
-
-```bash
-python generate_keys.py
-# → oscar_private_key.pem  (PRIVÉE — ne jamais partager)
-# → public key embedded in license_validator.py
-```
-
-La clé publique est embarquée dans `license_validator.py`.
-La clé privée est dans `oscar_private_key.pem` (gitignorée — **ne jamais committer**).
-
----
-
-## Développement local
-
-### Lancer en mode Streamlit (sans licence)
-
+### Lancer en local
 ```bash
 pip install -r requirements.txt
 streamlit run dashboard_aec_v2.py
 ```
 
-### Lancer en mode desktop (avec licence)
-
-```bash
-pip install -r requirements.txt
-python launcher.py
-```
-
-### Builder manuellement
-
-```bash
-# macOS
-bash build/build_mac.sh        # → dist/OSCAR-*.dmg
-
-# Windows (sur Windows)
-build\build_windows.bat        # → dist/OSCAR-*-Windows-Setup.exe
-
-# Linux
-bash build/build_linux.sh      # → dist/OSCAR-*-Linux-x86_64.AppImage
-```
-
-Prérequis macOS : `pip install pyinstaller pillow && brew install create-dmg`
+### Fonctionnalités
+- Analyse multi-années et multi-sedes (Milano, Firenze, Napoli, Palermo, Roma)
+- Vues : Panoramica, IFI Global, Par secteur, Comparaisons, Assistant IA
+- Upload Excel individuel ou ZIP multi-fichiers ; fichiers récents réouvrables
+- Interface FR/IT, mode nuit/jour, export PDF/Excel
+- Parser AEC : voir [`README_V3.md`](README_V3.md) pour le détail du mapping de colonnes
 
 ---
 
-## Architecture
+## v3 — Nouvelle UI Next.js (pré-alpha, locale)
+
+Expérience locale et **non destructive** qui reconstruit l'UI hors de Streamlit.
+Vit entièrement dans [`oscar-prealpha/`](oscar-prealpha/). Ne touche rien de la v2.
+
+- `oscar-prealpha/web/` — Next.js 14 + Tailwind + Recharts + react-three-fiber
+- `oscar-prealpha/api/` — FastAPI qui **réutilise** la logique pandas (`oscar_core.py`,
+  copiée du dashboard et nettoyée des appels `st.*`)
+
+### Lancer en local (deux process)
+```bash
+# 1) Backend FastAPI — http://localhost:8000
+cd oscar-prealpha/api && ./run.sh
+
+# 2) Frontend Next.js — http://localhost:3000
+cd oscar-prealpha/web && npm install && npm run dev
+```
+Détails et choix de stack : [`oscar-prealpha/README.md`](oscar-prealpha/README.md).
+
+> 🚧 La v3 n'est pas encore déployée en ligne. Son architecture d'upload/import et de
+> déploiement public est un chantier ouvert (sujet de design dédié à venir).
+
+---
+
+## Format des fichiers d'entrée AEC
 
 ```
-stats_aec_app/
-├── dashboard_aec_v2.py          # App Streamlit principale (6500+ lignes)
-├── launcher.py                  # Entry point desktop (licence + WebView + Streamlit)
-├── license_validator.py         # Validation RSA-2048 hors-ligne
-├── keygen.py                    # CLI génération de licences (dev only)
-├── oscar.spec                   # PyInstaller spec (3 plateformes)
-├── oscar_private_key.pem        # Clé privée RSA (gitignorée !)
-├── requirements.txt             # Dépendances Python
-├── DEPLOYMENT STREAMLIT/        # Snapshot pour Streamlit Cloud
-│   ├── dashboard_aec_v2.py
-│   ├── requirements.txt
-│   └── IFI_noir_logo.png
-├── build/
-│   ├── build_mac.sh             # Script build macOS
-│   ├── build_windows.bat        # Script build Windows
-│   ├── build_linux.sh           # Script build Linux
-│   ├── convert_icon.py          # PNG → ICO (Windows)
-│   ├── streamlit_config/        # Config Streamlit embarquée dans le bundle
-│   └── installers/windows/
-│       └── oscar_installer.iss  # Script Inno Setup
-└── .github/workflows/
-    └── build.yml                # CI/CD GitHub Actions
+export AEC semestre 1 2024 IFM.xlsx
+export AEC semestre 2 2024 IFF.xlsx
 ```
+Ou une archive ZIP contenant plusieurs de ces fichiers (`exports_AEC_2024.zip`).
+
+---
+
+## Backups & archives (tout vit dans git, plus aucun fichier `_backup`)
+
+| Branche | Contenu |
+|---|---|
+| `archive/desktop-oscar` | Snapshot complet pré-nettoyage : app desktop OSCAR (launcher, keygen, `license_validator`, `oscar.spec`, `build/`, CI `build.yml`), + l'ancien `dashboard_aec_v2_legacy_backup.py` et le module orphelin `aec_parser_v3.py`. Tout y est récupérable. |
+| `backup-restore-attempt-2026-05-27` | Ancienne tentative de restauration (conservée). |
+
+Pour ressortir un fichier archivé :
+```bash
+git checkout archive/desktop-oscar -- <chemin/du/fichier>
+```
+
+> L'app desktop native a été sortie du tronc actif pour clarifier le repo. Elle n'est
+> plus maintenue mais reste intégralement récupérable via la branche ci-dessus.
 
 ---
 
 ## Confidentialité
 
-L'application ne transmet aucune donnée à des serveurs externes.
-Les analyses sont effectuées localement. La validation de licence est entièrement hors-ligne.
+Les analyses v2 sont effectuées côté serveur Streamlit ; aucune donnée n'est transmise
+à des serveurs tiers au-delà de l'hébergement de l'app.
 
 ---
 

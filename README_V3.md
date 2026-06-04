@@ -1,20 +1,28 @@
-# OSCAR v3 — parser pour le nouvel export AEC
+# OSCAR — parser AEC (génération « v3 »)
 
-OSCAR utilise désormais le **nouveau parser v3** qui supporte l'export
+> ⚠️ Ici « v3 » désigne la **génération du parser AEC**, pas l'UI. Ce document
+> concerne l'app **Streamlit (v2)**. Pour le vocabulaire des versions, voir le
+> [README principal](README.md). La nouvelle UI Next.js (que l'on appelle « v3 »)
+> est documentée dans [`oscar-prealpha/README.md`](oscar-prealpha/README.md).
+
+L'app Streamlit utilise le **nouveau parser** qui supporte l'export
 AEC « Cours > Tous les cours » (un fichier = N cours, une ligne par cours)
 en plus du format historique « rapport par catégorie ».
 
-L'ancienne version est **conservée dans git** comme `dashboard_aec_v2_legacy_backup.py`
-pour pouvoir y revenir si besoin (`git log` + `git checkout`).
+L'ancien dashboard (sans ce parser) est **conservé dans la branche
+`archive/desktop-oscar`** sous le nom `dashboard_aec_v2_legacy_backup.py`,
+récupérable si besoin.
 
 ## Fichiers
 
 | Fichier | Rôle |
 |---|---|
-| `dashboard_aec_v2.py` | **Production** — point d'entrée Streamlit (contient le code v3) |
-| `aec_parser_v3.py` | Module parseur pour le nouvel export AEC |
-| `dashboard_aec_v2_legacy_backup.py` | Backup de l'ancien dashboard (sans le parser v3) — non déployé |
+| `dashboard_aec_v2.py` | **Production** — point d'entrée Streamlit (la logique du parser y est inlinée : `detect_export_type()`, etc.) |
 | `README_V3.md` | Ce fichier |
+
+> Note : le module autonome `aec_parser_v3.py` et `dashboard_aec_v2_legacy_backup.py`
+> ont été archivés (branche `archive/desktop-oscar`) — le dashboard ne les importait pas
+> (logique du parser inlinée). La v3 Next.js garde sa propre copie dans `oscar-prealpha/api/`.
 
 ## Ce que fait `aec_parser_v3.py`
 
@@ -56,13 +64,13 @@ sur `dashboard_aec_v2.py`, qui contient maintenant le code v3.
 
 Au prochain push, Streamlit Cloud redéploie automatiquement.
 
-## Revenir à l'ancienne version (si besoin)
+## Revenir à l'ancien dashboard (si besoin)
 
 ```bash
-cd stats_aec_app
-git mv dashboard_aec_v2.py dashboard_aec_v3_active.py
-git mv dashboard_aec_v2_legacy_backup.py dashboard_aec_v2.py
-git commit -m "revert: rollback to legacy v2 dashboard"
+# Récupérer l'ancien dashboard depuis la branche d'archive
+git checkout archive/desktop-oscar -- dashboard_aec_v2_legacy_backup.py
+mv dashboard_aec_v2_legacy_backup.py dashboard_aec_v2.py
+git commit -am "revert: rollback to legacy v2 dashboard"
 git push
 ```
 
