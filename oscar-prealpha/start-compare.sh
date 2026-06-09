@@ -24,7 +24,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo "[compare] 1/3 · backend FastAPI (port 8000)…"
-( cd "$ROOT/api" && ./run.sh ) &
+( cd "$ROOT/web/server" && ./run.sh ) &
 pids+=($!)
 
 echo "[compare] 2/3 · frontend Next.js (port 3000)…"

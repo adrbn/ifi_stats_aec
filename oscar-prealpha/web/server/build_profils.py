@@ -24,9 +24,12 @@ import oscar_core as oc
 # Paths
 # ---------------------------------------------------------------------------
 API_DIR = os.path.dirname(os.path.abspath(__file__))
+# Prod (Vercel): data bundled at web/server/data ; dev: fall back to repo-root data/.
+DATA_DIR = os.path.join(API_DIR, "data")
+if not os.path.isdir(DATA_DIR):
+    DATA_DIR = os.path.join(API_DIR, "..", "..", "..", "data")
 CSV_PATH = os.path.normpath(
-    os.path.join(API_DIR, "..", "..", "data",
-                 "export_417433918_clients_nat_23_24_25_26.csv")
+    os.path.join(DATA_DIR, "export_417433918_clients_nat_23_24_25_26.csv")
 )
 FIXTURES_DIR = os.path.join(API_DIR, "fixtures")
 OUT_PATH = os.path.join(FIXTURES_DIR, "profils.json")

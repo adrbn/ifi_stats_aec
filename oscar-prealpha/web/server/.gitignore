@@ -5,3 +5,6 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Bundled data copy (regenerated at Vercel build time)
+data/

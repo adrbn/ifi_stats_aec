@@ -5,9 +5,9 @@ Endpoints:
   GET /api/snapshot         -> the snapshot (optionally filtered by ?year=&antennas=)
   GET /api/meta             -> snapshot.meta
 
-On startup we attempt to recompute the snapshot from real data via
-build_snapshot.build(); if that fails we serve fixtures/snapshot.json from disk.
-The snapshot is loaded once into memory.
+On startup we load the precomputed fixtures/snapshot.json from disk (fast, fit
+for serverless cold starts). The heavy engine lazy-loads only when /api/cours is
+hit. The snapshot is loaded once into memory.
 """
 from __future__ import annotations
 
@@ -42,30 +42,14 @@ def _load_snapshot_from_disk() -> dict:
 
 
 def _load_snapshot() -> dict:
-    """Recompute from real data if possible, else serve the on-disk fixture."""
-    try:
-        import build_snapshot
-
-        snapshot, source = build_snapshot.build()
-        print(f"[main] snapshot recomputed at startup (source={source})")
-        return snapshot
-    except Exception as e:  # noqa: BLE001
-        print(f"[main] recompute failed ({e}); serving on-disk snapshot.")
-        return _load_snapshot_from_disk()
+    """Serverless: charge la fixture pré-calculée (rapide). engine lazy à la requête."""
+    return _load_snapshot_from_disk()
 
 
 @app.on_event("startup")
 def _startup() -> None:
     global SNAPSHOT
     SNAPSHOT = _load_snapshot()
-    # Warm the on-demand engine so the first /api/cours request is fast.
-    try:
-        import engine
-
-        engine.get_df()
-        print("[main] engine warmed (on-demand Cours compute ready)")
-    except Exception as e:  # noqa: BLE001
-        print(f"[main] engine warm failed ({e}); /api/cours will lazy-load.")
 
 
 def _parse_antennas(antennas: Optional[str]) -> Optional[List[str]]:
