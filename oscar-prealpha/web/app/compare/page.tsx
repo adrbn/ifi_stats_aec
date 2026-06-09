@@ -14,6 +14,17 @@ export default function ComparePage() {
     addEventListener("keydown", h);
     return () => removeEventListener("keydown", h);
   }, []);
+
+  // Keep-alive : ping la v2 (Streamlit Cloud) tant que le comparateur est ouvert,
+  // pour limiter sa mise en veille agressive (offre gratuite Streamlit).
+  useEffect(() => {
+    const ping = () => {
+      void fetch(V2_URL, { mode: "no-cors", cache: "no-store" }).catch(() => {});
+    };
+    ping();
+    const id = setInterval(ping, 40_000);
+    return () => clearInterval(id);
+  }, []);
   return (
     <div className="flex h-screen flex-col">
       <div className="flex h-14 items-center justify-between border-b border-neutral-200 bg-white px-4">
