@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { crumbFor } from "@/lib/nav";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { YearSegment, AntennaToggles } from "./Filters";
 import { MultiSelect } from "./MultiSelect";
 import { useFilters, type DimKey } from "@/lib/store";
@@ -24,6 +24,12 @@ export function TopBar() {
   const toggleDim = useFilters((s) => s.toggleDim);
   const clearDim = useFilters((s) => s.clearDim);
   const [showDims, setShowDims] = useState(false);
+  // Masque le lien "Comparer" quand le dashboard est lui-même affiché dans le
+  // comparateur (iframe) — sinon recliquer ouvre /compare en cascade.
+  const [embedded, setEmbedded] = useState(false);
+  useEffect(() => {
+    setEmbedded(typeof window !== "undefined" && window.self !== window.top);
+  }, []);
   const { data, isOffline } = useSnapshot();
   const dimOptions = data.dimOptions ?? { secteurs: [], sousSecteurs: [], macros: [], categories: [] };
   const dimCount = Object.values(dims).reduce((n, a) => n + a.length, 0);
@@ -50,13 +56,15 @@ export function TopBar() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href="/compare"
-            className="inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-surface px-3 py-1.5 text-body-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
-            title="Basculer entre la v2 (Streamlit) et la v3 (nouvelle UI)"
-          >
-            Comparer v2 ⇄ v3
-          </a>
+          {!embedded && (
+            <a
+              href="/compare"
+              className="inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-surface px-3 py-1.5 text-body-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+              title="Basculer entre la v2 (Streamlit) et la v3 (nouvelle UI)"
+            >
+              Comparer v2 ⇄ v3
+            </a>
+          )}
           <button
             onClick={() => setAiOpen(true)}
             className="inline-flex items-center gap-2 rounded-md border border-accent-100 bg-accent-50 px-3 py-1.5 text-body-sm font-semibold text-accent-700 transition-colors hover:bg-accent-100"
