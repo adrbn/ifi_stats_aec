@@ -50,6 +50,13 @@ export function TopBar() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <a
+            href="/compare"
+            className="inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-surface px-3 py-1.5 text-body-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+            title="Basculer entre la v2 (Streamlit) et la v3 (nouvelle UI)"
+          >
+            Comparer v2 ⇄ v3
+          </a>
           <button
             onClick={() => setAiOpen(true)}
             className="inline-flex items-center gap-2 rounded-md border border-accent-100 bg-accent-50 px-3 py-1.5 text-body-sm font-semibold text-accent-700 transition-colors hover:bg-accent-100"

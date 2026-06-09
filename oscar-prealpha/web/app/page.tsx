@@ -10,12 +10,21 @@ export default function Home() {
             <span className="text-[16px] font-bold tracking-[0.14em] text-neutral-900">OSCAR</span>
             <span className="text-body-sm text-neutral-500">Pre-alpha · Next.js</span>
           </div>
-          <Link
-            href="/cours/synthese"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-body-sm font-semibold text-white transition-colors hover:bg-neutral-800"
-          >
-            Ouvrir le tableau de bord
-          </Link>
+          <div className="flex items-center gap-2">
+            <a
+              href="/compare"
+              className="rounded-md border border-neutral-200 bg-surface px-4 py-2 text-body-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+              title="Basculer entre la v2 (Streamlit) et la v3 (nouvelle UI)"
+            >
+              Comparer v2 ⇄ v3
+            </a>
+            <Link
+              href="/cours/synthese"
+              className="rounded-md bg-neutral-900 px-4 py-2 text-body-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+            >
+              Ouvrir le tableau de bord
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -46,6 +55,12 @@ export default function Home() {
             >
               Carte 3D du réseau
             </Link>
+            <a
+              href="/compare"
+              className="inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-surface px-5 py-2.5 text-body font-semibold text-neutral-700 transition-colors hover:border-neutral-300 hover:text-neutral-900"
+            >
+              Comparer v2 ⇄ v3
+            </a>
           </div>
         </section>
 
