@@ -100,32 +100,38 @@ def _round(v, ndigits=0):
 
 
 def load_all_years():
-    """Return a combined, tagged DataFrame across all annual zips."""
-    import pandas as pd
+    """Return a tagged DataFrame from the NEW per-course cache
+    (data/new_cours/cache_cours.xlsx), parsed by aec_parser_v3 + sector levels.
+    (Remplace l'ancien chargement des ZIP « rapport par catégorie ».)"""
+    import aec_parser_v3 as parser
 
-    frames = []
-    for year, zipname in ANNUAL_ZIPS.items():
-        zpath = os.path.join(DATA_DIR, zipname)
-        if not os.path.exists(zpath):
-            continue
-        with zipfile.ZipFile(zpath) as z:
-            for entry in z.namelist():
-                if not entry.lower().endswith(".xlsx"):
-                    continue
-                fn = os.path.basename(entry)
-                raw = z.read(entry)
-                df, err = core.load_excel(io.BytesIO(raw), fn)
-                if err or df is None:
-                    continue
-                sede, _, detected_year = core.detect_from_filename(fn)
-                yr = detected_year or year
-                if sede is None:
-                    continue
-                tagged = core.process_data(df, yr, None, sede)
-                frames.append(tagged)
-    if not frames:
-        raise RuntimeError("No annual data could be loaded")
-    return pd.concat(frames, ignore_index=True)
+    candidates = [
+        os.path.join(DATA_DIR, "new_cours", "cache_cours.xlsx"),
+        os.path.join(HERE, "..", "..", "..", "data", "new_cours", "cache_cours.xlsx"),
+    ]
+    path = next((p for p in candidates if os.path.exists(p)), None)
+    if path is None:
+        raise RuntimeError("cache_cours.xlsx introuvable — lance l'outil « Récupérer cours AEC ».")
+
+    with open(path, "rb") as f:
+        df, _stats = parser.parse_aec_export(f.read())  # aggregate=True
+
+    # Mapping catégorie→secteur complet (sinon beaucoup de NON RATTACHÉ).
+    for csv in (os.path.join(DATA_DIR, "category_mapping.csv"),
+                os.path.join(HERE, "..", "..", "..", "data", "category_mapping.csv")):
+        if os.path.exists(csv):
+            try:
+                core.load_csv_mappings(csv)
+            except Exception:  # noqa: BLE001
+                pass
+            break
+
+    # Niveaux de secteur (le parser ne les produit pas, engine les attend).
+    levels = df["Catégorie de cours"].apply(core.map_category_to_levels)
+    df["Macro-catégorie"] = levels.apply(lambda x: x[0])
+    df["Sous-secteur"] = levels.apply(lambda x: x[1])
+    df["Secteur"] = levels.apply(lambda x: x[2])
+    return df
 
 
 def compute_kpis(df, latest_year, prev_year):

@@ -40,3 +40,9 @@ oscar_private_key.pem
 # Exception: data/ folder contains required dashboard data
 !data/
 !data/**
+
+# v3 : cache embarqué pour Vercel (sinon ignoré par *.xlsx)
+!oscar-prealpha/web/server/data/new_cours/cache_cours.xlsx
+
+# Ne JAMAIS committer le jeton de session AEC (cookie + localStorage)
+**/aec_state.json

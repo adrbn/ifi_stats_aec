@@ -53,9 +53,10 @@ SEDE_FROM_LIEU_KEYWORDS: dict[str, str] = {
 }
 
 # Column name mapping: new AEC export → OSCAR v2 internal schema.
-# (trailing space on "Quantité d'inscriptions" is intentional — that's the real header)
+# (les en-têtes sont strip()és à la lecture → on mappe sans espace final ;
+#  l'export brut AEC a parfois "Quantité d'inscriptions " avec espace.)
 COLUMN_RENAME_MAP: dict[str, str] = {
-    "Quantité d'inscriptions ": "Nb. d'inscriptions",
+    "Quantité d'inscriptions": "Nb. d'inscriptions",
     "Total des ventes": "Recettes",
     "Qté heures vendues": "Nombre total d'heures vendues (heures-étudiants)",
     "Qté synchrones heures vendues": "Heures synchrones vendues (heures-étudiants)",
@@ -144,6 +145,7 @@ def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
     when present (richer, used by the recent AEC schema).
     """
     df = df.copy()
+    df.columns = [str(c).strip() for c in df.columns]   # normalise les en-têtes (espaces finaux)
     # Disambiguate planned-hours column: prefer 'Qté heures' over 'Nombre total d'heures'
     if "Qté heures" in df.columns and "Nombre total d'heures" in df.columns:
         df = df.drop(columns=["Nombre total d'heures"])
