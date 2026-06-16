@@ -5,6 +5,7 @@ export interface SnapshotQuery {
   years?: number[];
   antennas?: AntennaCode[];
   dims?: { secteurs: string[]; sousSecteurs: string[]; macros: string[]; categories: string[] };
+  mode?: "civil" | "school";
 }
 
 /**
@@ -22,6 +23,7 @@ export async function fetchSnapshot(q: SnapshotQuery = {}): Promise<Snapshot> {
       q.dims![k].forEach((v) => params.append(k, v));
     });
   }
+  if (q.mode === "school") params.set("mode", "school");
   const qs = params.toString();
   try {
     const res = await fetch(`/api/cours${qs ? `?${qs}` : ""}`, {

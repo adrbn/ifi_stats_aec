@@ -78,15 +78,19 @@ def cours(
     sousSecteurs: Optional[List[str]] = Query(default=None),
     macros: Optional[List[str]] = Query(default=None),
     categories: Optional[List[str]] = Query(default=None),
+    mode: Optional[str] = Query(default="civil"),
 ):
     """Live, filter-aware Cours payload (multi-year + multi-antenna + cascading
-    dimension filters), computed on demand — same granularity as OSCAR Online."""
+    dimension filters), computed on demand — same granularity as OSCAR Online.
+
+    mode : "civil" (année civile) ou "school" (année scolaire)."""
     import engine
 
     try:
         return engine.compute(
             _parse_years(years), _parse_antennas(antennas),
             secteurs=secteurs, sousSecteurs=sousSecteurs, macros=macros, categories=categories,
+            year_mode=("school" if mode == "school" else "civil"),
         )
     except Exception as e:  # noqa: BLE001
         print(f"[main] /api/cours compute failed ({e}); serving static snapshot.")

@@ -1,6 +1,7 @@
 "use client";
 
 import { useFilters } from "@/lib/store";
+import type { YearMode } from "@/lib/store";
 import { useSnapshot } from "@/lib/useSnapshot";
 import type { AntennaCode } from "@/lib/types";
 
@@ -11,8 +12,42 @@ const ANTENNAS: { code: AntennaCode; label: string; color: string }[] = [
   { code: "IFP", label: "IFP", color: "#EF4444" },
 ];
 
+/** Libellé d'une année selon le mode : civile « 2024 » / scolaire « 2024-25 ». */
+export function yearLabel(y: number, mode: YearMode): string {
+  return mode === "school" ? `${y}-${String((y + 1) % 100).padStart(2, "0")}` : String(y);
+}
+
+/** Bascule année civile ⇄ scolaire. */
+export function YearModeToggle() {
+  const yearMode = useFilters((s) => s.yearMode);
+  const setYearMode = useFilters((s) => s.setYearMode);
+  const opts: { value: YearMode; label: string }[] = [
+    { value: "civil", label: "Civile" },
+    { value: "school", label: "Scolaire" },
+  ];
+  return (
+    <div className="inline-flex gap-1 rounded-pill bg-neutral-100 p-[3px]" title="Année civile (jan→déc) ou scolaire (sep→août)">
+      {opts.map((o) => {
+        const active = yearMode === o.value;
+        return (
+          <button
+            key={o.value}
+            onClick={() => setYearMode(o.value)}
+            className={`rounded-pill px-3 py-1.5 text-body-sm font-medium transition-all duration-150 ease-out-soft ${
+              active ? "bg-accent-500 text-white shadow-sm" : "text-neutral-500 hover:bg-surface hover:text-neutral-900"
+            }`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function YearSegment() {
   const years = useFilters((s) => s.years);
+  const yearMode = useFilters((s) => s.yearMode);
   const toggleYear = useFilters((s) => s.toggleYear);
   const setAllYears = useFilters((s) => s.setAllYears);
   const { data } = useSnapshot();
@@ -20,29 +55,32 @@ export function YearSegment() {
   const allActive = years.length === 0;
 
   return (
-    <div className="inline-flex flex-wrap gap-1 rounded-pill bg-neutral-100 p-[3px]">
-      <button
-        onClick={setAllYears}
-        className={`rounded-pill px-3 py-1.5 text-body-sm font-medium italic transition-all duration-150 ease-out-soft ${
-          allActive ? "bg-accent-500 text-white shadow-sm" : "text-neutral-500 hover:bg-surface hover:text-neutral-900"
-        }`}
-      >
-        Toutes
-      </button>
-      {available.map((y) => {
-        const active = years.includes(y);
-        return (
-          <button
-            key={y}
-            onClick={() => toggleYear(y)}
-            className={`tnum rounded-pill px-3 py-1.5 text-body-sm font-medium transition-all duration-150 ease-out-soft ${
-              active ? "bg-accent-500 text-white shadow-sm" : "text-neutral-600 hover:bg-surface hover:text-neutral-900"
-            }`}
-          >
-            {y}
-          </button>
-        );
-      })}
+    <div className="inline-flex flex-wrap items-center gap-2">
+      <YearModeToggle />
+      <div className="inline-flex flex-wrap gap-1 rounded-pill bg-neutral-100 p-[3px]">
+        <button
+          onClick={setAllYears}
+          className={`rounded-pill px-3 py-1.5 text-body-sm font-medium italic transition-all duration-150 ease-out-soft ${
+            allActive ? "bg-accent-500 text-white shadow-sm" : "text-neutral-500 hover:bg-surface hover:text-neutral-900"
+          }`}
+        >
+          Toutes
+        </button>
+        {available.map((y) => {
+          const active = years.includes(y);
+          return (
+            <button
+              key={y}
+              onClick={() => toggleYear(y)}
+              className={`tnum rounded-pill px-3 py-1.5 text-body-sm font-medium transition-all duration-150 ease-out-soft ${
+                active ? "bg-accent-500 text-white shadow-sm" : "text-neutral-600 hover:bg-surface hover:text-neutral-900"
+              }`}
+            >
+              {yearLabel(y, yearMode)}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -74,14 +112,18 @@ export function AntennaToggles() {
 
 export function FilterSummary() {
   const years = useFilters((s) => s.years);
+  const yearMode = useFilters((s) => s.yearMode);
   const antennas = useFilters((s) => s.antennas);
   const reset = useFilters((s) => s.reset);
-  const yearLabel = years.length === 0 ? "Toutes années" : years.join(", ");
+  const yearsLabel =
+    years.length === 0
+      ? yearMode === "school" ? "Toutes années scolaires" : "Toutes années"
+      : years.map((y) => yearLabel(y, yearMode)).join(", ");
   const antLabel = antennas.length === 4 ? "Toutes antennes" : antennas.join(", ");
   return (
     <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-neutral-200 bg-surface px-3 py-2">
       <span className="mr-1 text-eyebrow font-semibold uppercase text-neutral-500">Filtres actifs</span>
-      <Chip label={yearLabel} />
+      <Chip label={yearsLabel} />
       <Chip label={antLabel} />
       <button
         onClick={reset}

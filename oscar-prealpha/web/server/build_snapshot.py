@@ -135,6 +135,14 @@ def load_all_years():
     df["Macro-catégorie"] = levels.apply(lambda x: x[0])
     df["Sous-secteur"] = levels.apply(lambda x: x[1])
     df["Secteur"] = levels.apply(lambda x: x[2])
+
+    # Année scolaire = année de début de l'année scolaire (sep N → août N+1).
+    # Un cours démarrant en sep–déc N appartient à l'année scolaire N ; un cours
+    # démarrant en jan–août N appartient à l'année scolaire N-1.
+    if "Mois début" in df.columns:
+        df["Année scolaire"] = df["Année"] - (df["Mois début"] < 9).astype(int)
+    else:
+        df["Année scolaire"] = df["Année"]
     return df
 
 
@@ -164,19 +172,21 @@ def compute_kpis(df, latest_year, prev_year):
     p_rempl = (p_inscr / p_cours) if p_cours else 0
 
     dlabel = f"vs {prev_year}" if prev_year else "—"
+    # Ordre métier : Inscriptions · (Élèves différents) · Cours · Qté heures ·
+    # Remplissage · Recettes · Heures-élèves.
     return [
         {"key": "inscriptions", "label": "Inscriptions", "value": _round(inscr),
          "format": "int", "delta": delta(inscr, p_inscr), "deltaLabel": dlabel},
         {"key": "cours", "label": "Cours", "value": _round(cours),
          "format": "int", "delta": delta(cours, p_cours), "deltaLabel": dlabel},
-        {"key": "recettes", "label": "Recettes", "value": _round(recettes),
-         "format": "eur", "delta": delta(recettes, p_recettes), "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": _round(heures),
          "format": "int", "delta": 0, "deltaLabel": "stable"},
-        {"key": "heures_eleves", "label": "Heures-élèves", "value": _round(heures_eleves),
-         "format": "int", "delta": None, "deltaLabel": ""},
         {"key": "remplissage", "label": "Remplissage", "value": _round(rempl, 1),
          "format": "dec1", "delta": _round(rempl - p_rempl, 1), "deltaLabel": dlabel},
+        {"key": "recettes", "label": "Recettes", "value": _round(recettes),
+         "format": "eur", "delta": delta(recettes, p_recettes), "deltaLabel": dlabel},
+        {"key": "heures_eleves", "label": "Heures-élèves", "value": _round(heures_eleves),
+         "format": "int", "delta": None, "deltaLabel": ""},
     ]
 
 

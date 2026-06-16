@@ -23,12 +23,20 @@ def get_df():
     return _DF
 
 
-def available_years() -> List[int]:
+def _year_col(mode: str) -> str:
+    """Colonne d'année selon le mode : civile (défaut) ou scolaire."""
+    return "Année scolaire" if mode == "school" else "Année"
+
+
+def available_years(mode: str = "civil") -> List[int]:
     df = get_df()
-    return sorted(int(y) for y in df["Année"].unique())
+    col = _year_col(mode)
+    if col not in df.columns:
+        col = "Année"
+    return sorted(int(y) for y in df[col].unique())
 
 
-def meta() -> dict:
+def meta(mode: str = "civil") -> dict:
     antennas = []
     for code in ["IFI"] + bs.ANTENNA_ORDER:
         antennas.append({"code": code, **bs.ANTENNA_META[code]})
@@ -37,7 +45,8 @@ def meta() -> dict:
         "subtitle": "Institut français Italia — pilotage statistique",
         "source": "computed",
         "updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "years": available_years(),
+        "years": available_years(mode),
+        "yearMode": mode,
         "antennas": antennas,
     }
 
@@ -46,10 +55,15 @@ def _sum(d, col):
     return float(d[col].sum()) if col in d.columns and len(d) else 0.0
 
 
-def _kpis(df_sel, years: List[int], antennas: List[str]):
+def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None):
     """Totals over the selected years. Delta vs previous year only when a single
-    year is selected (and the prior year exists for the same antennas)."""
-    df_all = get_df()
+    year is selected (and the prior year exists for the same antennas).
+
+    df_all : référentiel complet (déjà aligné sur le mode d'année actif) pour le
+    calcul du delta N-1. Fourni par compute() afin que le mode scolaire compare
+    bien à l'année scolaire précédente."""
+    if df_all is None:
+        df_all = get_df()
     inscr = _sum(df_sel, "Nb. d'inscriptions")
     cours = _sum(df_sel, "Nb. de Cours")
     recettes = _sum(df_sel, "Recettes")
@@ -76,13 +90,16 @@ def _kpis(df_sel, years: List[int], antennas: List[str]):
                 "rempl": round(rempl - p_rempl, 1) if p_rempl else None,
             }
 
+    # Ordre métier : Inscriptions · (Élèves différents) · Cours · Qté heures ·
+    # Remplissage · Recettes · Heures-élèves. « Élèves différents » sera inséré
+    # après "inscriptions" quand l'indicateur sera disponible.
     return [
         {"key": "inscriptions", "label": "Inscriptions", "value": bs._round(inscr), "format": "int", "delta": delta["inscr"], "deltaLabel": dlabel},
         {"key": "cours", "label": "Cours", "value": bs._round(cours), "format": "int", "delta": delta["cours"], "deltaLabel": dlabel},
-        {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": bs._round(heures), "format": "int", "delta": None, "deltaLabel": ""},
-        {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": None, "deltaLabel": ""},
         {"key": "remplissage", "label": "Remplissage", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
+        {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
+        {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": None, "deltaLabel": ""},
     ]
 
 
@@ -296,15 +313,24 @@ def compute(
     sousSecteurs: Optional[List[str]] = None,
     macros: Optional[List[str]] = None,
     categories: Optional[List[str]] = None,
+    year_mode: str = "civil",
 ) -> dict:
     """Full snapshot-shaped payload for the given filters, computed live.
 
     Dimension filters (secteurs/sousSecteurs/macros/categories) cascade: each
     narrows df_sel, so the returned breakdowns only contain matching children —
     which in turn narrows the child dropdown options on the client.
+
+    year_mode : "civil" (année civile, défaut) ou "school" (année scolaire,
+    sep N → août N+1). En mode scolaire on remplace la colonne « Année » par
+    « Année scolaire » : tout le pipeline aval (filtres, KPI, évolution, YoY,
+    ventilations) regroupe alors par année scolaire sans autre changement.
     """
+    year_mode = "school" if year_mode == "school" else "civil"
     df = get_df()
-    all_years = available_years()
+    if year_mode == "school" and "Année scolaire" in df.columns:
+        df = df.assign(**{"Année": df["Année scolaire"]})
+    all_years = sorted(int(y) for y in df["Année"].unique())
     years = [y for y in (years or all_years) if y in all_years] or all_years
     antennas = [a for a in (antennas or bs.ANTENNA_ORDER) if a in bs.ANTENNA_ORDER] or list(bs.ANTENNA_ORDER)
 
@@ -336,17 +362,18 @@ def compute(
         if vals and col in df_sel.columns:
             df_sel = df_sel[df_sel[col].isin(vals)]
 
-    m = meta()
+    m = meta(year_mode)
     return {
         "meta": m,
         "filters": {
             "years": years, "year": years[-1] if years else 0, "antennas": antennas,
+            "yearMode": year_mode,
             "secteurs": sel["secteurs"], "sousSecteurs": sel["sousSecteurs"],
             "macros": sel["macros"], "categories": sel["categories"], "sectors": [],
         },
         "dimOptions": dim_options,
         "indicators": INDICATOR_META,
-        "kpis": _kpis(df_sel, years, antennas),
+        "kpis": _kpis(df_sel, years, antennas, df),
         "byAntenna": _by_antenna(df_sel, antennas),
         "sectors": _sectors(df_sel),
         "evolution": _evolution(df_sel, years, antennas),

@@ -4,14 +4,17 @@ import { create } from "zustand";
 import type { AntennaCode } from "./types";
 
 export type DimKey = "secteurs" | "sousSecteurs" | "macros" | "categories";
+export type YearMode = "civil" | "school";
 
 interface FilterState {
   years: number[]; // empty = all available years
+  yearMode: YearMode; // année civile (défaut) ou scolaire
   antennas: AntennaCode[]; // operational antennas (excludes IFI meta)
   dims: Record<DimKey, string[]>;
   aiOpen: boolean;
   toggleYear: (y: number) => void;
   setAllYears: () => void;
+  setYearMode: (m: YearMode) => void;
   toggleAntenna: (c: AntennaCode) => void;
   setAntennas: (a: AntennaCode[]) => void;
   toggleDim: (dim: DimKey, value: string) => void;
@@ -33,6 +36,7 @@ const DESCENDANTS: Record<DimKey, DimKey[]> = {
 
 export const useFilters = create<FilterState>((set) => ({
   years: [],
+  yearMode: "civil",
   antennas: [...ALL],
   dims: { ...EMPTY_DIMS },
   aiOpen: false,
@@ -43,6 +47,10 @@ export const useFilters = create<FilterState>((set) => ({
       return { years: next.sort((a, b) => a - b) };
     }),
   setAllYears: () => set({ years: [] }),
+  // Les valeurs d'années diffèrent entre les deux modes (civile vs scolaire) :
+  // on repart sur « Toutes » pour éviter une sélection incohérente.
+  setYearMode: (m) =>
+    set((s) => (s.yearMode === m ? {} : { yearMode: m, years: [] })),
   toggleAntenna: (c) =>
     set((s) => {
       const has = s.antennas.includes(c);
@@ -65,6 +73,6 @@ export const useFilters = create<FilterState>((set) => ({
       for (const d of DESCENDANTS[dim]) dims[d] = [];
       return { dims };
     }),
-  reset: () => set({ years: [], antennas: [...ALL], dims: { ...EMPTY_DIMS } }),
+  reset: () => set({ years: [], yearMode: "civil", antennas: [...ALL], dims: { ...EMPTY_DIMS } }),
   setAiOpen: (aiOpen) => set({ aiOpen }),
 }));

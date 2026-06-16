@@ -1,22 +1,26 @@
 "use client";
 
 import { useSnapshot } from "@/lib/useSnapshot";
+import { useFilters } from "@/lib/store";
 import { KpiRow } from "@/components/KpiCard";
 import { Panel } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
 import { AntennaBar, EvolutionLine } from "@/components/Charts";
 import { SectorTable } from "@/components/SectorTable";
-import { FilterSummary } from "@/components/Filters";
+import { FilterSummary, yearLabel } from "@/components/Filters";
 import { Sankey, FlowTreemap } from "@/components/RichCharts";
 
 const SEDE_COLORS: Record<string, string> = { IFM: "#FF8C00", IFF: "#8B5CF6", IFN: "#22C55E", IFP: "#EF4444" };
 
 export default function SynthesePage() {
   const { data } = useSnapshot();
+  const yearMode = useFilters((s) => s.yearMode);
   const flows = data.flows ?? [];
+  const eyebrowYears = (data.filters.years ?? []).map((y) => yearLabel(y, yearMode)).join(", ");
+  const evoYears = data.evolution.years;
   return (
     <div className="space-y-5">
-      <PageTitle eyebrow={`Cours · ${(data.filters.years ?? []).join(", ") || data.filters.year}`} title="Synthèse du réseau">
+      <PageTitle eyebrow={`Cours · ${eyebrowYears || yearLabel(data.filters.year, yearMode)}`} title="Synthèse du réseau">
         Vue d'ensemble : inscriptions, cours, recettes, remplissage sur le périmètre filtré.
       </PageTitle>
 
@@ -27,7 +31,7 @@ export default function SynthesePage() {
         <Panel title="Inscriptions par antenne" subtitle="Périmètre filtré">
           <AntennaBar rows={data.byAntenna} />
         </Panel>
-        <Panel title="Évolution des inscriptions" subtitle={`${data.evolution.years[0]}–${data.evolution.years.at(-1)}`}>
+        <Panel title="Évolution des inscriptions" subtitle={`${yearLabel(evoYears[0], yearMode)}–${yearLabel(evoYears.at(-1) ?? evoYears[0], yearMode)}`}>
           <EvolutionLine years={data.evolution.years} series={data.evolution.series} />
         </Panel>
       </div>
