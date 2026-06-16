@@ -320,32 +320,42 @@ def _by_antenna_indicators(df_sel, antennas):
 
 
 def _sector_antenna_matrix(df_sel, antennas):
+    """Matrice secteur × antenne pour CHAQUE indicateur (matrices[key][sec][ant]).
+    La heatmap peut ainsi suivre l'indicateur sélectionné."""
     secteurs = _ordered_sectors(df_sel)
     ants = [a for a in bs.ANTENNA_ORDER if a in antennas]
-    insc, rempl = [], []
+    matrices = {key: [] for key, _l, _c, _f in INDICATORS}
     for sec in secteurs:
-        ri, rr = [], []
+        row_by_key = {key: [] for key, _l, _c, _f in INDICATORS}
         for a in ants:
             d = df_sel[(df_sel["Secteur"] == sec) & (df_sel["Sede"] == a)]
-            i = _sum(d, "Nb. d'inscriptions")
-            c = _sum(d, "Nb. de Cours")
-            ri.append(bs._round(i))
-            rr.append(round(i / c, 2) if c else 0)
-        insc.append(ri)
-        rempl.append(rr)
-    return {"sectors": secteurs, "antennas": ants, "inscriptions": insc, "remplissage": rempl}
+            for key, _l, col, _f in INDICATORS:
+                row_by_key[key].append(_indic_value(d, key, col))
+        for key in matrices:
+            matrices[key].append(row_by_key[key])
+    return {
+        "sectors": secteurs, "antennas": ants,
+        "matrices": matrices,
+        # rétro-compat (anciens clients) :
+        "inscriptions": matrices.get("inscriptions", []),
+        "remplissage": matrices.get("remplissage", []),
+    }
 
 
 def _flows(df_sel, antennas):
+    """Flux antenne → secteur, avec la valeur de CHAQUE indicateur par flux
+    (values[key]). `value` reste les inscriptions (rétro-compat / défaut)."""
     out = []
     if "Secteur" not in df_sel.columns:
         return out
     for a in [x for x in bs.ANTENNA_ORDER if x in antennas]:
         da = df_sel[df_sel["Sede"] == a]
         for sec in _ordered_sectors(da):
-            v = _sum(da[da["Secteur"] == sec], "Nb. d'inscriptions")
-            if v > 0:
-                out.append({"source": a, "target": str(sec), "value": bs._round(v)})
+            d = da[da["Secteur"] == sec]
+            values = {key: _indic_value(d, key, col) for key, _l, col, _f in INDICATORS}
+            if values.get("inscriptions", 0) > 0:
+                out.append({"source": a, "target": str(sec),
+                            "value": values["inscriptions"], "values": values})
     return out
 
 

@@ -127,6 +127,7 @@ export interface Snapshot {
     antennas: AntennaCode[];
     inscriptions: number[][];
     remplissage: number[][];
+    matrices?: Record<string, number[][]>;
   };
-  flows?: { source: string; target: string; value: number }[];
+  flows?: { source: string; target: string; value: number; values?: Record<string, number> }[];
 }

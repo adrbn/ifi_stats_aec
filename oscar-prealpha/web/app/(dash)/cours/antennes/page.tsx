@@ -87,7 +87,7 @@ export default function AntennesPage() {
       </Panel>
 
       <Panel title="Inscriptions par antenne">
-        <AntennaBar rows={data.byAntenna} />
+        <AntennaBar rows={data.byAntenna.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))} label="Inscriptions" />
       </Panel>
 
       <Panel title="Indicateurs détaillés" subtitle="Cours, recettes et remplissage par antenne">

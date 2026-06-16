@@ -88,8 +88,11 @@ export function Heatmap({
   rows: string[];
   cols: string[];
   values: number[][];
-  unit?: "int" | "dec1";
+  unit?: "int" | "dec1" | "eur";
 }) {
+  const cell = (v: number) => (unit === "eur" ? formatEur(v) : unit === "dec1" ? formatDec1(v) : formatInt(v));
+  // Le remplissage (ratio) ne se totalise pas par ligne : on masque la colonne Total.
+  const showTotal = unit !== "dec1";
   const flat = values.flat();
   const max = Math.max(...flat, 1);
   const rowTotals = values.map((r) => r.reduce((a, b) => a + b, 0));
@@ -109,7 +112,7 @@ export function Heatmap({
             {cols.map((c) => (
               <th key={c} className="min-w-[88px] px-4 py-2 text-center text-eyebrow font-semibold uppercase text-neutral-600">{c}</th>
             ))}
-            <th className="min-w-[88px] px-4 py-2 text-center text-eyebrow font-semibold uppercase text-neutral-600">Total</th>
+            {showTotal && <th className="min-w-[88px] px-4 py-2 text-center text-eyebrow font-semibold uppercase text-neutral-600">Total</th>}
           </tr>
         </thead>
         <tbody>
@@ -121,11 +124,11 @@ export function Heatmap({
                 const t = Math.min(1, v / max);
                 return (
                   <td key={c} className="tnum rounded-sm px-4 py-3 text-center" style={{ background: color(v), color: t > 0.6 ? "#fff" : "var(--neutral-800)" }}>
-                    {unit === "dec1" ? formatDec1(v) : formatInt(v)}
+                    {cell(v)}
                   </td>
                 );
               })}
-              <td className="tnum rounded-sm bg-neutral-50 px-4 py-3 text-center font-semibold text-neutral-900">{formatInt(rowTotals[ri])}</td>
+              {showTotal && <td className="tnum rounded-sm bg-neutral-50 px-4 py-3 text-center font-semibold text-neutral-900">{cell(rowTotals[ri])}</td>}
             </tr>
           ))}
         </tbody>
@@ -145,11 +148,16 @@ export function FlowTreemap({
   flows,
   height = 320,
   onSelect,
+  unit = "int",
+  label = "inscriptions",
 }: {
   flows: { source: string; target: string; value: number }[];
   height?: number;
   onSelect?: (secteur: string) => void;
+  unit?: "int" | "eur";
+  label?: string;
 }) {
+  const fmtVal = (v: number) => (unit === "eur" ? formatEur(v) : formatInt(v));
   const ref = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(640);
   useEffect(() => {
@@ -225,7 +233,7 @@ export function FlowTreemap({
               rx={2.5}
               fill={colorOf(n.target)}
             >
-              <title>{`${n.source} · ${n.target}\n${formatInt(n.value)} inscriptions`}</title>
+              <title>{`${n.source} · ${n.target}\n${fmtVal(n.value)} ${label}`}</title>
             </rect>
             {n.big && (
               <>
@@ -233,7 +241,7 @@ export function FlowTreemap({
                   {n.target}
                 </text>
                 <text x={n.x + PAD + 6} y={n.y + 31} fontSize={10} fill="rgba(255,255,255,0.85)" fontFamily="var(--font-sans)" className="tnum">
-                  {formatInt(n.value)}
+                  {fmtVal(n.value)}
                 </text>
               </>
             )}

@@ -15,8 +15,8 @@ import {
   YAxis,
   Legend,
 } from "recharts";
-import type { AntennaRow, EvolutionSeries } from "@/lib/types";
-import { formatInt } from "@/lib/format";
+import type { EvolutionSeries } from "@/lib/types";
+import { formatInt, formatEur, formatDec1 } from "@/lib/format";
 
 const tooltipStyle = {
   background: "#fff",
@@ -31,21 +31,41 @@ const tooltipStyle = {
 // Bleu IFI (réseau global) — cohérent avec ANTENNA_META["IFI"].color côté backend.
 const IFI_BLUE = "#3B82F6";
 
-export function AntennaBar({ rows, showTotal = true }: { rows: AntennaRow[]; showTotal?: boolean }) {
-  const antennas = rows.map((r) => ({ name: r.code, value: r.inscriptions, color: r.color }));
-  // Total IFI (somme du réseau) en bleu, AVANT les antennes.
-  const total = antennas.reduce((s, d) => s + d.value, 0);
-  const data = showTotal ? [{ name: "IFI", value: total, color: IFI_BLUE }, ...antennas] : antennas;
+type Unit = "int" | "eur" | "dec1";
+const fmtUnit = (v: number, unit: Unit) =>
+  unit === "eur" ? formatEur(v) : unit === "dec1" ? formatDec1(v) : formatInt(v);
+
+/**
+ * Barres par antenne pour un indicateur quelconque. `rows` porte une `value`
+ * générique. Total IFI (bleu) en tête : somme par défaut, ou `total` fourni
+ * (ex. remplissage = ratio global, non sommable). `label` nomme l'indicateur.
+ */
+export function AntennaBar({
+  rows,
+  showTotal = true,
+  total,
+  unit = "int",
+  label = "Inscriptions",
+}: {
+  rows: { code: string; color: string; value: number }[];
+  showTotal?: boolean;
+  total?: number;
+  unit?: Unit;
+  label?: string;
+}) {
+  const antennas = rows.map((r) => ({ name: r.code, value: r.value, color: r.color }));
+  const totalVal = total ?? antennas.reduce((s, d) => s + d.value, 0);
+  const data = showTotal ? [{ name: "IFI", value: totalVal, color: IFI_BLUE }, ...antennas] : antennas;
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 16, right: 20, bottom: 8, left: 8 }}>
         <CartesianGrid vertical={false} />
         <XAxis dataKey="name" tickLine={false} axisLine={{ stroke: "var(--neutral-300)" }} />
-        <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={(v) => formatInt(v)} />
+        <YAxis tickLine={false} axisLine={false} width={unit === "eur" ? 60 : 48} tickFormatter={(v) => fmtUnit(v, unit)} />
         <Tooltip
           cursor={{ fill: "var(--accent-50)" }}
           contentStyle={tooltipStyle}
-          formatter={(v: number, _n, p) => [formatInt(v), p?.payload?.name === "IFI" ? "Total IFI" : "Inscriptions"]}
+          formatter={(v: number, _n, p) => [fmtUnit(v, unit), p?.payload?.name === "IFI" ? `Total IFI · ${label}` : label]}
         />
         <Bar dataKey="value" radius={[3, 3, 0, 0]} maxBarSize={64}>
           {data.map((d) => (

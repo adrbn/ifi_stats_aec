@@ -48,12 +48,12 @@ export function SecteursView() {
       </Panel>
 
       {sa && sa.sectors.length > 0 && (
-        <Panel title="Croisement secteur × antenne" subtitle={ind === "remplissage" ? "Taux de remplissage" : "Inscriptions"}>
+        <Panel title="Croisement secteur × antenne" subtitle={meta?.label ?? "Inscriptions"}>
           <Heatmap
             rows={sa.sectors}
             cols={sa.antennas}
-            values={ind === "remplissage" ? sa.remplissage : sa.inscriptions}
-            unit={ind === "remplissage" ? "dec1" : "int"}
+            values={sa.matrices?.[ind] ?? sa.inscriptions}
+            unit={unit}
           />
         </Panel>
       )}
