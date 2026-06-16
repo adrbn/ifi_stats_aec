@@ -44,8 +44,8 @@ export function YoyView() {
       </Panel>
 
       <Panel title="Tableau comparatif" subtitle="Variation calculée vs l'année précédente">
-        <div className="overflow-hidden rounded-md border border-neutral-200">
-          <table className="w-full border-collapse text-body-sm">
+        <div className="overflow-x-auto rounded-md border border-neutral-200">
+          <table className="w-full min-w-[560px] border-collapse text-body-sm">
             <thead>
               <tr>
                 {["Année", "Inscriptions", "Δ", "Cours", "Recettes", "Δ", "Remplissage"].map((h, i) => (

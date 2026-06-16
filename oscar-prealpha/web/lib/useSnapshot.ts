@@ -24,5 +24,9 @@ export function useSnapshot(): { data: Snapshot; isLoading: boolean; isOffline: 
     staleTime: 15_000,
   });
   const data = q.data ?? EMPTY_SNAPSHOT;
-  return { data, isLoading: q.isLoading, isOffline: data.meta.source === "unavailable" };
+  // « Hors-ligne » UNIQUEMENT si un fetch a abouti et a échoué — pas pendant le
+  // tout premier chargement (cold start serverless ~10-15 s), sinon le bandeau
+  // d'erreur s'affiche alors que les données arrivent juste après.
+  const unavailable = data.meta.source === "unavailable";
+  return { data, isLoading: q.isLoading, isOffline: !q.isLoading && unavailable };
 }

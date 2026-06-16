@@ -91,8 +91,8 @@ export default function AntennesPage() {
       </Panel>
 
       <Panel title="Indicateurs détaillés" subtitle="Cours, recettes et remplissage par antenne">
-        <div className="overflow-hidden rounded-md border border-neutral-200">
-          <table className="w-full border-collapse text-body-sm">
+        <div className="overflow-x-auto rounded-md border border-neutral-200">
+          <table className="w-full min-w-[560px] border-collapse text-body-sm">
             <thead>
               <tr>
                 {["Antenne", "Inscriptions", "Cours", "Recettes", "Remplissage"].map((h, i) => (

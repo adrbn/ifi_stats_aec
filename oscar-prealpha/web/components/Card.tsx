@@ -14,7 +14,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-lg border border-neutral-200 bg-surface shadow-xs ${className}`}>
+    <section className={`min-w-0 rounded-lg border border-neutral-200 bg-surface shadow-xs ${className}`}>
       {(title || right) && (
         <header className="flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-4">
           <div>

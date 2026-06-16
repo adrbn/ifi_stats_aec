@@ -25,8 +25,8 @@ export function SectorTable({
 }) {
   const headers = ["Secteur", "Cours", "Inscriptions", "Nouv. inscrits", "% nouv.", "Recettes", "Remplissage"];
   return (
-    <div className="overflow-hidden rounded-md border border-neutral-200">
-      <table className="w-full border-collapse text-body-sm">
+    <div className="overflow-x-auto rounded-md border border-neutral-200">
+      <table className="w-full min-w-[640px] border-collapse text-body-sm">
         <thead>
           <tr>
             {headers.map((h, i) => (

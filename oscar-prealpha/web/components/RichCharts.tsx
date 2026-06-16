@@ -210,7 +210,7 @@ export function FlowTreemap({
   }
 
   return (
-    <div ref={ref} className="w-full">
+    <div ref={ref} className="w-full min-w-0 overflow-hidden">
       <svg width={w} height={height} role="img" aria-label="Répartition antenne par secteur">
         {headers.map((h) =>
           h.show ? (
