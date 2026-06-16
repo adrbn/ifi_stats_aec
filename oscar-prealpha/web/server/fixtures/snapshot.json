@@ -3,7 +3,7 @@
     "app": "OSCAR",
     "subtitle": "Institut français Italia — pilotage statistique",
     "source": "computed",
-    "updated": "2026-06-16T09:14:12Z",
+    "updated": "2026-06-16T09:32:16Z",
     "years": [
       2022,
       2023,
@@ -1040,6 +1040,303 @@
       },
       "key": "categorie",
       "label": "Catégorie"
+    },
+    "niveau": {
+      "rows": [
+        {
+          "label": "A2",
+          "cours": 46,
+          "inscriptions": 1232,
+          "nouv": 1212,
+          "pctNouv": 98.4,
+          "recettes": 12749,
+          "remplissage": 26.78
+        },
+        {
+          "label": "Tous les niveaux ",
+          "cours": 57,
+          "inscriptions": 438,
+          "nouv": 175,
+          "pctNouv": 40.0,
+          "recettes": 20362,
+          "remplissage": 7.68
+        },
+        {
+          "label": "B1",
+          "cours": 23,
+          "inscriptions": 237,
+          "nouv": 204,
+          "pctNouv": 86.1,
+          "recettes": 7380,
+          "remplissage": 10.3
+        },
+        {
+          "label": "A1.1 (demi-niveau)",
+          "cours": 33,
+          "inscriptions": 127,
+          "nouv": 118,
+          "pctNouv": 92.9,
+          "recettes": 31654,
+          "remplissage": 3.85
+        },
+        {
+          "label": "A2.1",
+          "cours": 18,
+          "inscriptions": 102,
+          "nouv": 93,
+          "pctNouv": 91.2,
+          "recettes": 12104,
+          "remplissage": 5.67
+        },
+        {
+          "label": "A1 (niveau complet)",
+          "cours": 8,
+          "inscriptions": 43,
+          "nouv": 40,
+          "pctNouv": 93.0,
+          "recettes": 3073,
+          "remplissage": 5.38
+        },
+        {
+          "label": "B2",
+          "cours": 16,
+          "inscriptions": 34,
+          "nouv": 6,
+          "pctNouv": 17.6,
+          "recettes": 8689,
+          "remplissage": 2.12
+        },
+        {
+          "label": "B1.1",
+          "cours": 10,
+          "inscriptions": 22,
+          "nouv": 18,
+          "pctNouv": 81.8,
+          "recettes": 5640,
+          "remplissage": 2.2
+        },
+        {
+          "label": "C1",
+          "cours": 6,
+          "inscriptions": 14,
+          "nouv": 5,
+          "pctNouv": 35.7,
+          "recettes": 6615,
+          "remplissage": 2.33
+        },
+        {
+          "label": "A1.2",
+          "cours": 9,
+          "inscriptions": 11,
+          "nouv": 4,
+          "pctNouv": 36.4,
+          "recettes": 7752,
+          "remplissage": 1.22
+        },
+        {
+          "label": "B2.1",
+          "cours": 9,
+          "inscriptions": 8,
+          "nouv": 3,
+          "pctNouv": 37.5,
+          "recettes": 3771,
+          "remplissage": 0.89
+        },
+        {
+          "label": "A2.2",
+          "cours": 7,
+          "inscriptions": 5,
+          "nouv": 1,
+          "pctNouv": 20.0,
+          "recettes": 3100,
+          "remplissage": 0.71
+        },
+        {
+          "label": "Supérieur (à partir du niveau C1 acquis)",
+          "cours": 2,
+          "inscriptions": 4,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 1680,
+          "remplissage": 2.0
+        },
+        {
+          "label": "B1.2",
+          "cours": 7,
+          "inscriptions": 3,
+          "nouv": 1,
+          "pctNouv": 33.3,
+          "recettes": 2130,
+          "remplissage": 0.43
+        },
+        {
+          "label": "B2.2",
+          "cours": 2,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 1200,
+          "remplissage": 0.5
+        },
+        {
+          "label": "C2",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 1300,
+          "remplissage": 1.0
+        },
+        {
+          "label": "C1.1",
+          "cours": 2,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "C1.2",
+          "cours": 2,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "C2.1",
+          "cours": 1,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        }
+      ],
+      "total": {
+        "label": "TOTAL",
+        "cours": 259,
+        "inscriptions": 2282,
+        "nouv": 1880,
+        "pctNouv": 82.4,
+        "recettes": 129199,
+        "remplissage": 8.81
+      },
+      "key": "niveau",
+      "label": "Niveau"
+    },
+    "format": {
+      "rows": [
+        {
+          "label": "En présence ",
+          "cours": 147,
+          "inscriptions": 1757,
+          "nouv": 1535,
+          "pctNouv": 87.4,
+          "recettes": 51572,
+          "remplissage": 11.95
+        },
+        {
+          "label": "À distance",
+          "cours": 97,
+          "inscriptions": 364,
+          "nouv": 270,
+          "pctNouv": 74.2,
+          "recettes": 70982,
+          "remplissage": 3.75
+        },
+        {
+          "label": "Hors les murs",
+          "cours": 9,
+          "inscriptions": 163,
+          "nouv": 80,
+          "pctNouv": 49.1,
+          "recettes": 3640,
+          "remplissage": 18.11
+        },
+        {
+          "label": "Comodal",
+          "cours": 3,
+          "inscriptions": 2,
+          "nouv": 1,
+          "pctNouv": 50.0,
+          "recettes": 880,
+          "remplissage": 0.67
+        },
+        {
+          "label": "Hybride (alterné P/D)",
+          "cours": 2,
+          "inscriptions": 2,
+          "nouv": 2,
+          "pctNouv": 100.0,
+          "recettes": 1300,
+          "remplissage": 1.0
+        }
+      ],
+      "total": {
+        "label": "TOTAL",
+        "cours": 258,
+        "inscriptions": 2288,
+        "nouv": 1888,
+        "pctNouv": 82.5,
+        "recettes": 128374,
+        "remplissage": 8.87
+      },
+      "key": "format",
+      "label": "Présentiel / en ligne"
+    },
+    "age": {
+      "rows": [
+        {
+          "label": "ADOLESCENTS",
+          "cours": 67,
+          "inscriptions": 1678,
+          "nouv": 1662,
+          "pctNouv": 99.0,
+          "recettes": 17428,
+          "remplissage": 25.04
+        },
+        {
+          "label": "ADULTES",
+          "cours": 180,
+          "inscriptions": 508,
+          "nouv": 179,
+          "pctNouv": 35.2,
+          "recettes": 104679,
+          "remplissage": 2.82
+        },
+        {
+          "label": "ENFANTS 6-11 ANS",
+          "cours": 14,
+          "inscriptions": 116,
+          "nouv": 61,
+          "pctNouv": 52.6,
+          "recettes": 6742,
+          "remplissage": 8.29
+        },
+        {
+          "label": "ENFANTS 2-6 ANS",
+          "cours": 1,
+          "inscriptions": 2,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 350,
+          "remplissage": 2.0
+        }
+      ],
+      "total": {
+        "label": "TOTAL",
+        "cours": 262,
+        "inscriptions": 2304,
+        "nouv": 1902,
+        "pctNouv": 82.6,
+        "recettes": 129199,
+        "remplissage": 8.79
+      },
+      "key": "age",
+      "label": "Tranche d'âge"
     }
   },
   "yoy": {

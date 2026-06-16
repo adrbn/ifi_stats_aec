@@ -13,6 +13,9 @@ const DIMS: { key: string; label: string }[] = [
   { key: "sous_secteur", label: "Sous-secteur" },
   { key: "macro", label: "Macro-catégorie" },
   { key: "categorie", label: "Catégorie" },
+  { key: "niveau", label: "Niveau" },
+  { key: "format", label: "Présentiel / en ligne" },
+  { key: "age", label: "Tranche d'âge" },
 ];
 
 const METRICS: { key: keyof BreakdownRow; label: string; unit: "int" | "eur" }[] = [

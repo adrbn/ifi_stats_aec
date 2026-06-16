@@ -114,7 +114,11 @@ def load_all_years():
         raise RuntimeError("cache_cours.xlsx introuvable — lance l'outil « Récupérer cours AEC ».")
 
     with open(path, "rb") as f:
-        df, _stats = parser.parse_aec_export(f.read())  # aggregate=True
+        # GRAIN PAR COURS (aggregate=False) : on garde Niveau / Format /
+        # Tranche d'âge / Localisation… par cours pour ventiler à la demande,
+        # au lieu d'agréger trop tôt. L'engine agrège ensuite lui-même.
+        df, _stats = parser.parse_aec_export(f.read(), aggregate=False)
+    df["Nb. de Cours"] = 1   # 1 ligne = 1 cours → somme = nombre de cours
 
     # Mapping catégorie→secteur complet (sinon beaucoup de NON RATTACHÉ).
     for csv in (os.path.join(DATA_DIR, "category_mapping.csv"),
@@ -262,6 +266,10 @@ DIMENSIONS = [
     ("sous_secteur", "Sous-secteur", "Sous-secteur"),
     ("macro", "Macro-catégorie", "Macro-catégorie"),
     ("categorie", "Catégorie de cours", "Catégorie"),
+    # Dimensions « par cours » débloquées par le grain par cours :
+    ("niveau", "Niveau", "Niveau"),
+    ("format", "Format", "Présentiel / en ligne"),
+    ("age", "Tranche d'âge du cours", "Tranche d'âge"),
 ]
 
 
