@@ -16,6 +16,7 @@ const SEDE_COLORS: Record<string, string> = { IFM: "#FF8C00", IFF: "#8B5CF6", IF
 export default function SynthesePage() {
   const { data } = useSnapshot();
   const yearMode = useFilters((s) => s.yearMode);
+  const toggleDim = useFilters((s) => s.toggleDim);
   const flows = data.flows ?? [];
   const eyebrowYears = (data.filters.years ?? []).map((y) => yearLabel(y, yearMode)).join(", ");
   const evoYears = data.evolution.years;
@@ -44,8 +45,8 @@ export default function SynthesePage() {
         <Panel title="Flux antenne → secteur" subtitle="Sankey · inscriptions">
           {flows.length ? <Sankey flows={flows} sedeColors={SEDE_COLORS} height={320} /> : null}
         </Panel>
-        <Panel title="Répartition hiérarchique" subtitle="Treemap antenne · secteur">
-          {flows.length ? <FlowTreemap flows={flows} height={320} /> : null}
+        <Panel title="Répartition hiérarchique" subtitle="Antenne · secteur — clic = filtre secteur">
+          {flows.length ? <FlowTreemap flows={flows} height={320} onSelect={(sec) => toggleDim("secteurs", sec)} /> : null}
         </Panel>
       </div>
 

@@ -8,27 +8,46 @@ import { FilterSummary } from "@/components/Filters";
 import { formatInt, formatEur, formatDec1 } from "@/lib/format";
 import { motion } from "framer-motion";
 
+const IFI_BLUE = "#3B82F6";
+
 export default function AntennesPage() {
   const { data } = useSnapshot();
   const indicators = data.indicators ?? [];
   const byInd = data.byAntennaIndicator ?? {};
 
+  // Total IFI (réseau) en bleu, AVANT les antennes. Indicateurs additifs = somme ;
+  // remplissage = ratio global (inscriptions / cours), non sommable.
+  const sumBy = (k: "inscriptions" | "cours" | "recettes") => data.byAntenna.reduce((s, a) => s + (a[k] ?? 0), 0);
+  const ifiInscr = sumBy("inscriptions");
+  const ifiCours = sumBy("cours");
+  const ifiRecettes = sumBy("recettes");
+  const ifiRempl = ifiCours ? ifiInscr / ifiCours : 0;
+  const cardRows = [
+    { code: "IFI", name: "IFI · Réseau", color: IFI_BLUE, inscriptions: ifiInscr },
+    ...data.byAntenna,
+  ];
+  const indRowsWithIFI = (key: string) => {
+    const base = (byInd[key] ?? []).map((r) => ({ name: r.code, value: r.value, color: r.color }));
+    const ifiVal = key === "remplissage" ? ifiRempl : base.reduce((s, r) => s + r.value, 0);
+    return [{ name: "IFI", value: ifiVal, color: IFI_BLUE }, ...base];
+  };
+
   return (
     <div className="space-y-5">
       <PageTitle eyebrow="Cours" title="Par antenne">
-        Comparaison des antennes du réseau IFI, tous indicateurs, sur le périmètre filtré.
+        Comparaison des antennes du réseau IFI, tous indicateurs, sur le périmètre filtré. La ligne « IFI » = total réseau.
       </PageTitle>
       <FilterSummary />
 
-      {/* compact per-antenna KPI cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {data.byAntenna.map((a, i) => (
+      {/* compact per-antenna KPI cards (IFI total en tête, en bleu) */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {cardRows.map((a, i) => (
           <motion.div
             key={a.code}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.24, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center gap-3 rounded-md border border-neutral-200 bg-surface p-3"
+            className={`flex items-center gap-3 rounded-md border p-3 ${a.code === "IFI" ? "border-accent-300 bg-accent-50/40" : "border-neutral-200 bg-surface"}`}
           >
             <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ background: a.color }} />
             <div className="min-w-0">
@@ -43,7 +62,7 @@ export default function AntennesPage() {
       <Panel title="Tous les indicateurs par antenne" subtitle="Petits multiples">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {indicators.map((ind) => {
-            const rows = (byInd[ind.key] ?? []).map((r) => ({ name: r.code, value: r.value, color: r.color }));
+            const rows = indRowsWithIFI(ind.key);
             const max = Math.max(...rows.map((r) => r.value), 1);
             return (
               <div key={ind.key} className="rounded-md border border-neutral-200 p-3">
@@ -84,6 +103,18 @@ export default function AntennesPage() {
               </tr>
             </thead>
             <tbody>
+              <tr className="border-b-2 border-accent-200 bg-accent-50/40 font-semibold text-neutral-900">
+                <td className="px-3.5 py-2.5">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ background: IFI_BLUE }} />
+                    IFI · Réseau
+                  </span>
+                </td>
+                <td className="tnum px-3.5 py-2.5 text-right">{formatInt(ifiInscr)}</td>
+                <td className="tnum px-3.5 py-2.5 text-right">{formatInt(ifiCours)}</td>
+                <td className="tnum px-3.5 py-2.5 text-right">{formatEur(ifiRecettes)}</td>
+                <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(ifiRempl)}</td>
+              </tr>
               {data.byAntenna.map((a) => (
                 <tr key={a.code} className="even:bg-neutral-50 hover:bg-accent-50">
                   <td className="px-3.5 py-2.5">

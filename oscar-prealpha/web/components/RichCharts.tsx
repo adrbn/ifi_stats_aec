@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -9,7 +10,6 @@ import {
   PieChart,
   ResponsiveContainer,
   Tooltip,
-  Treemap,
   XAxis,
   YAxis,
 } from "recharts";
@@ -102,30 +102,30 @@ export function Heatmap({
   };
   return (
     <div className="overflow-x-auto">
-      <table className="border-collapse text-body-sm">
+      <table className="w-full border-separate border-spacing-1 text-body-sm">
         <thead>
           <tr>
             <th className="px-3 py-2 text-left text-eyebrow font-semibold uppercase text-neutral-500"></th>
             {cols.map((c) => (
-              <th key={c} className="px-3 py-2 text-center text-eyebrow font-semibold uppercase text-neutral-600">{c}</th>
+              <th key={c} className="min-w-[88px] px-4 py-2 text-center text-eyebrow font-semibold uppercase text-neutral-600">{c}</th>
             ))}
-            <th className="px-3 py-2 text-center text-eyebrow font-semibold uppercase text-neutral-600">Total</th>
+            <th className="min-w-[88px] px-4 py-2 text-center text-eyebrow font-semibold uppercase text-neutral-600">Total</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r, ri) => (
             <tr key={r}>
-              <td className="whitespace-nowrap px-3 py-2 font-medium text-neutral-800">{r}</td>
+              <td className="w-[150px] whitespace-nowrap py-3 pr-4 font-medium text-neutral-800">{r}</td>
               {cols.map((c, ci) => {
                 const v = values[ri][ci];
                 const t = Math.min(1, v / max);
                 return (
-                  <td key={c} className="px-3 py-2 text-center tnum" style={{ background: color(v), color: t > 0.6 ? "#fff" : "var(--neutral-800)" }}>
+                  <td key={c} className="tnum rounded-sm px-4 py-3 text-center" style={{ background: color(v), color: t > 0.6 ? "#fff" : "var(--neutral-800)" }}>
                     {unit === "dec1" ? formatDec1(v) : formatInt(v)}
                   </td>
                 );
               })}
-              <td className="px-3 py-2 text-center tnum font-semibold text-neutral-900">{formatInt(rowTotals[ri])}</td>
+              <td className="tnum rounded-sm bg-neutral-50 px-4 py-3 text-center font-semibold text-neutral-900">{formatInt(rowTotals[ri])}</td>
             </tr>
           ))}
         </tbody>
@@ -134,40 +134,113 @@ export function Heatmap({
   );
 }
 
-/** Treemap of flows (Sede › Secteur) — inscriptions. */
+/**
+ * Treemap hiérarchique antenne › secteur (inscriptions). Colonnes = antennes
+ * (largeur ∝ total), segments = secteurs (hauteur ∝ valeur). SVG maison (le
+ * Treemap Recharts imbriqué rendait des labels « undefined »). Largeur mesurée
+ * → remplit sans déformer le texte. Survol + tooltip natif ; clic = filtre
+ * secteur (si onSelect fourni).
+ */
 export function FlowTreemap({
   flows,
   height = 320,
+  onSelect,
 }: {
   flows: { source: string; target: string; value: number }[];
   height?: number;
+  onSelect?: (secteur: string) => void;
 }) {
-  // group by source
-  const map = new Map<string, { name: string; children: { name: string; size: number }[] }>();
-  for (const f of flows) {
-    if (!map.has(f.source)) map.set(f.source, { name: f.source, children: [] });
-    map.get(f.source)!.children.push({ name: `${f.source}·${f.target}`, size: f.value });
-  }
-  const data = [...map.values()];
-  return (
-    <ResponsiveContainer width="100%" height={height}>
-      <Treemap data={data} dataKey="size" stroke="#fff" content={<TreeCell />} />
-    </ResponsiveContainer>
-  );
-}
+  const ref = useRef<HTMLDivElement>(null);
+  const [w, setW] = useState(640);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      const cw = entries[0]?.contentRect.width;
+      if (cw && cw > 0) setW(cw);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
-function TreeCell(props: any) {
-  const { x, y, width, height, name, index } = props;
-  const fill = SECTOR_PALETTE[(index ?? 0) % SECTOR_PALETTE.length];
+  const TOP = 20;
+  const PAD = 2.5;
+  const innerH = Math.max(0, height - TOP);
+
+  // Regroupement par antenne (source) + couleur stable par secteur.
+  const bySource = new Map<string, { value: number; cells: { target: string; value: number }[] }>();
+  for (const f of flows) {
+    if (!f.value || f.value <= 0) continue;
+    if (!bySource.has(f.source)) bySource.set(f.source, { value: 0, cells: [] });
+    const g = bySource.get(f.source)!;
+    g.value += f.value;
+    g.cells.push({ target: f.target, value: f.value });
+  }
+  const sources = [...bySource.entries()].sort((a, b) => b[1].value - a[1].value);
+  const total = sources.reduce((s, [, g]) => s + g.value, 0) || 1;
+  const sectors = [...new Set(flows.map((f) => f.target))];
+  const colorOf = (t: string) => SECTOR_PALETTE[Math.max(0, sectors.indexOf(t)) % SECTOR_PALETTE.length];
+
+  type Node = { key: string; x: number; y: number; cw: number; ch: number; source: string; target: string; value: number; big: boolean };
+  const nodes: Node[] = [];
+  const headers: { source: string; x: number; show: boolean }[] = [];
+  let x = 0;
+  for (const [source, g] of sources) {
+    const cw = (g.value / total) * w;
+    headers.push({ source, x, show: cw > 38 });
+    let y = TOP;
+    for (const c of [...g.cells].sort((a, b) => b.value - a.value)) {
+      const ch = (c.value / g.value) * innerH;
+      nodes.push({
+        key: `${source}-${c.target}`, x, y, cw, ch,
+        source, target: c.target, value: c.value,
+        big: cw > 48 && ch > 26,
+      });
+      y += ch;
+    }
+    x += cw;
+  }
+
   return (
-    <g>
-      <rect x={x} y={y} width={width} height={height} style={{ fill, stroke: "#fff", strokeWidth: 2 }} />
-      {width > 56 && height > 22 && (
-        <text x={x + 6} y={y + 16} fill="#fff" fontSize={11} fontFamily="var(--font-sans)">
-          {String(name).split("·").pop()}
-        </text>
-      )}
-    </g>
+    <div ref={ref} className="w-full">
+      <svg width={w} height={height} role="img" aria-label="Répartition antenne par secteur">
+        {headers.map((h) =>
+          h.show ? (
+            <text key={`h-${h.source}`} x={h.x + 5} y={13} fontSize={11} fontWeight={700} fill="var(--neutral-600)" fontFamily="var(--font-sans)">
+              {h.source}
+            </text>
+          ) : null
+        )}
+        {nodes.map((n) => (
+          <g
+            key={n.key}
+            onClick={() => onSelect?.(n.target)}
+            className={onSelect ? "cursor-pointer transition-opacity hover:opacity-80" : ""}
+          >
+            <rect
+              x={n.x + PAD}
+              y={n.y + PAD}
+              width={Math.max(0, n.cw - PAD * 2)}
+              height={Math.max(0, n.ch - PAD * 2)}
+              rx={2.5}
+              fill={colorOf(n.target)}
+            >
+              <title>{`${n.source} · ${n.target}\n${formatInt(n.value)} inscriptions`}</title>
+            </rect>
+            {n.big && (
+              <>
+                <text x={n.x + PAD + 6} y={n.y + 17} fontSize={10.5} fontWeight={600} fill="#fff" fontFamily="var(--font-sans)">
+                  {n.target}
+                </text>
+                <text x={n.x + PAD + 6} y={n.y + 31} fontSize={10} fill="rgba(255,255,255,0.85)" fontFamily="var(--font-sans)" className="tnum">
+                  {formatInt(n.value)}
+                </text>
+              </>
+            )}
+          </g>
+        ))}
+      </svg>
+    </div>
   );
 }
 
