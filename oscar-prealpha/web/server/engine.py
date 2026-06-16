@@ -54,6 +54,7 @@ def _kpis(df_sel, years: List[int], antennas: List[str]):
     cours = _sum(df_sel, "Nb. de Cours")
     recettes = _sum(df_sel, "Recettes")
     heures = _sum(df_sel, "Qté heures")
+    heures_eleves = _sum(df_sel, "Nombre total d'heures vendues (heures-étudiants)")
     rempl = (inscr / cours) if cours else 0
 
     delta = {"inscr": None, "cours": None, "recettes": None, "rempl": None}
@@ -80,6 +81,7 @@ def _kpis(df_sel, years: List[int], antennas: List[str]):
         {"key": "cours", "label": "Cours", "value": bs._round(cours), "format": "int", "delta": delta["cours"], "deltaLabel": dlabel},
         {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": bs._round(heures), "format": "int", "delta": None, "deltaLabel": ""},
+        {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": None, "deltaLabel": ""},
         {"key": "remplissage", "label": "Remplissage", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
     ]
 

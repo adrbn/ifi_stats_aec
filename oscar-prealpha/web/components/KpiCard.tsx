@@ -42,7 +42,7 @@ export function KpiCard({ kpi, index = 0 }: { kpi: Kpi; index?: number }) {
 
 export function KpiRow({ kpis }: { kpis: Kpi[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
       {kpis.map((k, i) => (
         <KpiCard key={k.key} kpi={k} index={i} />
       ))}

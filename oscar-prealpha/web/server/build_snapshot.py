@@ -155,6 +155,7 @@ def compute_kpis(df, latest_year, prev_year):
     cours = total(cur, "Nb. de Cours")
     recettes = total(cur, "Recettes")
     heures = total(cur, "Qté heures")
+    heures_eleves = total(cur, "Nombre total d'heures vendues (heures-étudiants)")
     rempl = (inscr / cours) if cours else 0
 
     p_inscr = total(prev, "Nb. d'inscriptions") if prev is not None else 0
@@ -172,6 +173,8 @@ def compute_kpis(df, latest_year, prev_year):
          "format": "eur", "delta": delta(recettes, p_recettes), "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": _round(heures),
          "format": "int", "delta": 0, "deltaLabel": "stable"},
+        {"key": "heures_eleves", "label": "Heures-élèves", "value": _round(heures_eleves),
+         "format": "int", "delta": None, "deltaLabel": ""},
         {"key": "remplissage", "label": "Remplissage", "value": _round(rempl, 1),
          "format": "dec1", "delta": _round(rempl - p_rempl, 1), "deltaLabel": dlabel},
     ]
