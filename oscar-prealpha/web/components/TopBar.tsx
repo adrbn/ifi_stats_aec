@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { crumbFor } from "@/lib/nav";
 import { useState, useEffect } from "react";
-import { YearSegment, AntennaToggles } from "./Filters";
+import { YearSegment, AntennaToggles, yearLabel } from "./Filters";
 import { MultiSelect } from "./MultiSelect";
 import { MobileNav } from "./MobileNav";
 import { useFilters, type DimKey } from "@/lib/store";
@@ -24,7 +24,11 @@ export function TopBar() {
   const dims = useFilters((s) => s.dims);
   const toggleDim = useFilters((s) => s.toggleDim);
   const clearDim = useFilters((s) => s.clearDim);
+  const years = useFilters((s) => s.years);
+  const yearMode = useFilters((s) => s.yearMode);
+  const antennas = useFilters((s) => s.antennas);
   const [showDims, setShowDims] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false); // mobile : filtres repliés par défaut
   // Masque le lien "Comparer" quand le dashboard est lui-même affiché dans le
   // comparateur (iframe) — sinon recliquer ouvre /compare en cascade.
   const [embedded, setEmbedded] = useState(false);
@@ -34,6 +38,12 @@ export function TopBar() {
   const { data, isOffline, isLoading } = useSnapshot();
   const dimOptions = data.dimOptions ?? { secteurs: [], sousSecteurs: [], macros: [], categories: [] };
   const dimCount = Object.values(dims).reduce((n, a) => n + a.length, 0);
+  // Résumé compact des filtres actifs (affiché dans l'en-tête repliable mobile).
+  const yearSummary = years.length === 0
+    ? (yearMode === "school" ? "Toutes années scol." : "Toutes années")
+    : years.map((y) => yearLabel(y, yearMode)).join(", ");
+  const antSummary = antennas.length === 4 ? "Toutes antennes" : antennas.join(", ");
+  const filterSummary = `${yearSummary} · ${antSummary}${dimCount ? ` · ${dimCount} dim.` : ""}`;
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200 bg-surface/90 backdrop-blur-md backdrop-saturate-150">
@@ -94,7 +104,25 @@ export function TopBar() {
           </button>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-neutral-100 px-4 py-2.5 sm:gap-x-6 sm:px-6">
+
+      {/* Mobile/tablette : en-tête de filtres repliable (sinon il mange l'écran). */}
+      <button
+        onClick={() => setFiltersOpen((v) => !v)}
+        aria-expanded={filtersOpen}
+        className="flex w-full items-center justify-between gap-2 border-t border-neutral-100 px-4 py-2.5 text-left lg:hidden"
+      >
+        <span className="inline-flex min-w-0 items-center gap-2">
+          <svg className="h-4 w-4 flex-shrink-0 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M4 6h16M7 12h10M11 18h2" />
+          </svg>
+          <span className="text-body-sm font-semibold text-neutral-800">Filtres</span>
+          <span className="truncate text-caption text-neutral-400">{filterSummary}</span>
+        </span>
+        <IconChevronRight className={`h-4 w-4 flex-shrink-0 text-neutral-400 transition-transform ${filtersOpen ? "rotate-90" : ""}`} />
+      </button>
+
+      <div className={`${filtersOpen ? "block" : "hidden"} lg:block`}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-neutral-100 px-4 py-2.5 sm:gap-x-6 sm:px-6 lg:border-t">
         <FilterField label="Année">
           <YearSegment />
         </FilterField>
@@ -137,6 +165,7 @@ export function TopBar() {
           <span className="text-caption text-neutral-400">Les options s'affinent en cascade (Secteur → Sous-secteur → Macro → Catégorie).</span>
         </div>
       )}
+      </div>
       {isOffline && (
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-error/30 bg-error-soft px-4 py-2 text-body-sm text-error sm:px-6">
           <span className="font-semibold">Serveur de données indisponible.</span>
