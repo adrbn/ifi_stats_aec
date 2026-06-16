@@ -3,7 +3,7 @@
     "app": "OSCAR",
     "subtitle": "Institut français Italia — pilotage statistique",
     "source": "computed",
-    "updated": "2026-06-15T16:41:29Z",
+    "updated": "2026-06-16T09:14:12Z",
     "years": [
       2022,
       2023,
@@ -89,7 +89,7 @@
     },
     {
       "key": "heures",
-      "label": "Heures prévues",
+      "label": "Qté heures",
       "value": 3940,
       "format": "int",
       "delta": 0,

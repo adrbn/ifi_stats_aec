@@ -60,10 +60,10 @@ COLUMN_RENAME_MAP: dict[str, str] = {
     "Total des ventes": "Recettes",
     "Qté heures vendues": "Nombre total d'heures vendues (heures-étudiants)",
     "Qté synchrones heures vendues": "Heures synchrones vendues (heures-étudiants)",
-    "Nombre total d'heures": "Nombre d'heures prévues",
+    "Nombre total d'heures": "Qté heures",
     # If "Qté heures" is present instead (the AEC "heures enseignées" field),
     # we promote it to planned-hours.
-    "Qté heures": "Nombre d'heures prévues",
+    "Qté heures": "Qté heures",
     "Catégorie": "Catégorie de cours",
     "Tranche d'âge": "Tranche d'âge du cours",
     # Pass-throughs (same name): Nouveaux inscrits, Réinscrits, Niveau,
@@ -75,7 +75,7 @@ COLUMN_RENAME_MAP: dict[str, str] = {
 AGG_RULES: dict[str, str] = {
     "Nb. d'inscriptions": "sum",
     "Recettes": "sum",
-    "Nombre d'heures prévues": "sum",
+    "Qté heures": "sum",
     "Nombre total d'heures vendues (heures-étudiants)": "sum",
     "Heures synchrones vendues (heures-étudiants)": "sum",
     "Heures de cours asynchrones": "sum",

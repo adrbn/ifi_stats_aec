@@ -437,7 +437,7 @@ def aggregate_by_sector(df, group_cols=None, add_total_row=False):
     agg_dict = {}
     col_mapping = {
         "Nb. de Cours": "sum", "Nb. d'inscriptions": "sum", "Nouveaux inscrits": "sum",
-        "Réinscrits": "sum", "Nombre d'heures prévues": "sum",
+        "Réinscrits": "sum", "Qté heures": "sum",
         "Nombre total d'heures vendues (heures-étudiants)": "sum",
         "Heures synchrones vendues (heures-étudiants)": "sum", "Recettes": "sum", "Dépenses": "sum",
     }
@@ -497,7 +497,7 @@ def create_prova_stats_format(df, aggregate_year=False, add_total_row=False):
 
     desired_cols = [
         "Année", "Période", "Sede", "Secteur", "Nb. de Cours", "Nb. d'inscriptions",
-        "Nouveaux inscrits", "% nouveaux", "Réinscrits", "% réinscrits", "Nombre d'heures prévues",
+        "Nouveaux inscrits", "% nouveaux", "Réinscrits", "% réinscrits", "Qté heures",
         "Nombre d'heures-élèves", "Heures synchrones (h-élèves)",
         "Recettes", "Dépenses", "Taux de remplissage",
     ]

@@ -53,7 +53,7 @@ def _kpis(df_sel, years: List[int], antennas: List[str]):
     inscr = _sum(df_sel, "Nb. d'inscriptions")
     cours = _sum(df_sel, "Nb. de Cours")
     recettes = _sum(df_sel, "Recettes")
-    heures = _sum(df_sel, "Nombre d'heures prévues")
+    heures = _sum(df_sel, "Qté heures")
     rempl = (inscr / cours) if cours else 0
 
     delta = {"inscr": None, "cours": None, "recettes": None, "rempl": None}
@@ -79,7 +79,7 @@ def _kpis(df_sel, years: List[int], antennas: List[str]):
         {"key": "inscriptions", "label": "Inscriptions", "value": bs._round(inscr), "format": "int", "delta": delta["inscr"], "deltaLabel": dlabel},
         {"key": "cours", "label": "Cours", "value": bs._round(cours), "format": "int", "delta": delta["cours"], "deltaLabel": dlabel},
         {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
-        {"key": "heures", "label": "Heures prévues", "value": bs._round(heures), "format": "int", "delta": None, "deltaLabel": ""},
+        {"key": "heures", "label": "Qté heures", "value": bs._round(heures), "format": "int", "delta": None, "deltaLabel": ""},
         {"key": "remplissage", "label": "Remplissage", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
     ]
 
@@ -214,7 +214,7 @@ INDICATORS = [
     ("cours", "Cours", "Nb. de Cours", "int"),
     ("nouveaux", "Nouveaux inscrits", "Nouveaux inscrits", "int"),
     ("reinscrits", "Réinscrits", "Réinscrits", "int"),
-    ("heures", "Heures prévues", "Nombre d'heures prévues", "int"),
+    ("heures", "Qté heures", "Qté heures", "int"),
     ("recettes", "Recettes", "Recettes", "eur"),
     ("remplissage", "Remplissage", None, "dec1"),
 ]
