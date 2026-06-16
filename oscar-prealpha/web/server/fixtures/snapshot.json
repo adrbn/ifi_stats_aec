@@ -3,7 +3,7 @@
     "app": "OSCAR",
     "subtitle": "Institut français Italia — pilotage statistique",
     "source": "computed",
-    "updated": "2026-06-16T10:47:36Z",
+    "updated": "2026-06-16T10:55:18Z",
     "years": [
       2022,
       2023,
@@ -69,6 +69,14 @@
       "value": 2304,
       "format": "int",
       "delta": -81.2,
+      "deltaLabel": "vs 2025"
+    },
+    {
+      "key": "eleves_differents",
+      "label": "Élèves différents",
+      "value": 480,
+      "format": "int",
+      "delta": -85.3,
       "deltaLabel": "vs 2025"
     },
     {

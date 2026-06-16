@@ -13,6 +13,7 @@ import oscar_core as core
 import build_snapshot as bs
 
 _DF = None
+_ELEVES = None
 
 
 def get_df():
@@ -21,6 +22,27 @@ def get_df():
     if _DF is None:
         _DF = bs.load_all_years()
     return _DF
+
+
+def get_eleves():
+    """Cache d'enrôlements (Code Client × Code cours) — chargé une fois."""
+    global _ELEVES
+    if _ELEVES is None:
+        _ELEVES = bs.load_eleves()
+    return _ELEVES
+
+
+def _distinct_students(df_scope) -> Optional[int]:
+    """Nombre d'élèves différents (Code Client distincts) parmi les enrôlements
+    dont le « Code cours » appartient au périmètre df_scope. Renvoie None si le
+    cache élèves est absent (l'indicateur est alors masqué côté UI)."""
+    el = get_eleves()
+    if el is None or not len(el) or "Code cours" not in df_scope.columns:
+        return None
+    codes = set(df_scope["Code cours"].dropna().astype(str))
+    if not codes:
+        return 0
+    return int(el[el["Code cours"].isin(codes)]["Code Client"].nunique())
 
 
 def _year_col(mode: str) -> str:
@@ -75,10 +97,11 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
     recettes = _sum(df_sel, "Recettes")
     heures = _sum(df_sel, "Qté heures")
     heures_eleves = _sum(df_sel, "Nombre total d'heures vendues (heures-étudiants)")
+    eleves_diff = _distinct_students(df_sel)  # None si cache élèves absent
     rempl = (inscr / cours) if cours else 0
 
     delta = {"inscr": None, "cours": None, "recettes": None, "rempl": None,
-             "heures": None, "heures_eleves": None}
+             "heures": None, "heures_eleves": None, "eleves": None}
     dlabel = ""
     if len(years) == 1:
         prev = years[0] - 1
@@ -92,6 +115,7 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
             p_rec = _sum(prev_sel, "Recettes")
             p_heures = _sum(prev_sel, "Qté heures")
             p_heures_el = _sum(prev_sel, "Nombre total d'heures vendues (heures-étudiants)")
+            p_eleves = _distinct_students(prev_sel)
             p_rempl = (p_inscr / p_cours) if p_cours else 0
             pct = lambda c, p: round((c - p) / p * 100, 1) if p else None
             delta = {
@@ -100,20 +124,26 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
                 "recettes": pct(recettes, p_rec),
                 "heures": pct(heures, p_heures),
                 "heures_eleves": pct(heures_eleves, p_heures_el),
+                "eleves": pct(eleves_diff, p_eleves) if (eleves_diff is not None and p_eleves) else None,
                 "rempl": round(rempl - p_rempl, 1) if p_rempl else None,
             }
 
     # Ordre métier : Inscriptions · (Élèves différents) · Cours · Qté heures ·
-    # Remplissage · Recettes · Heures-élèves. « Élèves différents » sera inséré
-    # après "inscriptions" quand l'indicateur sera disponible.
-    return [
+    # Remplissage · Recettes · Heures-élèves. « Élèves différents » n'apparaît
+    # que si le cache élèves est présent (sinon l'indicateur est masqué).
+    out = [
         {"key": "inscriptions", "label": "Inscriptions", "value": bs._round(inscr), "format": "int", "delta": delta["inscr"], "deltaLabel": dlabel},
+    ]
+    if eleves_diff is not None:
+        out.append({"key": "eleves_differents", "label": "Élèves différents", "value": int(eleves_diff), "format": "int", "delta": delta["eleves"], "deltaLabel": dlabel})
+    out += [
         {"key": "cours", "label": "Cours", "value": bs._round(cours), "format": "int", "delta": delta["cours"], "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": bs._round(heures), "format": "int", "delta": delta["heures"], "deltaLabel": dlabel},
         {"key": "remplissage", "label": "Remplissage", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
         {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
         {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": delta["heures_eleves"], "deltaLabel": dlabel},
     ]
+    return out
 
 
 def _by_antenna(df_sel, antennas: List[str]):

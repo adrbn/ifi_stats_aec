@@ -146,6 +146,27 @@ def load_all_years():
     return df
 
 
+def load_eleves():
+    """Cache d'enrôlements (Code Client × Code cours) pour l'indicateur « élèves
+    différents ». Joint au cache cours sur « Code cours ». Renvoie un DataFrame
+    vide si le cache est absent (l'indicateur sera alors masqué)."""
+    candidates = [
+        os.path.join(DATA_DIR, "new_cours", "cache_eleves.xlsx"),
+        os.path.join(HERE, "..", "..", "..", "data", "new_cours", "cache_eleves.xlsx"),
+    ]
+    path = next((p for p in candidates if os.path.exists(p)), None)
+    if path is None:
+        import pandas as pd
+        return pd.DataFrame(columns=["Code Client", "Code cours"])
+    import pandas as pd
+    e = pd.read_excel(path, sheet_name=0)
+    e.columns = [str(c).strip() for c in e.columns]
+    for c in ("Code Client", "Code cours"):
+        if c in e.columns:
+            e[c] = e[c].astype(str).str.strip()
+    return e
+
+
 def compute_kpis(df, latest_year, prev_year):
     """KPIs for the latest year with YoY deltas vs prev_year."""
     def total(d, col):
@@ -159,11 +180,22 @@ def compute_kpis(df, latest_year, prev_year):
             return 0.0
         return round((cur_v - prev_v) / prev_v * 100, 1)
 
+    # Élèves différents : Code Client distincts parmi les enrôlements du périmètre.
+    _el = load_eleves()
+
+    def _distinct(scope):
+        if _el is None or not len(_el) or "Code cours" not in scope.columns:
+            return None
+        codes = set(scope["Code cours"].dropna().astype(str))
+        return int(_el[_el["Code cours"].isin(codes)]["Code Client"].nunique()) if codes else 0
+
     inscr = total(cur, "Nb. d'inscriptions")
     cours = total(cur, "Nb. de Cours")
     recettes = total(cur, "Recettes")
     heures = total(cur, "Qté heures")
     heures_eleves = total(cur, "Nombre total d'heures vendues (heures-étudiants)")
+    eleves_diff = _distinct(cur)
+    p_eleves = _distinct(prev) if prev is not None else None
     rempl = (inscr / cours) if cours else 0
 
     p_inscr = total(prev, "Nb. d'inscriptions") if prev is not None else 0
@@ -176,9 +208,14 @@ def compute_kpis(df, latest_year, prev_year):
     dlabel = f"vs {prev_year}" if prev_year else "—"
     # Ordre métier : Inscriptions · (Élèves différents) · Cours · Qté heures ·
     # Remplissage · Recettes · Heures-élèves.
-    return [
+    out = [
         {"key": "inscriptions", "label": "Inscriptions", "value": _round(inscr),
          "format": "int", "delta": delta(inscr, p_inscr), "deltaLabel": dlabel},
+    ]
+    if eleves_diff is not None:
+        out.append({"key": "eleves_differents", "label": "Élèves différents", "value": int(eleves_diff),
+                    "format": "int", "delta": delta(eleves_diff, p_eleves or 0), "deltaLabel": dlabel})
+    out += [
         {"key": "cours", "label": "Cours", "value": _round(cours),
          "format": "int", "delta": delta(cours, p_cours), "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": _round(heures),
@@ -190,6 +227,7 @@ def compute_kpis(df, latest_year, prev_year):
         {"key": "heures_eleves", "label": "Heures-élèves", "value": _round(heures_eleves),
          "format": "int", "delta": delta(heures_eleves, p_heures_el), "deltaLabel": dlabel},
     ]
+    return out
 
 
 def compute_by_antenna(df, latest_year):

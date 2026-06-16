@@ -43,6 +43,7 @@ oscar_private_key.pem
 
 # v3 : cache embarqué pour Vercel (sinon ignoré par *.xlsx)
 !oscar-prealpha/web/server/data/new_cours/cache_cours.xlsx
+!oscar-prealpha/web/server/data/new_cours/cache_eleves.xlsx
 
 # Ne JAMAIS committer le jeton de session AEC (cookie + localStorage)
 **/aec_state.json

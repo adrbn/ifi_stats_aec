@@ -11,4 +11,5 @@ data/*
 !data/new_cours/
 data/new_cours/*
 !data/new_cours/cache_cours.xlsx
+!data/new_cours/cache_eleves.xlsx
 !data/category_mapping.csv
