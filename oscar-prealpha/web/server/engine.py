@@ -55,13 +55,19 @@ def _sum(d, col):
     return float(d[col].sum()) if col in d.columns and len(d) else 0.0
 
 
-def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None):
+def _year_text(y: int, mode: str) -> str:
+    """Libellé d'année : civile « 2024 » / scolaire « 2024-25 »."""
+    return f"{y}-{(y + 1) % 100:02d}" if mode == "school" else str(y)
+
+
+def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode: str = "civil"):
     """Totals over the selected years. Delta vs previous year only when a single
     year is selected (and the prior year exists for the same antennas).
 
     df_all : référentiel complet (déjà aligné sur le mode d'année actif) pour le
     calcul du delta N-1. Fourni par compute() afin que le mode scolaire compare
-    bien à l'année scolaire précédente."""
+    bien à l'année scolaire précédente. year_mode sert au libellé du delta
+    (« vs 2024 » en civil, « vs 2024-25 » en scolaire)."""
     if df_all is None:
         df_all = get_df()
     inscr = _sum(df_sel, "Nb. d'inscriptions")
@@ -71,22 +77,29 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None):
     heures_eleves = _sum(df_sel, "Nombre total d'heures vendues (heures-étudiants)")
     rempl = (inscr / cours) if cours else 0
 
-    delta = {"inscr": None, "cours": None, "recettes": None, "rempl": None}
+    delta = {"inscr": None, "cours": None, "recettes": None, "rempl": None,
+             "heures": None, "heures_eleves": None}
     dlabel = ""
     if len(years) == 1:
         prev = years[0] - 1
         prev_sel = df_all[(df_all["Année"] == prev) & (df_all["Sede"].isin(antennas))]
         if len(prev_sel):
-            dlabel = f"vs {prev}"
+            # Comparaison à l'année (civile ou scolaire) précédente — df_all est
+            # déjà aligné sur le mode actif, donc « prev » est la bonne année.
+            dlabel = f"vs {_year_text(prev, year_mode)}"
             p_inscr = _sum(prev_sel, "Nb. d'inscriptions")
             p_cours = _sum(prev_sel, "Nb. de Cours")
             p_rec = _sum(prev_sel, "Recettes")
+            p_heures = _sum(prev_sel, "Qté heures")
+            p_heures_el = _sum(prev_sel, "Nombre total d'heures vendues (heures-étudiants)")
             p_rempl = (p_inscr / p_cours) if p_cours else 0
             pct = lambda c, p: round((c - p) / p * 100, 1) if p else None
             delta = {
                 "inscr": pct(inscr, p_inscr),
                 "cours": pct(cours, p_cours),
                 "recettes": pct(recettes, p_rec),
+                "heures": pct(heures, p_heures),
+                "heures_eleves": pct(heures_eleves, p_heures_el),
                 "rempl": round(rempl - p_rempl, 1) if p_rempl else None,
             }
 
@@ -96,10 +109,10 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None):
     return [
         {"key": "inscriptions", "label": "Inscriptions", "value": bs._round(inscr), "format": "int", "delta": delta["inscr"], "deltaLabel": dlabel},
         {"key": "cours", "label": "Cours", "value": bs._round(cours), "format": "int", "delta": delta["cours"], "deltaLabel": dlabel},
-        {"key": "heures", "label": "Qté heures", "value": bs._round(heures), "format": "int", "delta": None, "deltaLabel": ""},
+        {"key": "heures", "label": "Qté heures", "value": bs._round(heures), "format": "int", "delta": delta["heures"], "deltaLabel": dlabel},
         {"key": "remplissage", "label": "Remplissage", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
         {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
-        {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": None, "deltaLabel": ""},
+        {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": delta["heures_eleves"], "deltaLabel": dlabel},
     ]
 
 
@@ -373,7 +386,7 @@ def compute(
         },
         "dimOptions": dim_options,
         "indicators": INDICATOR_META,
-        "kpis": _kpis(df_sel, years, antennas, df),
+        "kpis": _kpis(df_sel, years, antennas, df, year_mode),
         "byAntenna": _by_antenna(df_sel, antennas),
         "sectors": _sectors(df_sel),
         "evolution": _evolution(df_sel, years, antennas),

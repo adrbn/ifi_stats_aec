@@ -5,7 +5,8 @@ import { useFilters } from "@/lib/store";
 import { KpiRow } from "@/components/KpiCard";
 import { Panel } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
-import { AntennaBar, EvolutionLine } from "@/components/Charts";
+import { AntennaBar } from "@/components/Charts";
+import { EvolutionPanel } from "@/components/EvolutionPanel";
 import { SectorTable } from "@/components/SectorTable";
 import { FilterSummary, yearLabel } from "@/components/Filters";
 import { Sankey, FlowTreemap } from "@/components/RichCharts";
@@ -28,12 +29,15 @@ export default function SynthesePage() {
       <KpiRow kpis={data.kpis} />
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Panel title="Inscriptions par antenne" subtitle="Périmètre filtré">
+        <Panel title="Inscriptions par antenne" subtitle="IFI (réseau) + antennes">
           <AntennaBar rows={data.byAntenna} />
         </Panel>
-        <Panel title="Évolution des inscriptions" subtitle={`${yearLabel(evoYears[0], yearMode)}–${yearLabel(evoYears.at(-1) ?? evoYears[0], yearMode)}`}>
-          <EvolutionLine years={data.evolution.years} series={data.evolution.series} />
-        </Panel>
+        <EvolutionPanel
+          title="Évolution des inscriptions"
+          subtitle={`${yearLabel(evoYears[0], yearMode)}–${yearLabel(evoYears.at(-1) ?? evoYears[0], yearMode)}`}
+          years={data.evolution.years}
+          series={data.evolution.series}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">

@@ -28,8 +28,14 @@ const tooltipStyle = {
   color: "var(--neutral-900)",
 };
 
-export function AntennaBar({ rows }: { rows: AntennaRow[] }) {
-  const data = rows.map((r) => ({ name: r.code, value: r.inscriptions, color: r.color }));
+// Bleu IFI (réseau global) — cohérent avec ANTENNA_META["IFI"].color côté backend.
+const IFI_BLUE = "#3B82F6";
+
+export function AntennaBar({ rows, showTotal = true }: { rows: AntennaRow[]; showTotal?: boolean }) {
+  const antennas = rows.map((r) => ({ name: r.code, value: r.inscriptions, color: r.color }));
+  // Total IFI (somme du réseau) en bleu, AVANT les antennes.
+  const total = antennas.reduce((s, d) => s + d.value, 0);
+  const data = showTotal ? [{ name: "IFI", value: total, color: IFI_BLUE }, ...antennas] : antennas;
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 16, right: 20, bottom: 8, left: 8 }}>
@@ -39,7 +45,7 @@ export function AntennaBar({ rows }: { rows: AntennaRow[] }) {
         <Tooltip
           cursor={{ fill: "var(--accent-50)" }}
           contentStyle={tooltipStyle}
-          formatter={(v: number) => [formatInt(v), "Inscriptions"]}
+          formatter={(v: number, _n, p) => [formatInt(v), p?.payload?.name === "IFI" ? "Total IFI" : "Inscriptions"]}
         />
         <Bar dataKey="value" radius={[3, 3, 0, 0]} maxBarSize={64}>
           {data.map((d) => (

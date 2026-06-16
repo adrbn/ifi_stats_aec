@@ -2,22 +2,24 @@
 
 import { useState } from "react";
 import { useSnapshot } from "@/lib/useSnapshot";
-import { Panel } from "@/components/Card";
+import { useFilters } from "@/lib/store";
 import { PageTitle } from "@/components/PageTitle";
-import { FilterSummary } from "@/components/Filters";
-import { EvolutionLine } from "@/components/Charts";
+import { FilterSummary, yearLabel } from "@/components/Filters";
+import { EvolutionPanel } from "@/components/EvolutionPanel";
 
 export default function EvolutionsPage() {
   const { data } = useSnapshot();
+  const yearMode = useFilters((s) => s.yearMode);
   const indicators = data.indicators ?? [{ key: "inscriptions", label: "Inscriptions", format: "int" as const }];
   const [metric, setMetric] = useState("inscriptions");
-  const span = `${data.evolution.years[0]}–${data.evolution.years.at(-1)}`;
-  const single = data.evolution.years.length < 2;
+  const yrs = data.evolution.years;
+  const span = yrs.length ? `${yearLabel(yrs[0], yearMode)}–${yearLabel(yrs.at(-1) ?? yrs[0], yearMode)}` : "";
+  const single = yrs.length < 2;
 
   return (
     <div className="space-y-5">
       <PageTitle eyebrow="Cours" title="Évolutions pluriannuelles">
-        Tendances par antenne sur {span}. {single && "Sélectionnez ≥ 2 années pour une vraie courbe."}
+        Tendances par antenne sur {span}. {single && "Une seule période → vue histogramme (la courbe est inutile)."}
       </PageTitle>
       <FilterSummary />
 
@@ -38,9 +40,13 @@ export default function EvolutionsPage() {
         </div>
       </div>
 
-      <Panel title={indicators.find((i) => i.key === metric)?.label ?? "Évolution"} subtitle={span}>
-        <EvolutionLine years={data.evolution.years} series={data.evolution.series} metric={metric} />
-      </Panel>
+      <EvolutionPanel
+        title={indicators.find((i) => i.key === metric)?.label ?? "Évolution"}
+        subtitle={span}
+        years={yrs}
+        series={data.evolution.series}
+        metric={metric}
+      />
     </div>
   );
 }

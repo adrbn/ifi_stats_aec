@@ -169,6 +169,8 @@ def compute_kpis(df, latest_year, prev_year):
     p_inscr = total(prev, "Nb. d'inscriptions") if prev is not None else 0
     p_cours = total(prev, "Nb. de Cours") if prev is not None else 0
     p_recettes = total(prev, "Recettes") if prev is not None else 0
+    p_heures = total(prev, "Qté heures") if prev is not None else 0
+    p_heures_el = total(prev, "Nombre total d'heures vendues (heures-étudiants)") if prev is not None else 0
     p_rempl = (p_inscr / p_cours) if p_cours else 0
 
     dlabel = f"vs {prev_year}" if prev_year else "—"
@@ -180,13 +182,13 @@ def compute_kpis(df, latest_year, prev_year):
         {"key": "cours", "label": "Cours", "value": _round(cours),
          "format": "int", "delta": delta(cours, p_cours), "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": _round(heures),
-         "format": "int", "delta": 0, "deltaLabel": "stable"},
+         "format": "int", "delta": delta(heures, p_heures), "deltaLabel": dlabel},
         {"key": "remplissage", "label": "Remplissage", "value": _round(rempl, 1),
          "format": "dec1", "delta": _round(rempl - p_rempl, 1), "deltaLabel": dlabel},
         {"key": "recettes", "label": "Recettes", "value": _round(recettes),
          "format": "eur", "delta": delta(recettes, p_recettes), "deltaLabel": dlabel},
         {"key": "heures_eleves", "label": "Heures-élèves", "value": _round(heures_eleves),
-         "format": "int", "delta": None, "deltaLabel": ""},
+         "format": "int", "delta": delta(heures_eleves, p_heures_el), "deltaLabel": dlabel},
     ]
 
 
