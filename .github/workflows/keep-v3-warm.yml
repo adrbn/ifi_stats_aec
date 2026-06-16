@@ -1,0 +1,23 @@
+name: Keep v3 (OSCAR) warm
+
+# Ping périodique de l'endpoint /api/warmup de la prod v3 (Vercel) pour garder la
+# fonction serverless « chaude » : elle précharge le moteur (DataFrame cours +
+# enrôlements) en mémoire, ce qui évite le cold start de ~13 s au 1er vrai appel.
+# /api/warmup est public (exclu de l'auth) et ne renvoie aucune donnée sensible.
+#
+# Solution gratuite et plan-agnostique (le cron Vercel sub-quotidien nécessite
+# le plan Pro ; GitHub Actions tourne toutes les ~5 min sur l'offre gratuite).
+on:
+  schedule:
+    - cron: "*/5 * * * *" # toutes les ~5 min (best-effort, GitHub peut décaler)
+  workflow_dispatch: {} # déclenchement manuel possible
+
+jobs:
+  warmup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping OSCAR /api/warmup
+        run: |
+          out=$(curl -s -L --max-time 90 -w "\n%{http_code} %{time_total}s" \
+            https://oscar-ifi.vercel.app/api/warmup || echo "000")
+          echo "warmup -> $out"

@@ -156,6 +156,21 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/api/warmup")
+def warmup() -> dict:
+    """Préchauffe la fonction serverless : charge le moteur (DataFrame cours +
+    enrôlements) en mémoire pour éviter le cold start de ~13 s au 1er vrai appel.
+    Public (route exclue de l'auth) — ne renvoie aucune donnée sensible, juste
+    des compteurs. Pingée par le cron Vercel toutes les 5 min."""
+    try:
+        import engine
+        df = engine.get_df()
+        el = engine.get_eleves()
+        return {"ok": True, "cours": int(len(df)), "eleves": int(len(el))}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "error": str(e)}
+
+
 @app.get("/api/meta")
 def meta() -> dict:
     return SNAPSHOT.get("meta", {})

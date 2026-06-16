@@ -3,7 +3,8 @@ import type { NextRequest } from "next/server";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth";
 
 // Chemins accessibles sans session.
-const PUBLIC = ["/login", "/api/auth/login"];
+// /api/warmup : préchauffage serverless par le cron Vercel (aucune donnée sensible).
+const PUBLIC = ["/login", "/api/auth/login", "/api/warmup"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
