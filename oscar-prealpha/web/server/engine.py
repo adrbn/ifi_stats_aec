@@ -140,8 +140,8 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
         {"key": "cours", "label": "Cours", "value": bs._round(cours), "format": "int", "delta": delta["cours"], "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": bs._round(heures), "format": "int", "delta": delta["heures"], "deltaLabel": dlabel},
         {"key": "remplissage", "label": "Remplissage", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
-        {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
         {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": delta["heures_eleves"], "deltaLabel": dlabel},
+        {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
     ]
     return out
 
@@ -271,12 +271,16 @@ _DIM_COL = {
 }
 
 # Indicators shared by the per-sector / per-antenna analytical charts.
+# « eleves_differents » est un COMPTE DISTINCT (non additif) : col=None, calculé
+# spécialement dans _indic_value via _distinct_students.
 INDICATORS = [
     ("inscriptions", "Inscriptions", "Nb. d'inscriptions", "int"),
+    ("eleves_differents", "Élèves différents", None, "int"),
     ("cours", "Cours", "Nb. de Cours", "int"),
     ("nouveaux", "Nouveaux inscrits", "Nouveaux inscrits", "int"),
     ("reinscrits", "Réinscrits", "Réinscrits", "int"),
     ("heures", "Qté heures", "Qté heures", "int"),
+    ("heures_eleves", "Heures-élèves", "Nombre total d'heures vendues (heures-étudiants)", "int"),
     ("recettes", "Recettes", "Recettes", "eur"),
     ("remplissage", "Remplissage", None, "dec1"),
 ]
@@ -295,6 +299,9 @@ def _indic_value(d, key, col):
         inscr = _sum(d, "Nb. d'inscriptions")
         cours = _sum(d, "Nb. de Cours")
         return round(inscr / cours, 2) if cours else 0
+    if key == "eleves_differents":
+        v = _distinct_students(d)
+        return int(v) if v is not None else 0
     return bs._round(_sum(d, col))
 
 

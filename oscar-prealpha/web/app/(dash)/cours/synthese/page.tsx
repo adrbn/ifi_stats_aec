@@ -8,7 +8,7 @@ import { Panel } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
 import { AntennaBar } from "@/components/Charts";
 import { EvolutionPanel } from "@/components/EvolutionPanel";
-import { SectorTable } from "@/components/SectorTable";
+import { SectorIndicatorTable } from "@/components/SectorIndicatorTable";
 import { FilterSummary, yearLabel } from "@/components/Filters";
 import { Sankey, FlowTreemap } from "@/components/RichCharts";
 
@@ -45,6 +45,12 @@ export default function SynthesePage() {
   const eyebrowYears = (data.filters.years ?? []).map((y) => yearLabel(y, yearMode)).join(", ");
   const evoYears = data.evolution.years;
   const evoSpan = `${yearLabel(evoYears[0], yearMode)}–${yearLabel(evoYears.at(-1) ?? evoYears[0], yearMode)}`;
+
+  // Détail par secteur : mêmes colonnes que les étiquettes KPI (même ordre) ;
+  // la ligne TOTAL reprend les valeurs KPI (juste même pour élèves différents).
+  const kpiCols = data.kpis.map((k) => ({ key: k.key, label: k.label, format: k.format }));
+  const kpiTotals = Object.fromEntries(data.kpis.map((k) => [k.key, k.value]));
+  const sectorList = (data.bySectorIndicator?.inscriptions ?? []).map((x) => x.label);
 
   return (
     <div className="space-y-5">
@@ -97,8 +103,8 @@ export default function SynthesePage() {
         </Panel>
       </div>
 
-      <Panel title="Détail par secteur" subtitle="Tous indicateurs">
-        <SectorTable rows={data.sectors.rows} total={data.sectors.total} />
+      <Panel title="Détail par secteur" subtitle="Mêmes indicateurs que les étiquettes ci-dessus">
+        <SectorIndicatorTable sectors={sectorList} byInd={data.bySectorIndicator ?? {}} columns={kpiCols} totals={kpiTotals} />
       </Panel>
     </div>
   );

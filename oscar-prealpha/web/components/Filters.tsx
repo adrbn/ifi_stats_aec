@@ -88,8 +88,22 @@ export function YearSegment() {
 export function AntennaToggles() {
   const antennas = useFilters((s) => s.antennas);
   const toggleAntenna = useFilters((s) => s.toggleAntenna);
+  const setAntennas = useFilters((s) => s.setAntennas);
+  const allActive = antennas.length === ANTENNAS.length;
   return (
     <div className="inline-flex flex-wrap gap-1.5">
+      {/* Total IFI (réseau) — sélectionne toutes les antennes. */}
+      <button
+        onClick={() => setAntennas(ANTENNAS.map((a) => a.code))}
+        title="Total IFI : tout le réseau (toutes antennes)"
+        style={allActive ? { background: "#3B82F6", borderColor: "#3B82F6" } : { borderColor: "var(--neutral-200)" }}
+        className={`inline-flex items-center gap-1.5 rounded-pill border px-3 py-1.5 text-body-sm font-semibold transition-all duration-150 ease-out-soft ${
+          allActive ? "text-white" : "bg-surface text-neutral-700 hover:text-neutral-900"
+        }`}
+      >
+        <span className="h-2 w-2 rounded-full" style={{ background: allActive ? "rgba(255,255,255,0.9)" : "#3B82F6" }} />
+        IFI
+      </button>
       {ANTENNAS.map((a) => {
         const active = antennas.includes(a.code);
         return (

@@ -222,10 +222,10 @@ def compute_kpis(df, latest_year, prev_year):
          "format": "int", "delta": delta(heures, p_heures), "deltaLabel": dlabel},
         {"key": "remplissage", "label": "Remplissage", "value": _round(rempl, 1),
          "format": "dec1", "delta": _round(rempl - p_rempl, 1), "deltaLabel": dlabel},
-        {"key": "recettes", "label": "Recettes", "value": _round(recettes),
-         "format": "eur", "delta": delta(recettes, p_recettes), "deltaLabel": dlabel},
         {"key": "heures_eleves", "label": "Heures-élèves", "value": _round(heures_eleves),
          "format": "int", "delta": delta(heures_eleves, p_heures_el), "deltaLabel": dlabel},
+        {"key": "recettes", "label": "Recettes", "value": _round(recettes),
+         "format": "eur", "delta": delta(recettes, p_recettes), "deltaLabel": dlabel},
     ]
     return out
 

@@ -3,7 +3,7 @@
     "app": "OSCAR",
     "subtitle": "Institut français Italia — pilotage statistique",
     "source": "computed",
-    "updated": "2026-06-16T10:55:18Z",
+    "updated": "2026-06-19T08:42:12Z",
     "years": [
       2022,
       2023,
@@ -104,19 +104,19 @@
       "deltaLabel": "vs 2025"
     },
     {
-      "key": "recettes",
-      "label": "Recettes",
-      "value": 129199,
-      "format": "eur",
-      "delta": -92.4,
-      "deltaLabel": "vs 2025"
-    },
-    {
       "key": "heures_eleves",
       "label": "Heures-élèves",
       "value": 12034,
       "format": "int",
       "delta": -92.5,
+      "deltaLabel": "vs 2025"
+    },
+    {
+      "key": "recettes",
+      "label": "Recettes",
+      "value": 129199,
+      "format": "eur",
+      "delta": -92.4,
       "deltaLabel": "vs 2025"
     }
   ],

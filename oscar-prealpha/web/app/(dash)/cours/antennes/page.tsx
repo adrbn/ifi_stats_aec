@@ -10,27 +10,42 @@ import { motion } from "framer-motion";
 
 const IFI_BLUE = "#3B82F6";
 
+// Ordre demandé des indicateurs « par antenne ».
+const ANT_ORDER = ["inscriptions", "cours", "heures", "heures_eleves", "eleves_differents", "reinscrits", "nouveaux", "remplissage", "recettes"];
+
 export default function AntennesPage() {
   const { data } = useSnapshot();
   const indicators = data.indicators ?? [];
   const byInd = data.byAntennaIndicator ?? {};
+  // Indicateurs réordonnés selon ANT_ORDER (puis tout reliquat éventuel).
+  const orderedInds = [
+    ...ANT_ORDER.map((k) => indicators.find((i) => i.key === k)).filter(Boolean),
+    ...indicators.filter((i) => !ANT_ORDER.includes(i.key)),
+  ] as { key: string; label: string; format: "int" | "eur" | "dec1" }[];
 
-  // Total IFI (réseau) en bleu, AVANT les antennes. Indicateurs additifs = somme ;
-  // remplissage = ratio global (inscriptions / cours), non sommable.
-  const sumBy = (k: "inscriptions" | "cours" | "recettes") => data.byAntenna.reduce((s, a) => s + (a[k] ?? 0), 0);
-  const ifiInscr = sumBy("inscriptions");
-  const ifiCours = sumBy("cours");
-  const ifiRecettes = sumBy("recettes");
+  const ifiInscr = data.byAntenna.reduce((s, a) => s + (a.inscriptions ?? 0), 0);
+  const ifiCours = data.byAntenna.reduce((s, a) => s + (a.cours ?? 0), 0);
   const ifiRempl = ifiCours ? ifiInscr / ifiCours : 0;
   const cardRows = [
     { code: "IFI", name: "IFI · Réseau", color: IFI_BLUE, inscriptions: ifiInscr },
     ...data.byAntenna,
   ];
+  // Total IFI d'un indicateur : valeur KPI globale si dispo (juste pour les
+  // comptes distincts/ratios), sinon somme des antennes (indicateurs additifs).
+  const kpiVal = (key: string) => data.kpis.find((k) => k.key === key)?.value;
+  const ifiTotalFor = (key: string): number => {
+    const kv = kpiVal(key);
+    if (kv !== undefined) return kv;
+    if (key === "remplissage") return ifiRempl;
+    return (byInd[key] ?? []).reduce((s, r) => s + r.value, 0);
+  };
+  const fmtVal = (v: number, f: "int" | "eur" | "dec1") =>
+    f === "eur" ? formatEur(v) : f === "dec1" ? formatDec1(v) : formatInt(v);
   const indRowsWithIFI = (key: string) => {
     const base = (byInd[key] ?? []).map((r) => ({ name: r.code, value: r.value, color: r.color }));
-    const ifiVal = key === "remplissage" ? ifiRempl : base.reduce((s, r) => s + r.value, 0);
-    return [{ name: "IFI", value: ifiVal, color: IFI_BLUE }, ...base];
+    return [{ name: "IFI", value: ifiTotalFor(key), color: IFI_BLUE }, ...base];
   };
+  const valueOf = (key: string, code: string) => (byInd[key] ?? []).find((r) => r.code === code)?.value ?? 0;
 
   return (
     <div className="space-y-5">
@@ -61,7 +76,7 @@ export default function AntennesPage() {
       {/* small multiples: one mini bar per indicator across antennas */}
       <Panel title="Tous les indicateurs par antenne" subtitle="Petits multiples">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {indicators.map((ind) => {
+          {orderedInds.map((ind) => {
             const rows = indRowsWithIFI(ind.key);
             const max = Math.max(...rows.map((r) => r.value), 1);
             return (
@@ -90,14 +105,15 @@ export default function AntennesPage() {
         <AntennaBar rows={data.byAntenna.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))} label="Inscriptions" />
       </Panel>
 
-      <Panel title="Indicateurs détaillés" subtitle="Cours, recettes et remplissage par antenne">
+      <Panel title="Indicateurs détaillés" subtitle="Tous les indicateurs par antenne">
         <div className="overflow-x-auto rounded-md border border-neutral-200">
-          <table className="w-full min-w-[560px] border-collapse text-body-sm">
+          <table className="w-full min-w-[720px] border-collapse text-body-sm">
             <thead>
               <tr>
-                {["Antenne", "Inscriptions", "Cours", "Recettes", "Remplissage"].map((h, i) => (
-                  <th key={h} className={`border-b border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-eyebrow font-semibold uppercase text-neutral-600 ${i === 0 ? "text-left" : "text-right"}`}>
-                    {h}
+                <th className="border-b border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-left text-eyebrow font-semibold uppercase text-neutral-600">Antenne</th>
+                {orderedInds.map((ind) => (
+                  <th key={ind.key} className="border-b border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-right text-eyebrow font-semibold uppercase text-neutral-600">
+                    {ind.label}
                   </th>
                 ))}
               </tr>
@@ -110,10 +126,9 @@ export default function AntennesPage() {
                     IFI · Réseau
                   </span>
                 </td>
-                <td className="tnum px-3.5 py-2.5 text-right">{formatInt(ifiInscr)}</td>
-                <td className="tnum px-3.5 py-2.5 text-right">{formatInt(ifiCours)}</td>
-                <td className="tnum px-3.5 py-2.5 text-right">{formatEur(ifiRecettes)}</td>
-                <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(ifiRempl)}</td>
+                {orderedInds.map((ind) => (
+                  <td key={ind.key} className="tnum px-3.5 py-2.5 text-right">{fmtVal(ifiTotalFor(ind.key), ind.format)}</td>
+                ))}
               </tr>
               {data.byAntenna.map((a) => (
                 <tr key={a.code} className="even:bg-neutral-50 hover:bg-accent-50">
@@ -123,10 +138,9 @@ export default function AntennesPage() {
                       {a.name}
                     </span>
                   </td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(a.inscriptions)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(a.cours)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatEur(a.recettes)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(a.remplissage)}</td>
+                  {orderedInds.map((ind) => (
+                    <td key={ind.key} className="tnum px-3.5 py-2.5 text-right">{fmtVal(valueOf(ind.key, a.code), ind.format)}</td>
+                  ))}
                 </tr>
               ))}
             </tbody>
