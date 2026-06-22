@@ -16,7 +16,7 @@ import json
 import os
 from typing import List, Optional
 
-from fastapi import FastAPI, Query
+from fastapi import Body, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -169,6 +169,65 @@ def warmup() -> dict:
         return {"ok": True, "cours": int(len(df)), "eleves": int(len(el))}
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "error": str(e)}
+
+
+# --- Assistant LLM (API Albert / OpenAI-compatible) ----------------------------
+ASSISTANT_SYSTEM = (
+    "Tu es OSCAR, l'assistant analyste de données de l'Institut français Italie "
+    "(réseau IFI : IFM Milano, IFF Firenze, IFN Napoli, IFP Palermo). Tu réponds "
+    "UNIQUEMENT à partir des données JSON fournies (qui correspondent au périmètre "
+    "actuellement filtré par l'utilisateur). Procède ainsi : (1) comprends la "
+    "question, (2) montre brièvement tes étapes de calcul / comparaison, (3) donne "
+    "le résultat chiffré final. Si une métrique demandée n'existe pas dans les "
+    "données (ex. taux d'abandon, satisfaction, âge, nationalité), dis-le clairement "
+    "et liste les indicateurs réellement disponibles. N'invente jamais de chiffre. "
+    "Réponds en français, de façon concise et structurée."
+)
+
+
+@app.post("/api/assistant")
+def assistant(payload: dict = Body(default={})) -> dict:
+    """Assistant data en langage naturel via l'API Albert (Etalab, agents publics)
+    ou tout endpoint OpenAI-compatible. Le front envoie {question, context} où
+    context = sous-ensemble du snapshot (KPI, par antenne/secteur, évolution…).
+    Renvoie {ok:false,reason:'no_key'} si non configuré → le front bascule sur le
+    moteur déterministe local."""
+    import json as _json
+    import urllib.request as _u
+
+    key = os.environ.get("ALBERT_API_KEY", "").strip()
+    if not key:
+        return {"ok": False, "reason": "no_key"}
+    base = os.environ.get("ALBERT_BASE_URL", "https://albert.api.etalab.gouv.fr/v1").rstrip("/")
+    model = os.environ.get("ALBERT_MODEL", "albert-large")
+    question = str(payload.get("question", "")).strip()
+    context = payload.get("context", {})
+    if not question:
+        return {"ok": False, "reason": "empty"}
+
+    user = f"Données (JSON) du périmètre filtré :\n{_json.dumps(context, ensure_ascii=False)}\n\nQuestion : {question}"
+    body = _json.dumps({
+        "model": model,
+        "messages": [
+            {"role": "system", "content": ASSISTANT_SYSTEM},
+            {"role": "user", "content": user},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 700,
+    }).encode("utf-8")
+    req = _u.Request(
+        f"{base}/chat/completions", data=body,
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    try:
+        with _u.urlopen(req, timeout=90) as r:
+            data = _json.loads(r.read().decode("utf-8"))
+        answer = (data.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
+        if not answer:
+            return {"ok": False, "reason": "empty_response"}
+        return {"ok": True, "answer": answer, "model": model}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "reason": "api_error", "error": str(e)[:200]}
 
 
 @app.get("/api/meta")

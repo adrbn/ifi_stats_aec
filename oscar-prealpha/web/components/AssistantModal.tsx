@@ -117,17 +117,33 @@ function answer(q: string, snap: Snapshot): string {
   return `${cap(ind.label)} — en tête par ${dimWord} ${scope} : ${b.name} (${fmtVal(b.value, ind.fmt)}).`;
 }
 
+/** Contexte data compact envoyé au LLM (= le périmètre actuellement filtré). */
+function buildContext(d: Snapshot) {
+  return {
+    perimetre: { annees: d.filters.years, antennes: d.filters.antennas },
+    indicateurs: (d.indicators ?? []).map((i) => ({ cle: i.key, libelle: i.label })),
+    totaux_IFI: d.kpis.map((k) => ({ cle: k.key, libelle: k.label, valeur: k.value })),
+    par_antenne: d.byAntennaIndicator,
+    par_secteur: d.bySectorIndicator,
+    evolution_par_annee: {
+      annees: d.evolution.years,
+      series: d.evolution.series.map((s) => ({ code: s.code, nom: s.name, metriques: s.metrics })),
+    },
+  };
+}
+
 export function AssistantModal() {
   const open = useFilters((s) => s.aiOpen);
   const setOpen = useFilters((s) => s.setAiOpen);
   const { data } = useSnapshot();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  const [pending, setPending] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
-  }, [msgs]);
+  }, [msgs, pending]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -135,10 +151,26 @@ export function AssistantModal() {
     return () => window.removeEventListener("keydown", onKey);
   }, [setOpen]);
 
-  function ask(q: string) {
-    if (!q.trim()) return;
-    setMsgs((m) => [...m, { role: "user", text: q }, { role: "bot", text: answer(q, data) }]);
+  async function ask(q: string) {
+    if (!q.trim() || pending) return;
+    setMsgs((m) => [...m, { role: "user", text: q }]);
     setInput("");
+    setPending(true);
+    try {
+      // 1) On tente le LLM (API Albert) avec le contexte data.
+      const res = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ question: q, context: buildContext(data) }),
+      });
+      const j = await res.json().catch(() => null);
+      const text = j?.ok && j.answer ? j.answer : answer(q, data); // 2) repli déterministe
+      setMsgs((m) => [...m, { role: "bot", text }]);
+    } catch {
+      setMsgs((m) => [...m, { role: "bot", text: answer(q, data) }]);
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -205,6 +237,15 @@ export function AssistantModal() {
                   {m.text}
                 </div>
               ))}
+              {pending && (
+                <div className="max-w-[85%] self-start rounded-md rounded-bl-[2px] bg-neutral-50 px-3 py-2.5 text-neutral-500">
+                  <span className="inline-flex gap-1">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.2s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.1s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400" />
+                  </span>
+                </div>
+              )}
             </div>
 
             <form
@@ -217,13 +258,15 @@ export function AssistantModal() {
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Posez votre question…"
-                className="flex-1 rounded-md border border-neutral-200 bg-surface px-3 py-2 text-body-sm text-neutral-900 outline-none transition-shadow focus:border-accent-500 focus:shadow-focus"
+                disabled={pending}
+                placeholder={pending ? "OSCAR réfléchit…" : "Posez votre question…"}
+                className="flex-1 rounded-md border border-neutral-200 bg-surface px-3 py-2 text-body-sm text-neutral-900 outline-none transition-shadow focus:border-accent-500 focus:shadow-focus disabled:opacity-60"
               />
               <button
                 type="submit"
                 aria-label="envoyer"
-                className="grid h-[34px] w-[34px] place-items-center rounded-full bg-accent-500 text-white transition-colors hover:bg-accent-600"
+                disabled={pending}
+                className="grid h-[34px] w-[34px] place-items-center rounded-full bg-accent-500 text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
               >
                 <IconSend className="h-3.5 w-3.5" />
               </button>
