@@ -13,6 +13,18 @@ interface Msg {
   text: string;
 }
 
+/** Rendu léger du markdown renvoyé par le LLM : **gras** (le reste — listes,
+ *  sauts de ligne — passe via whitespace-pre-line). */
+function renderRich(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((seg, i) =>
+    seg.startsWith("**") && seg.endsWith("**") ? (
+      <strong key={i} className="font-semibold text-neutral-900">{seg.slice(2, -2)}</strong>
+    ) : (
+      <span key={i}>{seg}</span>
+    ),
+  );
+}
+
 const SUGGESTIONS = [
   "Classement des antennes par inscriptions",
   "Quel secteur génère le plus de recettes ?",
@@ -234,7 +246,7 @@ export function AssistantModal() {
                       : "max-w-[85%] self-start whitespace-pre-line rounded-md rounded-bl-[2px] bg-neutral-50 px-3 py-2.5 text-neutral-800"
                   }
                 >
-                  {m.text}
+                  {m.role === "bot" ? renderRich(m.text) : m.text}
                 </div>
               ))}
               {pending && (
