@@ -363,8 +363,8 @@ export function AcquisitionRetention({
   const NOUV = "#10B981"; // acquisition
   const max = Math.max(...rows.map((r) => r.nouveaux + r.reinscrits), 1);
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-neutral-500">
+    <div className="space-y-4">
+      <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-neutral-500">
         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: REINS }} />Réinscrits (fidélisation)</span>
         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: NOUV }} />Nouveaux (acquisition)</span>
       </div>
@@ -376,7 +376,7 @@ export function AcquisitionRetention({
         return (
           <div key={r.name} className="flex items-center gap-3">
             <span className={`w-9 flex-shrink-0 text-caption font-semibold ${r.highlight ? "text-accent-700" : "text-neutral-700"}`}>{r.name}</span>
-            <div className="flex h-5 flex-1 items-center">
+            <div className="flex h-6 flex-1 items-center">
               <div
                 className="flex h-full overflow-hidden rounded-sm"
                 style={{ width: `${Math.max(w, 1)}%` }}

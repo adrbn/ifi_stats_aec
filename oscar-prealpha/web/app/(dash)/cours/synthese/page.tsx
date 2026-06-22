@@ -113,12 +113,12 @@ export default function SynthesePage() {
         </Panel>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
         <Panel title="Acquisition vs fidélisation" subtitle="Nouveaux / réinscrits par antenne · taux de réinscription">
           <AcquisitionRetention rows={acqRows} />
         </Panel>
         <Panel title="Répartition par public" subtitle="Inscriptions par tranche d'âge">
-          {publicData.length ? <Donut data={publicData} height={300} /> : <p className="text-body-sm text-neutral-500">Aucune donnée.</p>}
+          {publicData.length ? <Donut data={publicData} height={260} /> : <p className="text-body-sm text-neutral-500">Aucune donnée.</p>}
         </Panel>
       </div>
 
