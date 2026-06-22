@@ -165,15 +165,18 @@ export function AssistantModal() {
 
   async function ask(q: string) {
     if (!q.trim() || pending) return;
+    // Historique de la conversation (avant ce message) pour les questions de
+    // suivi (« en %age », « et pour 2023 ? »…).
+    const history = msgs.slice(-10).map((m) => ({ role: m.role, content: m.text }));
     setMsgs((m) => [...m, { role: "user", text: q }]);
     setInput("");
     setPending(true);
     try {
-      // 1) On tente le LLM (API Albert) avec le contexte data.
+      // 1) On tente le LLM (API Albert) avec le contexte data + l'historique.
       const res = await fetch("/api/assistant", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question: q, context: buildContext(data) }),
+        body: JSON.stringify({ question: q, context: buildContext(data), history }),
       });
       const j = await res.json().catch(() => null);
       const text = j?.ok && j.answer ? j.answer : answer(q, data); // 2) repli déterministe

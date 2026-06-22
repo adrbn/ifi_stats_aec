@@ -202,16 +202,24 @@ def assistant(payload: dict = Body(default={})) -> dict:
     model = os.environ.get("ALBERT_MODEL", "albert-large")
     question = str(payload.get("question", "")).strip()
     context = payload.get("context", {})
+    history = payload.get("history", []) or []
     if not question:
         return {"ok": False, "reason": "empty"}
 
+    # Messages = system + historique de la conversation (pour les questions de
+    # suivi type « en %age ») + le tour courant (qui porte les données JSON).
+    messages = [{"role": "system", "content": ASSISTANT_SYSTEM}]
+    for h in history[-10:]:
+        role = "assistant" if h.get("role") in ("assistant", "bot") else "user"
+        content = str(h.get("content", "")).strip()[:2000]
+        if content:
+            messages.append({"role": role, "content": content})
     user = f"Données (JSON) du périmètre filtré :\n{_json.dumps(context, ensure_ascii=False)}\n\nQuestion : {question}"
+    messages.append({"role": "user", "content": user})
+
     body = _json.dumps({
         "model": model,
-        "messages": [
-            {"role": "system", "content": ASSISTANT_SYSTEM},
-            {"role": "user", "content": user},
-        ],
+        "messages": messages,
         "temperature": 0.1,
         "max_tokens": 700,
     }).encode("utf-8")
