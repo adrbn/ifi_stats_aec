@@ -141,6 +141,20 @@ function buildContext(d: Snapshot) {
       annees: d.evolution.years,
       series: d.evolution.series.map((s) => ({ code: s.code, nom: s.name, metriques: s.metrics })),
     },
+    // Ventilation fine du périmètre filtré : secteur, sous_secteur, macro,
+    // categorie, niveau, format, tranche d'âge (avec recettes par ligne).
+    ventilation_par_dimension: Object.fromEntries(
+      Object.entries(d.breakdowns ?? {}).map(([dim, block]) => [
+        dim,
+        (block?.rows ?? []).map((r) => ({
+          libelle: r.label,
+          inscriptions: r.inscriptions,
+          cours: r.cours,
+          recettes: r.recettes,
+          remplissage: r.remplissage,
+        })),
+      ]),
+    ),
   };
 }
 
