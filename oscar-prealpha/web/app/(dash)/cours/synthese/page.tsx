@@ -6,11 +6,11 @@ import { useFilters } from "@/lib/store";
 import { KpiRow } from "@/components/KpiCard";
 import { Panel } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
-import { AntennaBar } from "@/components/Charts";
+import { AntennaBar, Donut } from "@/components/Charts";
 import { EvolutionPanel } from "@/components/EvolutionPanel";
 import { SectorIndicatorTable } from "@/components/SectorIndicatorTable";
 import { FilterSummary, yearLabel } from "@/components/Filters";
-import { Sankey, FlowTreemap } from "@/components/RichCharts";
+import { Sankey, FlowTreemap, AcquisitionRetention } from "@/components/RichCharts";
 
 const SEDE_COLORS: Record<string, string> = { IFM: "#FF8C00", IFF: "#8B5CF6", IFN: "#22C55E", IFP: "#EF4444" };
 
@@ -51,6 +51,16 @@ export default function SynthesePage() {
   const kpiCols = data.kpis.map((k) => ({ key: k.key, label: k.label, format: k.format }));
   const kpiTotals = Object.fromEntries(data.kpis.map((k) => [k.key, k.value]));
   const sectorList = (data.bySectorIndicator?.inscriptions ?? []).map((x) => x.label);
+
+  // Acquisition vs fidélisation : nouveaux / réinscrits par antenne (+ total IFI).
+  const nouv = byInd.nouveaux ?? [];
+  const reins = byInd.reinscrits ?? [];
+  const acqRows = [
+    { name: "IFI", highlight: true, nouveaux: sumInd("nouveaux"), reinscrits: sumInd("reinscrits") },
+    ...nouv.map((n) => ({ name: n.code, nouveaux: n.value, reinscrits: reins.find((r) => r.code === n.code)?.value ?? 0 })),
+  ];
+  // Répartition par public (tranche d'âge) — composition des inscriptions.
+  const publicData = (data.breakdowns?.age?.rows ?? []).map((r) => ({ name: r.label, value: r.inscriptions })).filter((r) => r.value > 0);
 
   return (
     <div className="space-y-5">
@@ -93,13 +103,22 @@ export default function SynthesePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Panel title="Flux antenne → secteur" subtitle={`Sankey · ${flowLabel}`}>
-          {flows.length ? <Sankey flows={flows} sedeColors={SEDE_COLORS} height={320} /> : null}
+        <Panel title="Flux antenne → secteur" subtitle={`Sankey · ${flowLabel} · survolez un nœud`}>
+          {flows.length ? <Sankey flows={flows} sedeColors={SEDE_COLORS} height={320} unit={flowUnit} label={flowLabel} /> : null}
         </Panel>
         <Panel title="Répartition hiérarchique" subtitle={`${flowLabel} · clic = filtre secteur`}>
           {flows.length ? (
             <FlowTreemap flows={flows} height={320} unit={flowUnit} label={flowLabel} onSelect={(sec) => toggleDim("secteurs", sec)} />
           ) : null}
+        </Panel>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <Panel title="Acquisition vs fidélisation" subtitle="Nouveaux / réinscrits par antenne · taux de réinscription">
+          <AcquisitionRetention rows={acqRows} />
+        </Panel>
+        <Panel title="Répartition par public" subtitle="Inscriptions par tranche d'âge">
+          {publicData.length ? <Donut data={publicData} height={300} /> : <p className="text-body-sm text-neutral-500">Aucune donnée.</p>}
         </Panel>
       </div>
 

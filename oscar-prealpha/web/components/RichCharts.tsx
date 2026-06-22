@@ -233,7 +233,7 @@ export function FlowTreemap({
               rx={2.5}
               fill={colorOf(n.target)}
             >
-              <title>{`${n.source} · ${n.target}\n${fmtVal(n.value)} ${label}`}</title>
+              <title>{`${n.source} · ${n.target}\n${fmtVal(n.value)} ${label} · ${Math.round((n.value / total) * 100)}% du total`}</title>
             </rect>
             {n.big && (
               <>
@@ -252,17 +252,23 @@ export function FlowTreemap({
   );
 }
 
-/** Lightweight SVG Sankey: Sede (left) → Secteur (right). */
+/** Sankey SVG antenne → secteur : interactif (survol = met en valeur les flux du
+ *  nœud, atténue le reste), valeurs chiffrées par nœud, couleurs secteur. */
 export function Sankey({
   flows,
   height = 360,
   sedeColors,
+  unit = "int",
+  label = "inscriptions",
 }: {
   flows: { source: string; target: string; value: number }[];
   height?: number;
   sedeColors: Record<string, string>;
+  unit?: "int" | "eur" | "dec1";
+  label?: string;
 }) {
-  const W = 720;
+  const [hover, setHover] = useState<string | null>(null);
+  const W = 760;
   const sources = Array.from(new Set(flows.map((f) => f.source)));
   const targets = Array.from(new Set(flows.map((f) => f.target)));
   const total = flows.reduce((a, f) => a + f.value, 0) || 1;
@@ -291,6 +297,11 @@ export function Sankey({
     yy += h + gap;
   });
 
+  const secColor = (t: string) => SECTOR_PALETTE[Math.max(0, targets.indexOf(t)) % SECTOR_PALETTE.length];
+  const x0 = 130;
+  const x1 = W - 215;
+  const mid = (x0 + x1) / 2;
+
   return (
     <ResponsiveContainer width="100%" height={height}>
       <svg viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="xMidYMid meet">
@@ -302,35 +313,86 @@ export function Sankey({
           const y1 = t.cur;
           s.cur += sh;
           t.cur += sh;
-          const x0 = 120;
-          const x1 = W - 160;
-          const mid = (x0 + x1) / 2;
           const col = sedeColors[f.source] ?? "#94A3B8";
+          const dimmed = hover != null && f.source !== hover && f.target !== hover;
           return (
             <path
               key={i}
               d={`M${x0},${y0 + sh / 2} C${mid},${y0 + sh / 2} ${mid},${y1 + sh / 2} ${x1},${y1 + sh / 2}`}
               stroke={col}
-              strokeWidth={Math.max(1, sh)}
+              strokeWidth={Math.max(1.5, sh)}
               fill="none"
-              opacity={0.35}
-            />
+              opacity={dimmed ? 0.07 : hover ? 0.6 : 0.42}
+              className="transition-opacity duration-150"
+            >
+              <title>{`${f.source} → ${f.target}\n${fmt(f.value, unit)} ${label} · ${Math.round((f.value / total) * 100)}%`}</title>
+            </path>
           );
         })}
         {sources.map((s) => (
-          <g key={s}>
-            <rect x={108} y={sy[s].y} width={12} height={sy[s].h} fill={sedeColors[s] ?? "#94A3B8"} rx={2} />
-            <text x={102} y={sy[s].y + sy[s].h / 2 + 4} textAnchor="end" fontSize={12} fontFamily="var(--font-sans)" fill="var(--neutral-700)">{s}</text>
+          <g key={s} onMouseEnter={() => setHover(s)} onMouseLeave={() => setHover(null)}>
+            <rect x={x0 - 12} y={sy[s].y} width={12} height={sy[s].h} rx={2} fill={sedeColors[s] ?? "#94A3B8"} opacity={hover && hover !== s ? 0.4 : 1} />
+            <text x={x0 - 18} y={sy[s].y + sy[s].h / 2 + (sy[s].h > 16 ? -2 : 4)} textAnchor="end" fontSize={12} fontWeight={600} fill="var(--neutral-800)">{s}</text>
+            {sy[s].h > 16 && (
+              <text x={x0 - 18} y={sy[s].y + sy[s].h / 2 + 11} textAnchor="end" fontSize={10} className="tnum" fill="var(--neutral-400)">{fmt(sourceTot[s], unit)}</text>
+            )}
           </g>
         ))}
         {targets.map((t) => (
-          <g key={t}>
-            <rect x={W - 160} y={ty[t].y} width={12} height={ty[t].h} fill="#94A3B8" rx={2} />
-            <text x={W - 144} y={ty[t].y + ty[t].h / 2 + 4} textAnchor="start" fontSize={11} fontFamily="var(--font-sans)" fill="var(--neutral-700)">{t}</text>
+          <g key={t} onMouseEnter={() => setHover(t)} onMouseLeave={() => setHover(null)}>
+            <rect x={x1} y={ty[t].y} width={12} height={ty[t].h} rx={2} fill={secColor(t)} opacity={hover && hover !== t ? 0.4 : 1} />
+            <text x={x1 + 18} y={ty[t].y + ty[t].h / 2 + (ty[t].h > 16 ? -2 : 4)} textAnchor="start" fontSize={11} fontWeight={600} fill="var(--neutral-800)">{t}</text>
+            {ty[t].h > 16 && (
+              <text x={x1 + 18} y={ty[t].y + ty[t].h / 2 + 11} textAnchor="start" fontSize={10} className="tnum" fill="var(--neutral-400)">{fmt(targetTot[t], unit)}</text>
+            )}
           </g>
         ))}
       </svg>
     </ResponsiveContainer>
+  );
+}
+
+/** Acquisition vs fidélisation : part nouveaux (vert) / réinscrits (bleu) par
+ *  antenne, avec le % de réinscrits (taux de fidélisation). */
+export function AcquisitionRetention({
+  rows,
+}: {
+  rows: { name: string; nouveaux: number; reinscrits: number; highlight?: boolean }[];
+}) {
+  const REINS = "#3B82F6"; // fidélisation
+  const NOUV = "#10B981"; // acquisition
+  const max = Math.max(...rows.map((r) => r.nouveaux + r.reinscrits), 1);
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-neutral-500">
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: REINS }} />Réinscrits (fidélisation)</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: NOUV }} />Nouveaux (acquisition)</span>
+      </div>
+      {rows.map((r) => {
+        const tot = r.nouveaux + r.reinscrits;
+        const pct = tot ? Math.round((r.reinscrits / tot) * 100) : 0;
+        const w = (tot / max) * 100;
+        const reinsW = tot ? (r.reinscrits / tot) * 100 : 0;
+        return (
+          <div key={r.name} className="flex items-center gap-3">
+            <span className={`w-9 flex-shrink-0 text-caption font-semibold ${r.highlight ? "text-accent-700" : "text-neutral-700"}`}>{r.name}</span>
+            <div className="flex h-5 flex-1 items-center">
+              <div
+                className="flex h-full overflow-hidden rounded-sm"
+                style={{ width: `${Math.max(w, 1)}%` }}
+                title={`${r.name} : ${formatInt(r.reinscrits)} réinscrits (${pct}%) + ${formatInt(r.nouveaux)} nouveaux = ${formatInt(tot)}`}
+              >
+                <div className="h-full" style={{ width: `${reinsW}%`, background: REINS }} />
+                <div className="h-full flex-1" style={{ background: NOUV }} />
+              </div>
+            </div>
+            <span className="tnum w-[88px] flex-shrink-0 text-right text-caption text-neutral-600">
+              <b className="text-neutral-900">{pct}%</b> réinscr.
+            </span>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
