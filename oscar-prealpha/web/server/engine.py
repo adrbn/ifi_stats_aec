@@ -422,6 +422,16 @@ def compute(
         if vals and col in df_sel.columns:
             df_sel = df_sel[df_sel[col].isin(vals)]
 
+    # Référentiel pour le delta N-1 : MÊMES filtres dimension + antennes, mais
+    # TOUTES les années → la comparaison N-1 porte sur le même périmètre filtré
+    # (sinon on compare une valeur filtrée à un total non filtré → delta faux).
+    df_scope = df[df["Sede"].isin(antennas)]
+    for key in ("secteurs", "sousSecteurs", "macros", "categories"):
+        vals = sel[key]
+        col = _DIM_COL[key]
+        if vals and col in df_scope.columns:
+            df_scope = df_scope[df_scope[col].isin(vals)]
+
     m = meta(year_mode)
     return {
         "meta": m,
@@ -433,7 +443,7 @@ def compute(
         },
         "dimOptions": dim_options,
         "indicators": INDICATOR_META,
-        "kpis": _kpis(df_sel, years, antennas, df, year_mode),
+        "kpis": _kpis(df_sel, years, antennas, df_scope, year_mode),
         "byAntenna": _by_antenna(df_sel, antennas),
         "sectors": _sectors(df_sel),
         "evolution": _evolution(df_sel, years, antennas),
