@@ -102,3 +102,22 @@ body {
     transform: translateY(0);
   }
 }
+
+/* ============================================================
+   Rapport exécutif — impression / export PDF (style DSFR)
+   ============================================================ */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 13mm;
+  }
+  html,
+  body {
+    background: #ffffff !important;
+  }
+  /* Le navigateur force souvent N&B : on conserve les aplats de couleur. */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
