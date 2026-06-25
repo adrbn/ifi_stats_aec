@@ -1,46 +1,51 @@
-# OSCAR — pre-alpha (Next.js rebuild)
+# OSCAR — UI v3 (Next.js + FastAPI, déployée sur Vercel)
 
-A **local, non-destructive** experiment that rebuilds the OSCAR UI outside Streamlit,
-implementing the design system from the Claude Design handoff bundle
-(`OSCAR — Wireframes & Design System.html`).
+Réécriture de l'UI OSCAR hors Streamlit, **déployée sur Vercel** et **protégée par mot de
+passe**. Reprend la logique de calcul pandas de l'app Streamlit (copiée, pas importée — la v2
+exécute Streamlit à l'import) sans rien casser de la v2. Tout vit dans `oscar-prealpha/`.
 
-> Nothing in the original app is touched. `../dashboard_aec_v2.py`, `../aec_parser_v3.py`,
-> the Streamlit deployment and the data files are all untouched. This lives entirely in
-> `oscar-prealpha/`.
+> Pour le vocabulaire des versions et le pipeline de données, voir le
+> [README principal](../README.md). La v2 Streamlit reste intacte.
 
-## Why this stack
+## Stack
 
-You asked for "the best, free, better than the current UI" and named Next.js / Tailwind /
-Three.js. The constraint was **reuse the existing calculation** (9,479 lines of pandas) rather
-than rewrite it. So:
+| Couche | Choix | Notes |
+|-------|--------|-------|
+| **Calcul** | Python / pandas (réutilisé) | Fonctions pures copiées de `dashboard_aec_v2.py` dans `web/server/oscar_core.py`, dépouillées de `st.*`. |
+| **Backend** | FastAPI | API JSON ; **recalcul en direct** par filtre via `web/server/engine.py` (`/api/cours`). En prod = **fonction serverless** `web/api/index.py`. |
+| **Frontend** | Next.js 14 (App Router) + TS | |
+| **Styling** | Tailwind + tokens OSCAR | IBM Plex Sans, neutres ardoise, accent bleu IFI, radius 6px. |
+| **Charts** | Recharts | SVG, grille discrète, tabular-nums. |
+| **3D / WebGL** | react-three-fiber + drei | « Carte du réseau » : 4 antennes en piliers (hauteur ∝ inscriptions). |
+| **State / data** | Zustand (filtres) + TanStack Query (fetch/cache) | |
+| **Motion** | Framer Motion | Micro-interactions. |
 
-| Layer | Choice | Rationale |
-|-------|--------|-----------|
-| **Calculation** | Python / pandas (reused) | The pure data functions from `dashboard_aec_v2.py` were *copied* (not imported — the original executes Streamlit at import) into `api/oscar_core.py`, stripped of `st.*`. Zero logic rewritten. |
-| **Backend** | FastAPI + uvicorn | Thin JSON API over the reused functions. Computes a real snapshot from `../data/` at startup. |
-| **Frontend** | Next.js 14 (App Router) + TypeScript | Production-grade, free, full control to match the design pixel-for-pixel. |
-| **Styling** | Tailwind, themed with the OSCAR design tokens | `design-system.css` ported verbatim into `web/app/globals.css` + `tailwind.config.ts`. IBM Plex Sans, slate neutrals, IFI-blue accent, 6px radius. |
-| **Charts** | Recharts | SVG, themed to the design's Plotly rules (subtle grid, tabular-nums, no chart title). |
-| **3D / WebGL** | react-three-fiber + drei (Three.js) | The "Carte du réseau" — 4 antennas as glowing pillars (height ∝ inscriptions) on a 3D map, linked to the IFI hub. |
-| **State / data** | Zustand (filters) + TanStack Query (fetch + cache) | |
-| **Motion** | Framer Motion | Micro-interactions only (the design forbids decorative animation). |
+## Déploiement (Vercel)
 
-### The other options that were on the table (all free)
-- **FastAPI + HTMX + Jinja** — lightest, server-rendered, no JS build. Max reuse, less "telling".
-- **Plotly Dash** — pure Python, lowest migration friction, reuses Plotly directly.
-- **Reflex / NiceGUI** — pure-Python reactive → React/Vue.
+- `web/vercel.json` — fonction Python `api/index.py` (`includeFiles: server/**`) + rewrite de
+  `/api/*` (sauf `/api/auth/*`) vers la fonction. Auth via `web/middleware.ts` (cookie JWT).
+- `web/vercel-build.sh` — copie `../../data` → `server/data/` puis `next build`.
+- Variables d'env : `OSCAR_PASSWORD_SHA256`, `OSCAR_SESSION_SECRET`, et l'assistant
+  (`ALBERT_API_KEY` / `ALBERT_BASE_URL` / `ALBERT_MODEL`). Voir `web/.env.local.example`.
 
-Next.js was chosen per your request for the highest UI ceiling (motion + WebGL).
+## Données
+
+Le frontend appelle **`/api/cours`** → `engine.compute()` recalcule à la volée depuis
+**`web/server/data/new_cours/cache_cours.xlsx`** (export « Tous les cours » parsé par
+`aec_parser_v3.py`) + **`cache_eleves.xlsx`** (élèves différents). `fixtures/snapshot.json` est
+un **fallback statique** ; si le calcul live échoue, le frontend renvoie un état « hors-ligne »
+(aucune donnée — pas de « données démo »). Détails : `web/server/README.md` et le
+[README principal](../README.md).
 
 ## Navigation
 
-Hybrid of the design's Direction **C** + **A**, picked as the most intuitive for 11+ multidimensional views:
-- **Left nav rail** — domains (Cours / Profils / Produits) and their sub-views, always visible.
-- **Persistent top filter bar** — year segment + antenna toggles that hold across every view, plus a breadcrumb and the Assistant button.
+- **Rail de navigation** à gauche — domaines (Cours / Profils / Produits) et sous-vues.
+- **Barre de filtres** persistante en haut — année (civile/scolaire), antennes, fil d'Ariane,
+  bouton Assistant.
 
-## Run it
+## Lancer en local
 
-Two processes. Backend first:
+Deux process, backend d'abord :
 
 ```bash
 # 1) Backend (FastAPI) — http://localhost:8000
@@ -49,34 +54,39 @@ cd oscar-prealpha/web/server && ./run.sh
 # 2) Frontend (Next.js) — http://localhost:3000
 cd oscar-prealpha/web && npm install && npm run dev
 ```
+En dev, `/api/*` est proxifié vers le backend (`web/next.config.mjs`).
 
-Open the frontend; `/api/*` is proxied to the backend (see `web/next.config.mjs`).
-If the backend is down, the frontend falls back to an embedded fixture and shows a
-"données démo" badge — so it always renders.
+## Ce qui est en place (données réelles)
 
-## What's wired vs pending
+- **Cours** : Synthèse, Par antenne, Secteurs, Répartition, Année vs année, Rentabilité,
+  Évolutions, Graphiques, Carte 3D. KPI (inscriptions, élèves différents, cours, heures,
+  remplissage, recettes, **panier/inscription**, **panier/personne**) avec deltas N-1.
+- **Profils** : Synthèse, Démographie, Nationalités, Motivation (`build_profils.py` →
+  `fixtures/profils.json`).
+- **Produits** : Catalogue, Types, Tarifs (`build_produits.py` → `fixtures/produits.json`).
+- Assistant IA (API Albert, repli local déterministe), copie de graphique en image,
+  page `/compare` (v2 ⇄ v3), mode année civile/scolaire.
 
-**Wired with real computed data** (`source: "computed"` from `../data/` annual exports):
-- KPIs (inscriptions, cours, recettes, heures, remplissage) with real YoY deltas
-- By-antenna breakdown · by-sector table with TOTAL row · multi-year evolution
-- 3D network map · AI assistant (answers locally from the loaded snapshot)
-
-**Stubbed (calc exists in `oscar_core`, view not yet ported):**
-- Profils → Démographie / Acquisition · Produits → Catalogue
-- File-upload ingestion (the backend currently computes from preloaded `../data/`)
-- Per-course `aec_parser_v3` path (the annual zips are the category-report format; see `api/README.md`)
-
-## Layout
+## Arborescence
 
 ```
 oscar-prealpha/
-  api/            FastAPI backend — reuses the pandas calc, serves JSON
-    oscar_core.py     pure functions copied from dashboard_aec_v2.py (no streamlit)
-    aec_parser_v3.py  copied parser (future per-course path)
-    build_snapshot.py computes fixtures/snapshot.json from ../../data
-    main.py           endpoints: /api/health /api/snapshot /api/meta
-  web/            Next.js + Tailwind + Three.js frontend
-    app/                routes (welcome + dashboard shell + views)
-    components/         KPI cards, charts, table, filters, nav rail, AI modal, 3D map
-    lib/                types, api client, fixture fallback, formatters, store
+  web/
+    api/index.py         point d'entrée serverless Vercel (importe server/main.py:app)
+    server/              backend FastAPI
+      oscar_core.py        fonctions pandas copiées de dashboard_aec_v2.py (sans streamlit)
+      aec_parser_v3.py     parser « Tous les cours » (chargeur de prod)
+      engine.py            recalcul live par filtre (/api/cours)
+      build_snapshot.py    (re)génère fixtures/snapshot.json (fallback)
+      build_profils.py     → fixtures/profils.json
+      build_produits.py    → fixtures/produits.json
+      main.py              endpoints: /api/cours /api/data/{name} /api/meta /api/snapshot
+                                       /api/assistant /api/warmup /api/health
+      data/new_cours/      cache_cours.xlsx, cache_eleves.xlsx (embarqués Vercel)
+      fixtures/            snapshot.json, profils.json, produits.json
+    app/                 routes (welcome + shell dashboard + login + compare + vues)
+    components/          KPI, charts, table, filtres, rail, modal IA, carte 3D
+    lib/                 types, client API, fallback, formatters, store
+  shell/                 coque standalone de comparaison v2/v3 (iframes)
+  start-compare.sh
 ```

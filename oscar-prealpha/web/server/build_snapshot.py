@@ -197,6 +197,8 @@ def compute_kpis(df, latest_year, prev_year):
     eleves_diff = _distinct(cur)
     p_eleves = _distinct(prev) if prev is not None else None
     rempl = (inscr / cours) if cours else 0
+    panier_inscr = (recettes / inscr) if inscr else 0
+    panier_pers = (recettes / eleves_diff) if eleves_diff else None
 
     p_inscr = total(prev, "Nb. d'inscriptions") if prev is not None else 0
     p_cours = total(prev, "Nb. de Cours") if prev is not None else 0
@@ -204,6 +206,8 @@ def compute_kpis(df, latest_year, prev_year):
     p_heures = total(prev, "Qté heures") if prev is not None else 0
     p_heures_el = total(prev, "Nombre total d'heures vendues (heures-étudiants)") if prev is not None else 0
     p_rempl = (p_inscr / p_cours) if p_cours else 0
+    p_panier_inscr = (p_recettes / p_inscr) if p_inscr else 0
+    p_panier_pers = (p_recettes / p_eleves) if p_eleves else 0
 
     dlabel = f"vs {prev_year}" if prev_year else "—"
     # Ordre métier : Inscriptions · (Élèves différents) · Cours · Qté heures ·
@@ -226,7 +230,12 @@ def compute_kpis(df, latest_year, prev_year):
          "format": "int", "delta": delta(heures_eleves, p_heures_el), "deltaLabel": dlabel},
         {"key": "recettes", "label": "Recettes", "value": _round(recettes),
          "format": "eur", "delta": delta(recettes, p_recettes), "deltaLabel": dlabel},
+        {"key": "panier_inscr", "label": "Panier / inscr.", "value": _round(panier_inscr),
+         "format": "eur", "delta": delta(panier_inscr, p_panier_inscr), "deltaLabel": dlabel},
     ]
+    if panier_pers is not None:
+        out.append({"key": "panier_pers", "label": "Panier / personne", "value": _round(panier_pers),
+                    "format": "eur", "delta": delta(panier_pers, p_panier_pers or 0), "deltaLabel": dlabel})
     return out
 
 

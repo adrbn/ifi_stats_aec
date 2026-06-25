@@ -9,6 +9,14 @@ L'app Streamlit utilise le **nouveau parser** qui supporte l'export
 AEC « Cours > Tous les cours » (un fichier = N cours, une ligne par cours)
 en plus du format historique « rapport par catégorie ».
 
+> ℹ️ **Mise à jour** : cette même génération de parser est aujourd'hui le **chargeur
+> de production de la v3** (Next.js/Vercel). La v3 lit en continu
+> `oscar-prealpha/web/server/data/new_cours/cache_cours.xlsx` via
+> `oscar-prealpha/web/server/aec_parser_v3.py` puis recalcule en direct (voir le
+> [README principal](README.md) → section « v3 »). Le module racine `aec_parser_v3.py`
+> évoqué plus bas n'existe plus dans le working tree : la copie qui fait foi est celle
+> sous `oscar-prealpha/web/server/`.
+
 L'ancien dashboard (sans ce parser) est **conservé dans la branche
 `archive/desktop-oscar`** sous le nom `dashboard_aec_v2_legacy_backup.py`,
 récupérable si besoin.

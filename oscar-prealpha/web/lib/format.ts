@@ -15,6 +15,16 @@ export function formatEur(n: number): string {
   return `${formatInt(n)}${NBSP}€`;
 }
 
+// Variante compacte pour les cartes KPI étroites : M€ ≥ 1M, k€ ≥ 10k, exact en
+// dessous (les petits montants comme le panier restent affichés au détail). Le
+// montant exact reste affiché par formatEur dans les tableaux/graphes.
+export function formatEurCompact(n: number): string {
+  const a = Math.abs(n);
+  if (a >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(".", ",")}${NBSP}M€`;
+  if (a >= 10_000) return `${formatInt(Math.round(n / 1000))}${NBSP}k€`;
+  return `${formatInt(n)}${NBSP}€`;
+}
+
 export function formatDec1(n: number): string {
   return n.toFixed(1).replace(".", ",");
 }

@@ -99,9 +99,12 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
     heures_eleves = _sum(df_sel, "Nombre total d'heures vendues (heures-étudiants)")
     eleves_diff = _distinct_students(df_sel)  # None si cache élèves absent
     rempl = (inscr / cours) if cours else 0
+    panier_inscr = (recettes / inscr) if inscr else 0
+    panier_pers = (recettes / eleves_diff) if eleves_diff else None  # None si pas de cache élèves
 
     delta = {"inscr": None, "cours": None, "recettes": None, "rempl": None,
-             "heures": None, "heures_eleves": None, "eleves": None}
+             "heures": None, "heures_eleves": None, "eleves": None,
+             "panier_inscr": None, "panier_pers": None}
     dlabel = ""
     if len(years) == 1:
         prev = years[0] - 1
@@ -117,6 +120,8 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
             p_heures_el = _sum(prev_sel, "Nombre total d'heures vendues (heures-étudiants)")
             p_eleves = _distinct_students(prev_sel)
             p_rempl = (p_inscr / p_cours) if p_cours else 0
+            p_panier_inscr = (p_rec / p_inscr) if p_inscr else 0
+            p_panier_pers = (p_rec / p_eleves) if p_eleves else 0
             pct = lambda c, p: round((c - p) / p * 100, 1) if p else None
             delta = {
                 "inscr": pct(inscr, p_inscr),
@@ -126,6 +131,8 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
                 "heures_eleves": pct(heures_eleves, p_heures_el),
                 "eleves": pct(eleves_diff, p_eleves) if (eleves_diff is not None and p_eleves) else None,
                 "rempl": round(rempl - p_rempl, 1) if p_rempl else None,
+                "panier_inscr": pct(panier_inscr, p_panier_inscr),
+                "panier_pers": pct(panier_pers, p_panier_pers) if (panier_pers is not None and p_panier_pers) else None,
             }
 
     # Ordre métier : Inscriptions · (Élèves différents) · Cours · Qté heures ·
@@ -142,7 +149,11 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
         {"key": "remplissage", "label": "Remplissage", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
         {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": delta["heures_eleves"], "deltaLabel": dlabel},
         {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
+        {"key": "panier_inscr", "label": "Panier / inscr.", "value": bs._round(panier_inscr), "format": "eur", "delta": delta["panier_inscr"], "deltaLabel": dlabel},
     ]
+    # Panier par personne distincte : seulement si le cache élèves est présent.
+    if panier_pers is not None:
+        out.append({"key": "panier_pers", "label": "Panier / personne", "value": bs._round(panier_pers), "format": "eur", "delta": delta["panier_pers"], "deltaLabel": dlabel})
     return out
 
 
@@ -283,6 +294,11 @@ INDICATORS = [
     ("heures_eleves", "Heures-élèves", "Nombre total d'heures vendues (heures-étudiants)", "int"),
     ("recettes", "Recettes", "Recettes", "eur"),
     ("remplissage", "Remplissage", None, "dec1"),
+    # Paniers moyens (ratios non additifs, col=None → calcul spécial _indic_value).
+    # panier_inscr = Recettes / inscriptions ; panier_pers = Recettes / élèves
+    # différents (dépend du cache élèves, sinon 0).
+    ("panier_inscr", "Panier / inscr.", None, "eur"),
+    ("panier_pers", "Panier / personne", None, "eur"),
 ]
 INDICATOR_META = [{"key": k, "label": l, "format": f} for k, l, _c, f in INDICATORS]
 
@@ -299,6 +315,12 @@ def _indic_value(d, key, col):
         inscr = _sum(d, "Nb. d'inscriptions")
         cours = _sum(d, "Nb. de Cours")
         return round(inscr / cours, 2) if cours else 0
+    if key == "panier_inscr":
+        inscr = _sum(d, "Nb. d'inscriptions")
+        return bs._round(_sum(d, "Recettes") / inscr) if inscr else 0
+    if key == "panier_pers":
+        pers = _distinct_students(d)
+        return bs._round(_sum(d, "Recettes") / pers) if pers else 0
     if key == "eleves_differents":
         v = _distinct_students(d)
         return int(v) if v is not None else 0

@@ -18,15 +18,24 @@ export function Panel({
   className?: string;
   copyable?: boolean;
 }) {
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"idle" | "copied" | "saved" | "error">("idle");
 
   const copy = async () => {
-    if (!bodyRef.current) return;
+    if (!cardRef.current) return;
     try {
+      // On capture toute la carte (en-tête + corps) pour inclure le TITRE et le
+      // sous-titre dans l'image. Les contrôles interactifs et le bouton Copier
+      // sont marqués data-no-export et exclus via `filter`.
       // skipFonts: on n'embarque pas les @font-face (Google Fonts cross-origin →
       // SecurityError + lenteur) ; la police déjà chargée est rendue telle quelle.
-      const blob = await toBlob(bodyRef.current, { pixelRatio: 2, backgroundColor: "#ffffff", skipFonts: true });
+      const blob = await toBlob(cardRef.current, {
+        pixelRatio: 2,
+        backgroundColor: "#ffffff",
+        skipFonts: true,
+        filter: (node) =>
+          !(node instanceof HTMLElement && node.dataset?.noExport === "true"),
+      });
       if (!blob) throw new Error("capture vide");
       try {
         // Copie dans le presse-papiers (collable dans une présentation / un mail).
@@ -49,14 +58,14 @@ export function Panel({
   };
 
   return (
-    <section className={`min-w-0 rounded-lg border border-neutral-200 bg-surface shadow-xs ${className}`}>
+    <section ref={cardRef} className={`min-w-0 rounded-lg border border-neutral-200 bg-surface shadow-xs ${className}`}>
       {(title || right || copyable) && (
         <header className="flex items-start justify-between gap-3 border-b border-neutral-200 px-5 py-4">
           <div className="min-w-0">
             {title && <h2 className="text-h2 font-semibold text-neutral-900">{title}</h2>}
             {subtitle && <p className="mt-0.5 text-body-sm text-neutral-500">{subtitle}</p>}
           </div>
-          <div className="flex flex-shrink-0 items-center gap-2">
+          <div data-no-export="true" className="flex flex-shrink-0 items-center gap-2">
             {right}
             {copyable && (
               <button
@@ -83,7 +92,7 @@ export function Panel({
           </div>
         </header>
       )}
-      <div ref={bodyRef} className="bg-surface p-5">
+      <div className="bg-surface p-5">
         {children}
       </div>
     </section>

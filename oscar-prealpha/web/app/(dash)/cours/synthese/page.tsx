@@ -27,16 +27,26 @@ export default function SynthesePage() {
   const unit = (indMeta?.format ?? "int") as "int" | "eur" | "dec1";
 
   // Par antenne pour l'indicateur choisi. IFI = somme (additif) ou ratio global
-  // (remplissage, non sommable).
+  // (remplissage / paniers, non sommables).
   const byInd = data.byAntennaIndicator ?? {};
   const antRows = (byInd[ind] ?? []).map((r) => ({ code: r.code, color: r.color, value: r.value }));
   const sumInd = (k: string) => (byInd[k] ?? []).reduce((s, r) => s + r.value, 0);
-  const ifiTotal = ind === "remplissage" ? (sumInd("cours") ? sumInd("inscriptions") / sumInd("cours") : 0) : undefined;
+  const kpiVal = (k: string) => data.kpis.find((x) => x.key === k)?.value;
+  // Indicateurs « ratio » (non sommables) : le total IFI n'est pas la somme des
+  // antennes. Remplissage = ratio global recalculé ; paniers = valeur KPI globale
+  // (le panier/personne a un dénominateur — élèves distincts — non additif).
+  const isRatio = ind === "remplissage" || ind === "panier_inscr" || ind === "panier_pers";
+  const ifiTotal =
+    ind === "remplissage"
+      ? (sumInd("cours") ? sumInd("inscriptions") / sumInd("cours") : 0)
+      : ind === "panier_inscr" || ind === "panier_pers"
+        ? (kpiVal(ind) ?? 0)
+        : undefined;
 
   // Flux / treemap : seuls les indicateurs additifs ont un sens (un treemap de
-  // ratio n'en a pas) → le remplissage retombe sur les inscriptions.
-  const flowKey = ind === "remplissage" ? "inscriptions" : ind;
-  const flowLabel = ind === "remplissage" ? "inscriptions" : lower;
+  // ratio n'en a pas) → les ratios retombent sur les inscriptions.
+  const flowKey = isRatio ? "inscriptions" : ind;
+  const flowLabel = isRatio ? "inscriptions" : lower;
   const flowUnit: "int" | "eur" = ind === "recettes" ? "eur" : "int";
   const flows = (data.flows ?? [])
     .map((f) => ({ ...f, value: f.values?.[flowKey] ?? f.value }))
