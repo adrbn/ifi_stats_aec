@@ -196,34 +196,11 @@ export default function RapportPage() {
         {/* ====================== COUVERTURE ====================== */}
         <header className="break-inside-avoid">
           <div className="flex items-start justify-between">
-            <div>
-              <div className="mb-1 flex h-5 w-10 overflow-hidden rounded-[2px] border border-neutral-200">
-                <span className="flex-1" style={{ background: "#000091" }} />
-                <span className="flex-1 bg-white" />
-                <span className="flex-1" style={{ background: "#e1000f" }} />
-              </div>
-              <div className="text-[15px] font-extrabold leading-tight" style={{ color: "#161616" }}>
-                RÉPUBLIQUE
-                <br />
-                FRANÇAISE
-              </div>
-              <div className="mt-0.5 text-[10px] italic leading-tight text-neutral-500">
-                Liberté
-                <br />
-                Égalité
-                <br />
-                Fraternité
-              </div>
-            </div>
-            <div
-              className="rounded-[3px] border-2 px-4 py-3 text-right text-[15px] font-extrabold leading-none"
-              style={{ borderColor: BLEU, color: BLEU }}
-            >
-              INSTITUT
-              <br />
-              FRANÇAIS
-              <div className="mt-1 text-[9px] tracking-[0.2em]">ITALIA</div>
-            </div>
+            {/* Logos officiels repris du modèle CR IFI (extraits du PDF). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/rf-logo.png" alt="République française" className="h-[78px] w-auto" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/ifi-logo.png" alt="Institut français Italia" className="h-[64px] w-auto" />
           </div>
 
           <div className="mt-5 border-b border-neutral-200 pb-2 text-[12px] text-neutral-600">
