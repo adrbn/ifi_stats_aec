@@ -17,13 +17,23 @@ export function NavRail() {
       <nav className="thin-scroll flex-1 overflow-y-auto px-3 pb-6">
         <Link
           href="/rapport"
-          className={`mb-4 flex items-center gap-2 rounded-sm px-2 py-2 text-body-sm font-semibold transition-colors duration-120 ${
+          className={`mb-1 flex items-center gap-2 rounded-sm px-2 py-2 text-body-sm font-semibold transition-colors duration-120 ${
             pathname === "/rapport"
               ? "bg-accent-100 text-accent-700"
               : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
           }`}
         >
           <span aria-hidden>📄</span> Rapport d'activité
+        </Link>
+        <Link
+          href="/presentation"
+          className={`mb-4 flex items-center gap-2 rounded-sm px-2 py-2 text-body-sm font-semibold transition-colors duration-120 ${
+            pathname === "/presentation"
+              ? "bg-accent-100 text-accent-700"
+              : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+          }`}
+        >
+          <span aria-hidden>▶</span> Présentation
         </Link>
         {NAV.map((group) => (
           <div key={group.title} className="mb-4">

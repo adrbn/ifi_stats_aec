@@ -179,13 +179,22 @@ export default function RapportPage() {
         <Link href="/cours/synthese" className="text-body-sm font-medium text-neutral-600 hover:text-neutral-900">
           ← Retour au tableau de bord
         </Link>
-        <button
-          onClick={() => window.print()}
-          className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-body-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
-          style={{ background: BLEU }}
-        >
-          📄 Télécharger le PDF
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/presentation"
+            className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-body-sm font-semibold transition-colors hover:bg-neutral-50"
+            style={{ borderColor: BLEU, color: BLEU }}
+          >
+            ▶ Mode présentation
+          </Link>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-body-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+            style={{ background: BLEU }}
+          >
+            📄 Télécharger le PDF
+          </button>
+        </div>
       </div>
 
       {/* Document A4 */}
