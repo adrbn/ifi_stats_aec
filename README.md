@@ -1,3 +1,5 @@
+<img src="oscar-icon.png" alt="OSCAR" width="88" />
+
 # OSCAR — Outil de Suivi des Cours et d'Analyse du Réseau
 
 Dashboard analytique pour l'Institut français Italia (données AEC).
