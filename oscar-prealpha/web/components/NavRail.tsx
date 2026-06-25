@@ -65,7 +65,7 @@ export function NavRail() {
           Export &amp; présentation
         </div>
         <div className="space-y-2">
-          {exportBtn("/rapport", "Rapport d'activité")}
+          {exportBtn("/rapport", "Rapport PDF")}
           {exportBtn("/presentation", "Présentation")}
         </div>
       </div>

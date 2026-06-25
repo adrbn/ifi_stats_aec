@@ -59,14 +59,14 @@ function buildDeckHtml(images: string[], title: string) {
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:#1b1b1f;font-family:system-ui,Segoe UI,Roboto,sans-serif;height:100vh;overflow:hidden}
-  #deck{height:100vh;display:flex;align-items:center;justify-content:center}
-  section{display:none;width:100%;height:100%;align-items:center;justify-content:center;padding:24px}
+  #deck{height:100vh;width:100vw}
+  section{display:none;width:100vw;height:100vh;padding:28px;align-items:center;justify-content:center}
   section.on{display:flex}
-  img{max-width:100%;max-height:100%;object-fit:contain;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.4);border-radius:6px}
+  img{display:block;max-width:100%;max-height:100%;min-width:0;min-height:0;width:auto;height:auto;filter:drop-shadow(0 8px 24px rgba(0,0,0,.45))}
   .bar{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:18px;padding:12px;color:#fff;font-size:14px;background:rgba(0,0,0,.35)}
   .bar button{background:#fff;color:#000091;border:0;border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer}
   .ct{min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
-  @media print{ @page{size:A4 landscape;margin:0} body{background:#fff;height:auto;overflow:visible} #deck{display:block;height:auto} section{display:flex !important;page-break-after:always;height:100vh;padding:0} .bar{display:none} img{box-shadow:none;border-radius:0} }
+  @media print{ @page{size:A4 landscape;margin:0} body{background:#fff;height:auto;overflow:visible} #deck{display:block;height:auto;width:auto} section{display:flex !important;page-break-after:always;width:auto;height:100vh;padding:6mm} .bar{display:none} img{filter:none} }
 </style></head><body>
 <div id="deck">${sections}</div>
 <div class="bar">
@@ -171,9 +171,9 @@ export default function PresentationPage() {
     node: (
       <div className="w-full">
         <SlideHead title="Les chiffres clés" sub={periodLabel} />
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+        <div className="flex flex-wrap justify-center gap-6">
           {data.kpis.map((k) => (
-            <div key={k.key} className="rounded-lg border border-neutral-200 px-7 py-6">
+            <div key={k.key} className="w-[336px] min-w-0 shrink-0 rounded-lg border border-neutral-200 px-6 py-6">
               <div className="text-[13px] font-semibold uppercase tracking-[0.08em] text-neutral-500">{k.label}</div>
               <div className="mt-2 text-[46px] font-extrabold leading-none tnum" style={{ color: BLEU }}>
                 {k.key === "recettes" || k.key.startsWith("panier") ? formatEurCompact(k.value) : fmtBy(k.value, k.format)}
@@ -269,7 +269,7 @@ export default function PresentationPage() {
     node: (
       <div className="w-full">
         <SlideHead title="Acquisition, fidélisation & panier" sub={periodLabel} />
-        <div className="grid grid-cols-2 gap-7 md:grid-cols-4">
+        <div className="flex flex-wrap justify-center gap-6">
           {[
             { l: "Nouveaux inscrits", val: formatInt(nouveaux) },
             { l: "% nouveaux", val: `${formatDec1(pctNouveaux)} %` },
@@ -279,7 +279,7 @@ export default function PresentationPage() {
           ]
             .slice(0, 4)
             .map((c) => (
-              <div key={c.l} className="rounded-lg border border-neutral-200 px-6 py-7 text-center">
+              <div key={c.l} className="w-[224px] min-w-0 shrink-0 rounded-lg border border-neutral-200 px-5 py-7 text-center">
                 <div className="text-[13px] font-semibold uppercase tracking-[0.08em] text-neutral-500">{c.l}</div>
                 <div className="mt-2 text-[44px] font-extrabold leading-none tnum" style={{ color: BLEU }}>{c.val}</div>
               </div>

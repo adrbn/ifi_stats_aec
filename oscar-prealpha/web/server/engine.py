@@ -146,7 +146,7 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
     out += [
         {"key": "cours", "label": "Cours", "value": bs._round(cours), "format": "int", "delta": delta["cours"], "deltaLabel": dlabel},
         {"key": "heures", "label": "Qté heures", "value": bs._round(heures), "format": "int", "delta": delta["heures"], "deltaLabel": dlabel},
-        {"key": "remplissage", "label": "Remplissage", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
+        {"key": "remplissage", "label": "Élèves / cours", "value": bs._round(rempl, 1), "format": "dec1", "delta": delta["rempl"], "deltaLabel": dlabel},
         {"key": "heures_eleves", "label": "Heures-élèves", "value": bs._round(heures_eleves), "format": "int", "delta": delta["heures_eleves"], "deltaLabel": dlabel},
         {"key": "recettes", "label": "Recettes", "value": bs._round(recettes), "format": "eur", "delta": delta["recettes"], "deltaLabel": dlabel},
         {"key": "panier_inscr", "label": "Panier / inscr.", "value": bs._round(panier_inscr), "format": "eur", "delta": delta["panier_inscr"], "deltaLabel": dlabel},
@@ -293,7 +293,7 @@ INDICATORS = [
     ("heures", "Qté heures", "Qté heures", "int"),
     ("heures_eleves", "Heures-élèves", "Nombre total d'heures vendues (heures-étudiants)", "int"),
     ("recettes", "Recettes", "Recettes", "eur"),
-    ("remplissage", "Remplissage", None, "dec1"),
+    ("remplissage", "Élèves / cours", None, "dec1"),
     # Paniers moyens (ratios non additifs, col=None → calcul spécial _indic_value).
     # panier_inscr = Recettes / inscriptions ; panier_pers = Recettes / élèves
     # différents (dépend du cache élèves, sinon 0).

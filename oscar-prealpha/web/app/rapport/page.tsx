@@ -61,8 +61,8 @@ function ChartCard({ title, children }: { title: string; children: ReactNode }) 
 type Col = { k: string; label: string; right?: boolean };
 function DataTable({ cols, rows, title }: { cols: Col[]; rows: Record<string, ReactNode>[]; title?: string }) {
   return (
-    <div className="break-inside-avoid">
-      {title && <div className="mb-1.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-neutral-500">{title}</div>}
+    <div>
+      {title && <div className="mb-1.5 break-after-avoid text-[12px] font-semibold uppercase tracking-[0.06em] text-neutral-500">{title}</div>}
       <table className="w-full border-collapse text-[12.5px]">
         <thead>
           <tr style={{ background: BLEU }} className="text-left text-white">
@@ -73,7 +73,7 @@ function DataTable({ cols, rows, title }: { cols: Col[]; rows: Record<string, Re
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} className={i % 2 ? "bg-neutral-50" : ""}>
+            <tr key={i} className={`break-inside-avoid ${i % 2 ? "bg-neutral-50" : ""}`}>
               {cols.map((c) => (
                 <td key={c.k} className={`border-b border-neutral-200 px-3 py-2 ${c.right ? "tnum text-right" : "font-medium text-neutral-800"}`}>{r[c.k]}</td>
               ))}
@@ -347,11 +347,11 @@ export default function RapportPage() {
 
         {/* ====================== ÉVOLUTION ====================== */}
         {multiYear && (
-          <section className="break-before-page pt-2">
+          <section className="mt-10">
             <SectionTitle>Évolution pluriannuelle</SectionTitle>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-4">
               <ChartCard title={`Inscriptions par antenne · ${evoSpanLabel}`}>
-                <EvolutionLine years={evo.years} series={evo.series} metric="inscriptions" />
+                <EvolutionLine years={evo.years} series={evo.series} metric="inscriptions" height={340} />
               </ChartCard>
               {data.yoy && (
                 <ChartCard title={`Recettes du réseau · ${evoSpanLabel}`}>
@@ -376,13 +376,14 @@ export default function RapportPage() {
         {/* ====================== PAR ANTENNE ====================== */}
         <section className="mt-10">
           <SectionTitle>Performance par antenne</SectionTitle>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <ChartCard title="Inscriptions par antenne (IFI = réseau)">
-              <AntennaBar
-                rows={byAnt.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))}
-                label="Inscriptions"
-              />
-            </ChartCard>
+          <ChartCard title="Inscriptions par antenne (IFI = réseau)">
+            <AntennaBar
+              rows={byAnt.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))}
+              label="Inscriptions"
+              height={300}
+            />
+          </ChartCard>
+          <div className="mt-4">
             <div className="break-inside-avoid">
               <table className="w-full border-collapse text-[13px]">
                 <thead>
@@ -391,7 +392,7 @@ export default function RapportPage() {
                     <th className="px-3 py-2 text-right font-semibold">Inscr.</th>
                     <th className="px-3 py-2 text-right font-semibold">Cours</th>
                     <th className="px-3 py-2 text-right font-semibold">Recettes</th>
-                    <th className="px-3 py-2 text-right font-semibold">Rempl.</th>
+                    <th className="px-3 py-2 text-right font-semibold">Él./cours</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -419,17 +420,17 @@ export default function RapportPage() {
         </section>
 
         {/* ====================== PAR SECTEUR ====================== */}
-        <section className="break-before-page pt-2">
+        <section className="mt-10">
           <SectionTitle>Analyse par secteur</SectionTitle>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <ChartCard title="Recettes par secteur (top)">
-              <HBar
-                data={sectorRows.slice(0, 8).map((s) => ({ name: s.secteur, value: s.recettes }))}
-                unit="eur"
-                color={BLEU}
-                height={300}
-              />
-            </ChartCard>
+          <ChartCard title="Recettes par secteur (top 8)">
+            <HBar
+              data={sectorRows.slice(0, 8).map((s) => ({ name: s.secteur, value: s.recettes }))}
+              unit="eur"
+              color={BLEU}
+              height={340}
+            />
+          </ChartCard>
+          <div className="mt-4">
             <div className="break-inside-avoid">
               <table className="w-full border-collapse text-[13px]">
                 <thead>
@@ -486,7 +487,7 @@ export default function RapportPage() {
 
         {/* ====================== ÉVOLUTION ANNÉE PAR ANNÉE ====================== */}
         {data.yoy && data.yoy.rows.length > 0 && (
-          <section className="break-before-page pt-2">
+          <section className="mt-10">
             <SectionTitle>Évolution année par année</SectionTitle>
             <DataTable
               cols={[
@@ -515,7 +516,7 @@ export default function RapportPage() {
         {data.breakdowns && Object.keys(data.breakdowns).length > 0 && (
           <section className="mt-10">
             <SectionTitle>Répartitions</SectionTitle>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="space-y-6">
               {Object.values(data.breakdowns).map((bd) => (
                 <DataTable
                   key={bd.key}
@@ -525,7 +526,7 @@ export default function RapportPage() {
                     { k: "ins", label: "Inscr.", right: true },
                     { k: "co", label: "Cours", right: true },
                     { k: "re", label: "Recettes", right: true },
-                    { k: "rp", label: "Rempl.", right: true },
+                    { k: "rp", label: "Él./cours", right: true },
                   ]}
                   rows={bd.rows.map((r) => ({
                     l: r.label,
@@ -542,9 +543,9 @@ export default function RapportPage() {
 
         {/* ====================== RENTABILITÉ ====================== */}
         {data.profitability && (data.profitability.byAntenna.length > 0 || data.profitability.bySector.length > 0) && (
-          <section className="break-before-page pt-2">
+          <section className="mt-10">
             <SectionTitle>Rentabilité — recette moyenne par inscription (ARPI)</SectionTitle>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="space-y-6">
               {data.profitability.byAntenna.length > 0 && (
                 <DataTable
                   title="Par antenne"
