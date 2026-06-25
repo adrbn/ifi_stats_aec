@@ -58,6 +58,33 @@ function ChartCard({ title, children }: { title: string; children: ReactNode }) 
   );
 }
 
+type Col = { k: string; label: string; right?: boolean };
+function DataTable({ cols, rows, title }: { cols: Col[]; rows: Record<string, ReactNode>[]; title?: string }) {
+  return (
+    <div className="break-inside-avoid">
+      {title && <div className="mb-1.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-neutral-500">{title}</div>}
+      <table className="w-full border-collapse text-[12.5px]">
+        <thead>
+          <tr style={{ background: BLEU }} className="text-left text-white">
+            {cols.map((c) => (
+              <th key={c.k} className={`px-3 py-2 font-semibold ${c.right ? "text-right" : ""}`}>{c.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className={i % 2 ? "bg-neutral-50" : ""}>
+              {cols.map((c) => (
+                <td key={c.k} className={`border-b border-neutral-200 px-3 py-2 ${c.right ? "tnum text-right" : "font-medium text-neutral-800"}`}>{r[c.k]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 const fmtBy = (v: number, f?: string) =>
   f === "eur" ? formatEur(v) : f === "dec1" ? formatDec1(v) : formatInt(v);
 
@@ -149,25 +176,6 @@ export default function RapportPage() {
       return data.meta.updated;
     }
   })();
-
-  // ── Recommandations dérivées des chiffres ──
-  const reco: string[] = [];
-  if (lowGrow && lowGrow.g < -2)
-    reco.push(
-      `Prioriser l'antenne ${lowGrow.name}, en repli de ${signed(lowGrow.g)} sur ${growYearsLabel} : plan d'acquisition ciblé et revue de l'offre locale.`,
-    );
-  if (topGrow && topGrow.g > 2)
-    reco.push(`Diffuser au réseau les leviers de ${topGrow.name} (${signed(topGrow.g)} sur ${growYearsLabel}), antenne la plus dynamique.`);
-  if (pctNouveaux < 35)
-    reco.push(`Renforcer l'acquisition de nouveaux publics : ${formatDec1(pctNouveaux)} % de nouveaux inscrits seulement — campagnes d'entrée de gamme et partenariats.`);
-  else
-    reco.push(`Avec ${formatDec1(pctNouveaux)} % de nouveaux inscrits, structurer la fidélisation (parcours et relances de réinscription) pour transformer l'acquisition en base récurrente.`);
-  if (remplKpi && remplKpi.value < 12)
-    reco.push(`Optimiser le remplissage (${formatDec1(remplKpi.value)} élèves/cours en moyenne) : regrouper les petits groupes et ajuster le calendrier d'ouverture.`);
-  if (topSector)
-    reco.push(`Consolider le secteur « ${topSector.secteur} » (${formatDec1(topSectorShare)} % des recettes) tout en diversifiant l'offre pour réduire la dépendance.`);
-  if (panierI)
-    reco.push(`Activer des leviers de panier moyen (montées de gamme, formules/packs) — panier actuel ${formatEur(panierI.value)}/inscription.`);
 
   const evoSpanLabel =
     evo?.years?.length >= 2 ? `${yLabel(evo.years[0], yearMode)} → ${yLabel(evo.years.at(-1)!, yearMode)}` : periodLabel;
@@ -300,13 +308,13 @@ export default function RapportPage() {
           </div>
 
           <Insight>
-            <strong>À retenir.</strong>{" "}
-            {topAnt && <>L'antenne <strong>{topAnt.name}</strong> concentre le plus d'inscriptions ({formatInt(topAnt.inscriptions)}). </>}
-            {topSector && <>Le secteur <strong>{topSector.secteur}</strong> pèse <strong>{formatDec1(topSectorShare)} %</strong> des recettes. </>}
+            <strong>Faits marquants.</strong>{" "}
+            {topAnt && <>Première antenne : <strong>{topAnt.name}</strong> ({formatInt(topAnt.inscriptions)} inscriptions). </>}
+            {topSector && <>Secteur le plus contributeur : <strong>{topSector.secteur}</strong> ({formatDec1(topSectorShare)} % des recettes). </>}
             {topGrow && lowGrow && topGrow.code !== lowGrow.code && (
-              <>Dynamique contrastée sur {growYearsLabel} : <strong>{topGrow.name}</strong> ({signed(topGrow.g)}) vs <strong>{lowGrow.name}</strong> ({signed(lowGrow.g)}). </>
+              <>Variations {growYearsLabel} : <strong>{topGrow.name}</strong> {signed(topGrow.g)}, <strong>{lowGrow.name}</strong> {signed(lowGrow.g)}. </>
             )}
-            {pctNouveaux > 0 && <><strong>{formatDec1(pctNouveaux)} %</strong> des inscrits sont de nouveaux publics.</>}
+            {pctNouveaux > 0 && <>Nouveaux inscrits : <strong>{formatDec1(pctNouveaux)} %</strong>.</>}
           </Insight>
         </section>
 
@@ -433,7 +441,7 @@ export default function RapportPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sectorRows.slice(0, 8).map((s, i) => (
+                  {sectorRows.map((s, i) => (
                     <tr key={s.secteur} className={i % 2 ? "bg-neutral-50" : ""}>
                       <td className="border-b border-neutral-200 px-3 py-2 font-medium">{s.secteur}</td>
                       <td className="border-b border-neutral-200 px-3 py-2 text-right tnum">{formatInt(s.inscriptions)}</td>
@@ -448,7 +456,7 @@ export default function RapportPage() {
           {topSector && (
             <div className="mt-4">
               <Insight>
-                Le secteur <strong>{topSector.secteur}</strong> domine avec <strong>{formatEur(topSector.recettes)}</strong> de recettes (<strong>{formatDec1(topSectorShare)} %</strong> du total) et {formatInt(topSector.inscriptions)} inscriptions. Une concentration à surveiller pour l'équilibre du portefeuille.
+                Secteur le plus contributeur : <strong>{topSector.secteur}</strong> — <strong>{formatEur(topSector.recettes)}</strong> de recettes (<strong>{formatDec1(topSectorShare)} %</strong> du total), {formatInt(topSector.inscriptions)} inscriptions.
               </Insight>
             </div>
           )}
@@ -472,28 +480,112 @@ export default function RapportPage() {
             ))}
           </div>
           <Insight>
-            <strong>{formatDec1(pctNouveaux)} %</strong> des inscriptions proviennent de nouveaux publics{reinscrits ? <> et <strong>{formatInt(reinscrits)}</strong> réinscriptions soutiennent la base fidélisée</> : null}. Le panier moyen de <strong>{panierI ? formatEur(panierI.value) : "—"}</strong>/inscription{panierP && <> ({formatEur(panierP.value)}/personne)</>} mesure la valeur générée par apprenant — levier direct sur les recettes à volume constant.
+            Nouveaux inscrits : <strong>{formatDec1(pctNouveaux)} %</strong> des inscriptions{reinscrits ? <>, dont <strong>{formatInt(reinscrits)}</strong> réinscriptions</> : null}. Panier moyen : <strong>{panierI ? formatEur(panierI.value) : "—"}</strong>/inscription{panierP && <>, <strong>{formatEur(panierP.value)}</strong>/personne</>}.
           </Insight>
         </section>
 
-        {/* ====================== RECOMMANDATIONS ====================== */}
-        <section className="break-before-page pt-2">
-          <SectionTitle>Recommandations actionnables</SectionTitle>
-          <ul className="space-y-3">
-            {reco.map((r, i) => (
-              <li key={i} className="flex gap-3 break-inside-avoid text-[14px] leading-relaxed">
-                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white" style={{ background: BLEU }}>
-                  {i + 1}
-                </span>
-                <span>{r}</span>
-              </li>
-            ))}
-          </ul>
+        {/* ====================== ÉVOLUTION ANNÉE PAR ANNÉE ====================== */}
+        {data.yoy && data.yoy.rows.length > 0 && (
+          <section className="break-before-page pt-2">
+            <SectionTitle>Évolution année par année</SectionTitle>
+            <DataTable
+              cols={[
+                { k: "an", label: "Année" },
+                { k: "ins", label: "Inscriptions", right: true },
+                { k: "co", label: "Cours", right: true },
+                { k: "re", label: "Recettes", right: true },
+                { k: "he", label: "Heures-élèves", right: true },
+                { k: "vi", label: "Δ inscr.", right: true },
+                { k: "vr", label: "Δ recettes", right: true },
+              ]}
+              rows={data.yoy.rows.map((r) => ({
+                an: yLabel(r.year, yearMode),
+                ins: formatInt(r.inscriptions),
+                co: formatInt(r.cours),
+                re: formatEur(r.recettes),
+                he: formatInt(r.heures),
+                vi: deltaText(r.inscriptionsVar, "int") ?? "—",
+                vr: deltaText(r.recettesVar, "int") ?? "—",
+              }))}
+            />
+          </section>
+        )}
 
-          <div className="mt-12 border-t border-neutral-200 pt-3 text-center text-[11px] tracking-[0.04em] text-neutral-500">
-            Institut français Italia · <span className="font-semibold" style={{ color: BLEU }}>OSCAR — Rapport d'activité</span> · Données AEC au {updated} · Diffusion restreinte
-          </div>
-        </section>
+        {/* ====================== RÉPARTITIONS ====================== */}
+        {data.breakdowns && Object.keys(data.breakdowns).length > 0 && (
+          <section className="mt-10">
+            <SectionTitle>Répartitions</SectionTitle>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {Object.values(data.breakdowns).map((bd) => (
+                <DataTable
+                  key={bd.key}
+                  title={bd.label}
+                  cols={[
+                    { k: "l", label: bd.label },
+                    { k: "ins", label: "Inscr.", right: true },
+                    { k: "co", label: "Cours", right: true },
+                    { k: "re", label: "Recettes", right: true },
+                    { k: "rp", label: "Rempl.", right: true },
+                  ]}
+                  rows={bd.rows.map((r) => ({
+                    l: r.label,
+                    ins: formatInt(r.inscriptions),
+                    co: formatInt(r.cours),
+                    re: formatEurCompact(r.recettes),
+                    rp: formatDec1(r.remplissage),
+                  }))}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ====================== RENTABILITÉ ====================== */}
+        {data.profitability && (data.profitability.byAntenna.length > 0 || data.profitability.bySector.length > 0) && (
+          <section className="break-before-page pt-2">
+            <SectionTitle>Rentabilité — recette moyenne par inscription (ARPI)</SectionTitle>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {data.profitability.byAntenna.length > 0 && (
+                <DataTable
+                  title="Par antenne"
+                  cols={[
+                    { k: "c", label: "Antenne" },
+                    { k: "ins", label: "Inscr.", right: true },
+                    { k: "re", label: "Recettes", right: true },
+                    { k: "ar", label: "ARPI", right: true },
+                  ]}
+                  rows={data.profitability.byAntenna.map((r) => ({
+                    c: r.code,
+                    ins: formatInt(r.inscriptions),
+                    re: formatEurCompact(r.recettes),
+                    ar: formatEur(r.arpi),
+                  }))}
+                />
+              )}
+              {data.profitability.bySector.length > 0 && (
+                <DataTable
+                  title="Par secteur"
+                  cols={[
+                    { k: "l", label: "Secteur" },
+                    { k: "ins", label: "Inscr.", right: true },
+                    { k: "re", label: "Recettes", right: true },
+                    { k: "ar", label: "ARPI", right: true },
+                  ]}
+                  rows={data.profitability.bySector.map((r) => ({
+                    l: r.label,
+                    ins: formatInt(r.inscriptions),
+                    re: formatEurCompact(r.recettes),
+                    ar: formatEur(r.arpi),
+                  }))}
+                />
+              )}
+            </div>
+          </section>
+        )}
+
+        <div className="mt-12 border-t border-neutral-200 pt-3 text-center text-[11px] tracking-[0.04em] text-neutral-500">
+          Institut français Italia · <span className="font-semibold" style={{ color: BLEU }}>OSCAR — Rapport d'activité</span> · Données AEC au {updated} · Diffusion restreinte
+        </div>
       </article>
     </div>
   );

@@ -145,15 +145,6 @@ export default function PresentationPage() {
   const byAnt = data.byAntenna ?? [];
   const topAnt = [...byAnt].sort((a, b) => b.inscriptions - a.inscriptions)[0];
 
-  const reco: string[] = [];
-  if (lowGrow && lowGrow.g < -2) reco.push(`Prioriser l'antenne ${lowGrow.name} (repli de ${signed(lowGrow.g)} sur ${growYearsLabel}) : acquisition ciblée.`);
-  if (topGrow && topGrow.g > 2) reco.push(`Diffuser au réseau les leviers de ${topGrow.name} (${signed(topGrow.g)} sur ${growYearsLabel}).`);
-  if (pctNouveaux < 35) reco.push(`Renforcer l'acquisition : ${formatDec1(pctNouveaux)} % de nouveaux inscrits seulement.`);
-  else reco.push(`Structurer la fidélisation : ${formatDec1(pctNouveaux)} % de nouveaux — sécuriser la réinscription.`);
-  if (remplKpi && remplKpi.value < 12) reco.push(`Optimiser le remplissage (${formatDec1(remplKpi.value)} élèves/cours).`);
-  if (topSector) reco.push(`Consolider le secteur « ${topSector.secteur} » (${formatDec1(topSectorShare)} % des recettes).`);
-  if (panierI) reco.push(`Activer des leviers de panier moyen (${formatEur(panierI.value)}/inscription).`);
-
   // ── Slides ──
   const slides: { key: string; node: ReactNode }[] = [];
   slides.push({
@@ -240,6 +231,39 @@ export default function PresentationPage() {
       </div>
     ),
   });
+  if (data.yoy && data.yoy.rows.length > 0)
+    slides.push({
+      key: "yoy",
+      node: (
+        <div className="w-full">
+          <SlideHead title="Évolution année par année" />
+          <table className="w-full border-collapse text-[18px]">
+            <thead>
+              <tr style={{ background: BLEU }} className="text-left text-white">
+                <th className="px-4 py-2.5 font-semibold">Année</th>
+                <th className="px-4 py-2.5 text-right font-semibold">Inscriptions</th>
+                <th className="px-4 py-2.5 text-right font-semibold">Cours</th>
+                <th className="px-4 py-2.5 text-right font-semibold">Recettes</th>
+                <th className="px-4 py-2.5 text-right font-semibold">Δ inscr.</th>
+                <th className="px-4 py-2.5 text-right font-semibold">Δ recettes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.yoy!.rows.map((r, k) => (
+                <tr key={r.year} className={k % 2 ? "bg-neutral-50" : ""}>
+                  <td className="border-b border-neutral-200 px-4 py-2.5 font-semibold">{yLabel(r.year, yearMode)}</td>
+                  <td className="border-b border-neutral-200 px-4 py-2.5 text-right tnum">{formatInt(r.inscriptions)}</td>
+                  <td className="border-b border-neutral-200 px-4 py-2.5 text-right tnum">{formatInt(r.cours)}</td>
+                  <td className="border-b border-neutral-200 px-4 py-2.5 text-right tnum">{formatEurCompact(r.recettes)}</td>
+                  <td className="border-b border-neutral-200 px-4 py-2.5 text-right tnum">{deltaText(r.inscriptionsVar, "int") ?? "—"}</td>
+                  <td className="border-b border-neutral-200 px-4 py-2.5 text-right tnum">{deltaText(r.recettesVar, "int") ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ),
+    });
   slides.push({
     key: "acq",
     node: (
@@ -262,24 +286,59 @@ export default function PresentationPage() {
             ))}
         </div>
         <p className="mt-9 text-[20px] leading-relaxed text-neutral-700">
-          <strong>{formatDec1(pctNouveaux)} %</strong> des inscriptions proviennent de nouveaux publics. Le panier moyen de{" "}
-          <strong style={{ color: BLEU }}>{panierI ? formatEur(panierI.value) : "—"}</strong>/inscription est un levier direct sur les recettes.
+          Nouveaux inscrits : <strong>{formatDec1(pctNouveaux)} %</strong> des inscriptions{reinscrits ? <>, dont <strong>{formatInt(reinscrits)}</strong> réinscriptions</> : null}. Panier moyen :{" "}
+          <strong style={{ color: BLEU }}>{panierI ? formatEur(panierI.value) : "—"}</strong>/inscription{panierP ? <>, {formatEur(panierP.value)}/personne</> : null}.
         </p>
       </div>
     ),
   });
+  if (data.profitability && data.profitability.byAntenna.length > 0)
+    slides.push({
+      key: "renta",
+      node: (
+        <div className="w-full">
+          <SlideHead title="Rentabilité — recette par inscription" sub="ARPI par antenne" />
+          <table className="w-full border-collapse text-[19px]">
+            <thead>
+              <tr style={{ background: BLEU }} className="text-left text-white">
+                <th className="px-4 py-3 font-semibold">Antenne</th>
+                <th className="px-4 py-3 text-right font-semibold">Inscriptions</th>
+                <th className="px-4 py-3 text-right font-semibold">Recettes</th>
+                <th className="px-4 py-3 text-right font-semibold">ARPI</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.profitability!.byAntenna.map((r, k) => (
+                <tr key={r.code} className={k % 2 ? "bg-neutral-50" : ""}>
+                  <td className="border-b border-neutral-200 px-4 py-3 font-semibold">{r.code}</td>
+                  <td className="border-b border-neutral-200 px-4 py-3 text-right tnum">{formatInt(r.inscriptions)}</td>
+                  <td className="border-b border-neutral-200 px-4 py-3 text-right tnum">{formatEurCompact(r.recettes)}</td>
+                  <td className="border-b border-neutral-200 px-4 py-3 text-right tnum">{formatEur(r.arpi)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ),
+    });
   slides.push({
-    key: "reco",
+    key: "faits",
     node: (
       <div className="w-full">
-        <SlideHead title="Recommandations" sub="Pistes d'action prioritaires" />
-        <ul className="space-y-5">
-          {reco.map((r, idx) => (
-            <li key={idx} className="flex items-start gap-4 text-[22px] leading-relaxed text-neutral-800">
-              <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[16px] font-bold text-white" style={{ background: BLEU }}>{idx + 1}</span>
-              <span>{r}</span>
-            </li>
-          ))}
+        <SlideHead title="Faits marquants" sub="Chiffres clés du périmètre" />
+        <ul className="space-y-4 text-[21px] leading-relaxed text-neutral-800">
+          {topAnt && (
+            <li>Première antenne : <strong style={{ color: BLEU }}>{topAnt.name}</strong> — {formatInt(topAnt.inscriptions)} inscriptions{inscriptions ? <> ({formatDec1((topAnt.inscriptions / inscriptions) * 100)} % du réseau)</> : null}.</li>
+          )}
+          {topSector && (
+            <li>Secteur le plus contributeur : <strong style={{ color: BLEU }}>{topSector.secteur}</strong> — {formatDec1(topSectorShare)} % des recettes.</li>
+          )}
+          {topGrow && lowGrow && topGrow.code !== lowGrow.code && (
+            <li>Variations {growYearsLabel} : {topGrow.name} {signed(topGrow.g)} · {lowGrow.name} {signed(lowGrow.g)}.</li>
+          )}
+          <li>Nouveaux inscrits : <strong>{formatDec1(pctNouveaux)} %</strong>{reinscrits ? <> · {formatInt(reinscrits)} réinscriptions</> : null}.</li>
+          {panierI && <li>Panier moyen : <strong>{formatEur(panierI.value)}</strong>/inscription{panierP ? <> · {formatEur(panierP.value)}/personne</> : null}.</li>}
+          {remplKpi && <li>Remplissage moyen : <strong>{formatDec1(remplKpi.value)}</strong> élèves/cours.</li>}
         </ul>
       </div>
     ),
