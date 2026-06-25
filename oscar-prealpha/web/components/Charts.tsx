@@ -46,18 +46,20 @@ export function AntennaBar({
   total,
   unit = "int",
   label = "Inscriptions",
+  height = 260,
 }: {
   rows: { code: string; color: string; value: number }[];
   showTotal?: boolean;
   total?: number;
   unit?: Unit;
   label?: string;
+  height?: number;
 }) {
   const antennas = rows.map((r) => ({ name: r.code, value: r.value, color: r.color }));
   const totalVal = total ?? antennas.reduce((s, d) => s + d.value, 0);
   const data = showTotal ? [{ name: "IFI", value: totalVal, color: IFI_BLUE }, ...antennas] : antennas;
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 16, right: 20, bottom: 8, left: 8 }}>
         <CartesianGrid vertical={false} />
         <XAxis dataKey="name" tickLine={false} axisLine={{ stroke: "var(--neutral-300)" }} />
@@ -126,10 +128,12 @@ export function EvolutionLine({
   years,
   series,
   metric = "inscriptions",
+  height = 280,
 }: {
   years: number[];
   series: EvolutionSeries[];
   metric?: string;
+  height?: number;
 }) {
   const pick = (s: EvolutionSeries, i: number): number => {
     if (metric === "inscriptions") return s.inscriptions[i];
@@ -142,7 +146,7 @@ export function EvolutionLine({
     return row;
   });
   return (
-    <ResponsiveContainer width="100%" height={280}>
+    <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data} margin={{ top: 16, right: 20, bottom: 8, left: 8 }}>
         <CartesianGrid vertical={false} />
         <XAxis dataKey="year" tickLine={false} axisLine={{ stroke: "var(--neutral-300)" }} />

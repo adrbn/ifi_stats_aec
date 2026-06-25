@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import { useSnapshot } from "@/lib/useSnapshot";
 import { useFilters } from "@/lib/store";
 import { AntennaBar, HBar, EvolutionLine } from "@/components/Charts";
@@ -20,18 +19,70 @@ const deltaText = (d: number | null, fmt?: string) =>
   d == null ? null : `${d > 0 ? "+" : d < 0 ? "−" : ""}${formatDec1(Math.abs(d))}${fmt === "dec1" ? "" : " %"}`;
 
 function Eyebrow({ children, color = "#6b7280" }: { children: ReactNode; color?: string }) {
-  return <div className="text-[13px] font-bold uppercase tracking-[0.2em]" style={{ color }}>{children}</div>;
+  return <div className="text-[14px] font-bold uppercase tracking-[0.2em]" style={{ color }}>{children}</div>;
 }
 function SlideHead({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="mb-8">
-      <h2 className="flex items-center gap-3 text-[34px] font-extrabold leading-tight" style={{ color: BLEU }}>
-        <span className="inline-block h-9 w-[6px] rounded-sm" style={{ background: BLEU }} />
+      <h2 className="flex items-center gap-3 text-[40px] font-extrabold leading-tight" style={{ color: BLEU }}>
+        <span className="inline-block h-10 w-[7px] rounded-sm" style={{ background: BLEU }} />
         {title}
       </h2>
-      {sub && <p className="mt-1 pl-[18px] text-[16px] text-neutral-500">{sub}</p>}
+      {sub && <p className="mt-1 pl-[20px] text-[18px] text-neutral-500">{sub}</p>}
     </div>
   );
+}
+
+const PRINT_CSS = `
+@media print {
+  @page { size: A4 landscape; margin: 8mm; }
+  html, body { background: #fff !important; }
+  .pres-chrome, .pres-arrow { display: none !important; }
+  .pres-root { position: static !important; height: auto !important; overflow: visible !important; display: block !important; z-index: auto !important; }
+  .pres-scene { display: block !important; position: static !important; overflow: visible !important; height: auto !important; padding: 0 !important; }
+  .pres-slide { position: relative !important; inset: auto !important; opacity: 1 !important; z-index: auto !important;
+    height: 185mm !important; max-height: 185mm !important; overflow: hidden !important;
+    display: flex !important; padding: 4mm !important; }
+  /* saut AVANT chaque slide sauf la première (les flèches suivent les slides dans
+     le DOM, donc :last-child ne cible pas la dernière slide → pas de page vide). */
+  .pres-slide + .pres-slide { page-break-before: always !important; break-before: page !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}`;
+
+function buildDeckHtml(images: string[], title: string) {
+  const sections = images
+    .map((src, i) => `<section class="s${i === 0 ? " on" : ""}"><img alt="slide ${i + 1}" src="${src}"></section>`)
+    .join("\n");
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#1b1b1f;font-family:system-ui,Segoe UI,Roboto,sans-serif;height:100vh;overflow:hidden}
+  #deck{height:100vh;display:flex;align-items:center;justify-content:center}
+  section{display:none;width:100%;height:100%;align-items:center;justify-content:center;padding:24px}
+  section.on{display:flex}
+  img{max-width:100%;max-height:100%;object-fit:contain;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.4);border-radius:6px}
+  .bar{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:18px;padding:12px;color:#fff;font-size:14px;background:rgba(0,0,0,.35)}
+  .bar button{background:#fff;color:#000091;border:0;border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer}
+  .ct{min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
+  @media print{ @page{size:A4 landscape;margin:0} body{background:#fff;height:auto;overflow:visible} #deck{display:block;height:auto} section{display:flex !important;page-break-after:always;height:100vh;padding:0} .bar{display:none} img{box-shadow:none;border-radius:0} }
+</style></head><body>
+<div id="deck">${sections}</div>
+<div class="bar">
+  <button onclick="go(-1)">‹ Précédent</button>
+  <span class="ct"><span id="i">1</span> / ${images.length}</span>
+  <button onclick="go(1)">Suivant ›</button>
+  <button onclick="if(document.fullscreenElement){document.exitFullscreen()}else{document.documentElement.requestFullscreen()}">Plein écran</button>
+  <button onclick="window.print()">Imprimer / PDF</button>
+</div>
+<script>
+  var n=${images.length},c=0,S=document.querySelectorAll('#deck section');
+  function show(){S.forEach(function(e,k){e.classList.toggle('on',k===c)});document.getElementById('i').textContent=c+1}
+  function go(d){c=Math.max(0,Math.min(n-1,c+d));show()}
+  document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' '){go(1)}else if(e.key==='ArrowLeft'){go(-1)}});
+</script>
+</body></html>`;
 }
 
 export default function PresentationPage() {
@@ -105,41 +156,39 @@ export default function PresentationPage() {
 
   // ── Slides ──
   const slides: { key: string; node: ReactNode }[] = [];
-
   slides.push({
     key: "cover",
     node: (
       <div className="text-center">
-        <div className="mb-12 flex items-center justify-center gap-12">
+        <div className="mb-12 flex items-center justify-center gap-14">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/rf-logo.png" alt="République française" className="h-24 w-auto" />
+          <img src="/rf-logo.png" alt="République française" className="h-28 w-auto" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/ifi-logo.png" alt="Institut français Italia" className="h-20 w-auto" />
+          <img src="/ifi-logo.png" alt="Institut français Italia" className="h-24 w-auto" />
         </div>
         <Eyebrow color={ROUGE}>Document interne</Eyebrow>
-        <h1 className="mt-4 text-[72px] font-extrabold leading-none" style={{ color: BLEU }}>Rapport d'activité</h1>
-        <div className="mx-auto mt-6 h-[4px] w-[260px]" style={{ background: BLEU }} />
-        <p className="mt-6 text-[24px] text-neutral-500">Réseau de l'Institut français Italia</p>
-        <p className="mt-1 text-[30px] font-bold" style={{ color: BLEU }}>{periodLabel} · Cours</p>
-        <p className="mt-10 text-[14px] text-neutral-400">{antLabel}</p>
+        <h1 className="mt-4 text-[84px] font-extrabold leading-none" style={{ color: BLEU }}>Rapport d'activité</h1>
+        <div className="mx-auto mt-7 h-[5px] w-[300px]" style={{ background: BLEU }} />
+        <p className="mt-7 text-[28px] text-neutral-500">Réseau de l'Institut français Italia</p>
+        <p className="mt-1 text-[36px] font-bold" style={{ color: BLEU }}>{periodLabel} · Cours</p>
+        <p className="mt-10 text-[16px] text-neutral-400">{antLabel}</p>
       </div>
     ),
   });
-
   slides.push({
     key: "kpis",
     node: (
       <div className="w-full">
         <SlideHead title="Les chiffres clés" sub={periodLabel} />
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
           {data.kpis.map((k) => (
-            <div key={k.key} className="rounded-lg border border-neutral-200 px-6 py-5">
-              <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-neutral-500">{k.label}</div>
-              <div className="mt-2 text-[40px] font-extrabold leading-none tnum" style={{ color: BLEU }}>
+            <div key={k.key} className="rounded-lg border border-neutral-200 px-7 py-6">
+              <div className="text-[13px] font-semibold uppercase tracking-[0.08em] text-neutral-500">{k.label}</div>
+              <div className="mt-2 text-[46px] font-extrabold leading-none tnum" style={{ color: BLEU }}>
                 {k.key === "recettes" || k.key.startsWith("panier") ? formatEurCompact(k.value) : fmtBy(k.value, k.format)}
               </div>
               {k.delta != null && (
-                <div className={`mt-2 text-[13px] font-semibold ${k.delta >= 0 ? "text-green-700" : "text-red-600"}`}>
+                <div className={`mt-2 text-[14px] font-semibold ${k.delta >= 0 ? "text-green-700" : "text-red-600"}`}>
                   {deltaText(k.delta, k.format)} {k.deltaLabel}
                 </div>
               )}
@@ -149,64 +198,54 @@ export default function PresentationPage() {
       </div>
     ),
   });
-
   if (multiYear)
     slides.push({
       key: "evo",
       node: (
         <div className="w-full">
           <SlideHead title="Évolution pluriannuelle" sub={`Inscriptions par antenne · ${yLabel(eyears[0], yearMode)} → ${latestLabel}`} />
-          <div className="h-[440px] w-full">
-            <EvolutionLine years={evo.years} series={evo.series} metric="inscriptions" />
-          </div>
+          <EvolutionLine years={evo.years} series={evo.series} metric="inscriptions" height={470} />
           {partialLatest && (
-            <p className="mt-4 text-[14px] text-neutral-500">
+            <p className="mt-3 text-[15px] text-neutral-500">
               ⚠️ L'année {latestLabel} est en cours (données partielles) — les variations citées portent sur les années complètes.
             </p>
           )}
         </div>
       ),
     });
-
   slides.push({
     key: "antennes",
     node: (
       <div className="w-full">
         <SlideHead title="Performance par antenne" sub="IFI = total réseau" />
-        <div className="h-[400px] w-full">
-          <AntennaBar rows={byAnt.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))} label="Inscriptions" />
-        </div>
-        <p className="mt-3 text-[16px] text-neutral-700">
+        <AntennaBar rows={byAnt.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))} label="Inscriptions" height={440} />
+        <p className="mt-3 text-[18px] text-neutral-700">
           {topAnt && <><strong style={{ color: BLEU }}>{topAnt.name}</strong> est la première antenne ({formatInt(topAnt.inscriptions)} inscriptions). </>}
           {topGrow && lowGrow && topGrow.code !== lowGrow.code && <>Sur {growYearsLabel} : {topGrow.name} {signed(topGrow.g)} · {lowGrow.name} {signed(lowGrow.g)}.</>}
         </p>
       </div>
     ),
   });
-
   slides.push({
     key: "secteurs",
     node: (
       <div className="w-full">
         <SlideHead title="Analyse par secteur" sub="Recettes par secteur" />
-        <div className="h-[420px] w-full">
-          <HBar data={sectorRows.slice(0, 8).map((s) => ({ name: s.secteur, value: s.recettes }))} unit="eur" color={BLEU} height={420} />
-        </div>
+        <HBar data={sectorRows.slice(0, 8).map((s) => ({ name: s.secteur, value: s.recettes }))} unit="eur" color={BLEU} height={460} />
         {topSector && (
-          <p className="mt-3 text-[16px] text-neutral-700">
+          <p className="mt-3 text-[18px] text-neutral-700">
             <strong style={{ color: BLEU }}>{topSector.secteur}</strong> pèse {formatDec1(topSectorShare)} % des recettes ({formatEur(topSector.recettes)}).
           </p>
         )}
       </div>
     ),
   });
-
   slides.push({
     key: "acq",
     node: (
       <div className="w-full">
         <SlideHead title="Acquisition, fidélisation & panier" sub={periodLabel} />
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-7 md:grid-cols-4">
           {[
             { l: "Nouveaux inscrits", val: formatInt(nouveaux) },
             { l: "% nouveaux", val: `${formatDec1(pctNouveaux)} %` },
@@ -216,29 +255,28 @@ export default function PresentationPage() {
           ]
             .slice(0, 4)
             .map((c) => (
-              <div key={c.l} className="rounded-lg border border-neutral-200 px-6 py-6 text-center">
-                <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-neutral-500">{c.l}</div>
-                <div className="mt-2 text-[38px] font-extrabold leading-none tnum" style={{ color: BLEU }}>{c.val}</div>
+              <div key={c.l} className="rounded-lg border border-neutral-200 px-6 py-7 text-center">
+                <div className="text-[13px] font-semibold uppercase tracking-[0.08em] text-neutral-500">{c.l}</div>
+                <div className="mt-2 text-[44px] font-extrabold leading-none tnum" style={{ color: BLEU }}>{c.val}</div>
               </div>
             ))}
         </div>
-        <p className="mt-8 text-[18px] leading-relaxed text-neutral-700">
+        <p className="mt-9 text-[20px] leading-relaxed text-neutral-700">
           <strong>{formatDec1(pctNouveaux)} %</strong> des inscriptions proviennent de nouveaux publics. Le panier moyen de{" "}
           <strong style={{ color: BLEU }}>{panierI ? formatEur(panierI.value) : "—"}</strong>/inscription est un levier direct sur les recettes.
         </p>
       </div>
     ),
   });
-
   slides.push({
     key: "reco",
     node: (
       <div className="w-full">
         <SlideHead title="Recommandations" sub="Pistes d'action prioritaires" />
-        <ul className="space-y-4">
+        <ul className="space-y-5">
           {reco.map((r, idx) => (
-            <li key={idx} className="flex items-start gap-4 text-[19px] leading-relaxed text-neutral-800">
-              <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[15px] font-bold text-white" style={{ background: BLEU }}>{idx + 1}</span>
+            <li key={idx} className="flex items-start gap-4 text-[22px] leading-relaxed text-neutral-800">
+              <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[16px] font-bold text-white" style={{ background: BLEU }}>{idx + 1}</span>
               <span>{r}</span>
             </li>
           ))}
@@ -246,23 +284,24 @@ export default function PresentationPage() {
       </div>
     ),
   });
-
   slides.push({
     key: "end",
     node: (
       <div className="text-center">
-        <div className="text-[64px] font-extrabold" style={{ color: BLEU }}>Merci.</div>
-        <p className="mt-4 text-[18px] text-neutral-500">Institut français Italia · OSCAR — Rapport d'activité</p>
-        <p className="mt-1 text-[14px] text-neutral-400">Diffusion restreinte · données AEC « Tous les cours »</p>
+        <div className="text-[72px] font-extrabold" style={{ color: BLEU }}>Merci.</div>
+        <p className="mt-4 text-[20px] text-neutral-500">Institut français Italia · OSCAR — Rapport d'activité</p>
+        <p className="mt-1 text-[15px] text-neutral-400">Diffusion restreinte · données AEC « Tous les cours »</p>
       </div>
     ),
   });
 
-  // ── Navigation ──
+  // ── Navigation / état ──
   const n = slides.length;
   const [i, setI] = useState(0);
+  const [busy, setBusy] = useState(false);
   const idx = Math.min(i, n - 1);
   const go = useCallback((d: number) => setI((p) => Math.max(0, Math.min(n - 1, p + d))), [n]);
+  const sceneRef = useRef<HTMLDivElement>(null);
 
   const toggleFs = useCallback(() => {
     try {
@@ -272,6 +311,29 @@ export default function PresentationPage() {
       /* no-op */
     }
   }, []);
+
+  const exportHtml = useCallback(async () => {
+    setBusy(true);
+    try {
+      const { toPng } = await import("html-to-image");
+      const els = Array.from(sceneRef.current?.querySelectorAll<HTMLElement>(".pres-capture") ?? []);
+      const imgs: string[] = [];
+      for (const el of els) {
+        // eslint-disable-next-line no-await-in-loop
+        imgs.push(await toPng(el, { pixelRatio: 2, backgroundColor: "#ffffff", skipFonts: true }));
+      }
+      const html = buildDeckHtml(imgs, `OSCAR — Rapport d'activité ${periodLabel}`);
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `presentation-oscar-${periodLabel.replace(/[^\w-]+/g, "_")}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setBusy(false);
+    }
+  }, [periodLabel]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -283,41 +345,46 @@ export default function PresentationPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go, toggleFs]);
 
+  const btn = "rounded-md border border-neutral-200 px-3 py-1.5 text-[13px] font-medium text-neutral-600 transition hover:border-neutral-300 hover:text-neutral-900 disabled:opacity-40";
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
-      {/* En-tête fin */}
-      <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-3">
+    <div className="pres-root fixed inset-0 z-50 flex flex-col bg-white">
+      <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />
+
+      {/* En-tête */}
+      <div className="pres-chrome flex items-center justify-between border-b border-neutral-200 px-6 py-3">
         <span className="text-[12px] font-bold uppercase tracking-[0.16em]" style={{ color: BLEU }}>OSCAR · Présentation</span>
-        <div className="flex items-center gap-4">
-          <button onClick={toggleFs} className="text-[13px] font-medium text-neutral-500 hover:text-neutral-900">⛶ Plein écran</button>
-          <Link href="/cours/synthese" className="text-[13px] font-medium text-neutral-500 hover:text-neutral-900">✕ Quitter</Link>
+        <div className="flex items-center gap-2.5">
+          <button onClick={exportHtml} disabled={busy} className={btn}>{busy ? "Export…" : "⬇ HTML"}</button>
+          <button onClick={() => window.print()} className={btn}>⬇ PDF</button>
+          <button onClick={toggleFs} className={btn}>⛶ Plein écran</button>
+          <Link href="/rapport" className={btn}>↩ Rapport</Link>
+          <Link href="/cours/synthese" className={btn}>✕ Quitter</Link>
         </div>
       </div>
 
-      {/* Scène */}
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden px-10 py-8">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={slides[idx].key}
-            initial={{ opacity: 0, x: 28 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -28 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto w-full max-w-[1080px]"
+      {/* Scène : toutes les slides montées (active visible) → permet impression + export */}
+      <div ref={sceneRef} className="pres-scene relative flex flex-1 items-center justify-center overflow-hidden">
+        {slides.map((s, k) => (
+          <div
+            key={s.key}
+            className={`pres-slide absolute inset-0 flex items-center justify-center overflow-y-auto px-12 py-6 transition-opacity duration-300 ${
+              k === idx ? "z-10 opacity-100" : "pointer-events-none opacity-0"
+            }`}
           >
-            {slides[idx].node}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Zones de clic préc/suiv */}
+            <div className="pres-capture mx-auto w-full max-w-[1240px] bg-white">
+              {s.node}
+            </div>
+          </div>
+        ))}
         <button aria-label="Précédent" onClick={() => go(-1)} disabled={idx === 0}
-          className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border border-neutral-200 bg-white/80 px-3 py-2 text-neutral-600 shadow-sm transition hover:text-neutral-900 disabled:opacity-30">‹</button>
+          className="pres-arrow absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full border border-neutral-200 bg-white/80 px-3 py-2 text-neutral-600 shadow-sm transition hover:text-neutral-900 disabled:opacity-30">‹</button>
         <button aria-label="Suivant" onClick={() => go(1)} disabled={idx === n - 1}
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-neutral-200 bg-white/80 px-3 py-2 text-neutral-600 shadow-sm transition hover:text-neutral-900 disabled:opacity-30">›</button>
+          className="pres-arrow absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full border border-neutral-200 bg-white/80 px-3 py-2 text-neutral-600 shadow-sm transition hover:text-neutral-900 disabled:opacity-30">›</button>
       </div>
 
-      {/* Pied : progression + points */}
-      <div className="flex items-center justify-between border-t border-neutral-200 px-6 py-3">
+      {/* Pied */}
+      <div className="pres-chrome flex items-center justify-between border-t border-neutral-200 px-6 py-3">
         <div className="flex gap-1.5">
           {slides.map((s, k) => (
             <button key={s.key} aria-label={`Diapo ${k + 1}`} onClick={() => setI(k)}
