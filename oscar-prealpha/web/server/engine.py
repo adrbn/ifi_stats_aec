@@ -461,6 +461,17 @@ def compute(
         if vals and col in df_scope.columns:
             df_scope = df_scope[df_scope[col].isin(vals)]
 
+    # Totaux RÉSEAU (IFI) = TOUTES les 4 antennes, mêmes filtres année+dimensions
+    # mais SANS le filtre antenne → permet de comparer une antenne au total réseau
+    # même quand une seule antenne est sélectionnée (valeur + %).
+    df_all_ant = df[df["Année"].isin(years)]
+    for key in ("secteurs", "sousSecteurs", "macros", "categories", "niveaux"):
+        vals = sel[key]
+        col = _DIM_COL[key]
+        if vals and col in df_all_ant.columns:
+            df_all_ant = df_all_ant[df_all_ant[col].isin(vals)]
+    network_totals = {k: _indic_value(df_all_ant, k, col) for k, _l, col, _f in INDICATORS}
+
     m = meta(year_mode)
     return {
         "meta": m,
@@ -480,6 +491,7 @@ def compute(
         "breakdowns": _breakdowns(df_sel),
         "yoy": _yoy(df_sel, years),
         "profitability": _profitability(df_sel),
+        "networkTotals": network_totals,
         "bySectorIndicator": _by_sector_indicators(df_sel),
         "byAntennaIndicator": _by_antenna_indicators(df_sel, antennas),
         "sectorAntenna": _sector_antenna_matrix(df_sel, antennas),

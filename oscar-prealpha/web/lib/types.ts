@@ -121,6 +121,9 @@ export interface Snapshot {
   yoy?: { years: number[]; rows: YoyRow[] };
   profitability?: { bySector: ProfitabilityRow[]; byAntenna: ProfitabilityRow[] };
   indicators?: { key: string; label: string; format: "int" | "eur" | "dec1" }[];
+  // Totaux réseau (4 antennes) par indicateur, hors filtre antenne — pour comparer
+  // une antenne sélectionnée au total IFI (valeur + %).
+  networkTotals?: Record<string, number>;
   bySectorIndicator?: Record<string, { label: string; value: number }[]>;
   byAntennaIndicator?: Record<string, { code: AntennaCode; color: string; value: number }[]>;
   sectorAntenna?: {
