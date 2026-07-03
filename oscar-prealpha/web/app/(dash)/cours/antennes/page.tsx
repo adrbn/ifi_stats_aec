@@ -130,7 +130,11 @@ export default function AntennesPage() {
       </Panel>
 
       <Panel title="Inscriptions par antenne">
-        <AntennaBar rows={data.byAntenna.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))} label="Inscriptions" />
+        <AntennaBar
+          rows={data.byAntenna.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))}
+          total={ifiTotalFor("inscriptions")}
+          label="Inscriptions"
+        />
       </Panel>
 
       <Panel title="Indicateurs détaillés" subtitle="IFI = total réseau ; part du réseau sous chaque valeur d'antenne">

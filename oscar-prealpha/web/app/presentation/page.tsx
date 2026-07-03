@@ -209,7 +209,7 @@ export default function PresentationPage() {
     node: (
       <div className="w-full">
         <SlideHead title="Performance par antenne" sub="IFI = total réseau" />
-        <AntennaBar rows={byAnt.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))} label="Inscriptions" height={440} />
+        <AntennaBar rows={byAnt.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))} total={data.networkTotals?.inscriptions ?? sumInd("inscriptions")} label="Inscriptions" height={440} />
         <p className="mt-3 text-[18px] text-neutral-700">
           {topAnt && <><strong style={{ color: BLEU }}>{topAnt.name}</strong> est la première antenne ({formatInt(topAnt.inscriptions)} inscriptions). </>}
           {topGrow && lowGrow && topGrow.code !== lowGrow.code && <>Sur {growYearsLabel} : {topGrow.name} {signed(topGrow.g)} · {lowGrow.name} {signed(lowGrow.g)}.</>}

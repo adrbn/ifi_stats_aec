@@ -379,6 +379,7 @@ export default function RapportPage() {
           <ChartCard title="Inscriptions par antenne (IFI = réseau)">
             <AntennaBar
               rows={byAnt.map((a) => ({ code: a.code, color: a.color, value: a.inscriptions }))}
+              total={data.networkTotals?.inscriptions ?? sumInd("inscriptions")}
               label="Inscriptions"
               height={300}
             />

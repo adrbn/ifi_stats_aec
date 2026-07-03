@@ -41,12 +41,16 @@ export default function SynthesePage() {
   // antennes. Remplissage = ratio global recalculé ; paniers = valeur KPI globale
   // (le panier/personne a un dénominateur — élèves distincts — non additif).
   const isRatio = ind === "remplissage" || ind === "panier_inscr" || ind === "panier_pers";
+  // IFI = TOTAL RÉSEAU (4 antennes), via networkTotals (non filtré par antenne) →
+  // reste juste même quand une seule antenne est sélectionnée. Repli sur l'ancien
+  // calcul si networkTotals absent (snapshot statique / hors-ligne).
   const ifiTotal =
-    ind === "remplissage"
+    data.networkTotals?.[ind] ??
+    (ind === "remplissage"
       ? (sumInd("cours") ? sumInd("inscriptions") / sumInd("cours") : 0)
       : ind === "panier_inscr" || ind === "panier_pers"
         ? (kpiVal(ind) ?? 0)
-        : undefined;
+        : undefined);
 
   // Flux / treemap : seuls les indicateurs additifs ont un sens (un treemap de
   // ratio n'en a pas) → les ratios retombent sur les inscriptions.
