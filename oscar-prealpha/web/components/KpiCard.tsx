@@ -45,12 +45,29 @@ export function KpiCard({ kpi, index = 0 }: { kpi: Kpi; index?: number }) {
   );
 }
 
+// Nombre de colonnes (à lg/xl) selon le nombre de tuiles VISIBLES, pour que les
+// tuiles restantes remplissent la ligne quand des KPI sont masqués (mode
+// confidentiel) — au lieu de laisser des trous dans une grille figée à 9.
+// Classes écrites en toutes lettres (pas d'interpolation) → conservées par Tailwind.
+const COLS_BY_COUNT: Record<number, string> = {
+  1: "sm:grid-cols-1 lg:grid-cols-1",
+  2: "sm:grid-cols-2 lg:grid-cols-2",
+  3: "sm:grid-cols-3 lg:grid-cols-3",
+  4: "sm:grid-cols-2 lg:grid-cols-4",
+  5: "sm:grid-cols-3 lg:grid-cols-5",
+  6: "sm:grid-cols-3 lg:grid-cols-6",
+  7: "sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-7",
+  8: "sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8",
+  9: "sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9",
+};
+
 export function KpiRow({ kpis }: { kpis: Kpi[] }) {
   // Mode confidentiel : on retire les KPI de recettes (recettes + paniers).
   const { filterKeyed } = useConfidential();
   const visible = filterKeyed(kpis);
+  const cols = COLS_BY_COUNT[visible.length] ?? COLS_BY_COUNT[9];
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
+    <div className={`grid grid-cols-2 gap-3 ${cols}`}>
       {visible.map((k, i) => (
         <KpiCard key={k.key} kpi={k} index={i} />
       ))}
