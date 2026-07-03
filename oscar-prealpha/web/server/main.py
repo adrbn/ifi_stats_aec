@@ -78,10 +78,12 @@ def cours(
     sousSecteurs: Optional[List[str]] = Query(default=None),
     macros: Optional[List[str]] = Query(default=None),
     categories: Optional[List[str]] = Query(default=None),
+    niveaux: Optional[List[str]] = Query(default=None),
     mode: Optional[str] = Query(default="civil"),
 ):
     """Live, filter-aware Cours payload (multi-year + multi-antenna + cascading
-    dimension filters), computed on demand — same granularity as OSCAR Online.
+    dimension filters + filtre niveau orthogonal), computed on demand — same
+    granularity as OSCAR Online.
 
     mode : "civil" (année civile) ou "school" (année scolaire)."""
     import engine
@@ -90,6 +92,7 @@ def cours(
         return engine.compute(
             _parse_years(years), _parse_antennas(antennas),
             secteurs=secteurs, sousSecteurs=sousSecteurs, macros=macros, categories=categories,
+            niveaux=niveaux,
             year_mode=("school" if mode == "school" else "civil"),
         )
     except Exception as e:  # noqa: BLE001
@@ -149,6 +152,41 @@ def data(name: str) -> dict:
         payload = json.load(f)
     _DATA_CACHE[safe] = payload
     return payload
+
+
+@app.get("/api/mapping")
+def mapping() -> dict:
+    """Tableau des équivalences catégorie → (macro-catégorie, sous-secteur,
+    secteur). LECTURE SEULE (le FS serverless est en lecture seule) : la source
+    éditable reste data/category_mapping.csv (dict + override CSV). Sert l'onglet
+    « Paramètres » de la v3."""
+    try:
+        import engine
+        import oscar_core as core
+        # Réveille le moteur → applique les overrides CSV sur CATEGORY_MAPPING.
+        df = engine.get_df()
+        rows = [
+            {"categorie": c, "macro": v[0], "sousSecteur": v[1], "secteur": v[2]}
+            for c, v in core.CATEGORY_MAPPING.items()
+        ]
+        rows.sort(key=lambda r: (r["secteur"], r["sousSecteur"], r["macro"], r["categorie"]))
+        present = (
+            sorted(df["Catégorie de cours"].dropna().astype(str).str.strip().unique().tolist())
+            if "Catégorie de cours" in df.columns else []
+        )
+        mapped = {str(k).strip() for k in core.CATEGORY_MAPPING}
+        unmapped = [c for c in present if c not in mapped]  # → NON RATTACHÉ
+        return {
+            "rows": rows,
+            "sectorOrder": list(core.SECTOR_ORDER),
+            "count": len(rows),
+            "present": present,
+            "unmapped": unmapped,
+            "csvPath": "data/category_mapping.csv",
+            "editable": False,
+        }
+    except Exception as e:  # noqa: BLE001
+        return {"rows": [], "sectorOrder": [], "count": 0, "present": [], "unmapped": [], "error": str(e)[:200]}
 
 
 @app.get("/api/health")

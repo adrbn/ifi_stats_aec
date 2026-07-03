@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import type { Kpi } from "@/lib/types";
 import { formatKpi, formatDelta, formatEurCompact } from "@/lib/format";
+import { useConfidential } from "@/lib/confidential";
 import { IconArrowUp, IconArrowDown } from "./icons";
 
 export function KpiCard({ kpi, index = 0 }: { kpi: Kpi; index?: number }) {
@@ -45,9 +46,12 @@ export function KpiCard({ kpi, index = 0 }: { kpi: Kpi; index?: number }) {
 }
 
 export function KpiRow({ kpis }: { kpis: Kpi[] }) {
+  // Mode confidentiel : on retire les KPI de recettes (recettes + paniers).
+  const { filterKeyed } = useConfidential();
+  const visible = filterKeyed(kpis);
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
-      {kpis.map((k, i) => (
+      {visible.map((k, i) => (
         <KpiCard key={k.key} kpi={k} index={i} />
       ))}
     </div>

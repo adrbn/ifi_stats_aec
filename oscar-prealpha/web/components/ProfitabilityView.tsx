@@ -5,6 +5,8 @@ import { Panel } from "./Card";
 import { PageTitle } from "./PageTitle";
 import { HBar } from "./Charts";
 import { formatInt, formatEur } from "@/lib/format";
+import { useConfidential } from "@/lib/confidential";
+import { ConfidentialMask } from "./ConfidentialMask";
 
 function eurDec(n: number) {
   return `${n.toFixed(2).replace(".", ",")} €`;
@@ -12,7 +14,20 @@ function eurDec(n: number) {
 
 export function ProfitabilityView() {
   const { data } = useSnapshot();
+  const { confidential } = useConfidential();
   const prof = data.profitability ?? { bySector: [], byAntenna: [] };
+
+  // Page 100 % recettes (ARPI) → entièrement masquée en mode confidentiel.
+  if (confidential) {
+    return (
+      <div className="space-y-5">
+        <PageTitle eyebrow={`Cours · ${data.filters.year}`} title="Rentabilité">
+          Recette moyenne par inscription (ARPI = recettes ÷ inscriptions), par secteur et par antenne.
+        </PageTitle>
+        <ConfidentialMask />
+      </div>
+    );
+  }
 
   const sectorChart = prof.bySector.map((r) => ({ name: r.label ?? "—", value: r.arpi }));
   const top3 = [...prof.bySector].sort((a, b) => b.arpi - a.arpi).slice(0, 3);

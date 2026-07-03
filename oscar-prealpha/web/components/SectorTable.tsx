@@ -2,15 +2,16 @@
 
 import type { SectorRow } from "@/lib/types";
 import { formatInt, formatEur, formatPct, formatDec1 } from "@/lib/format";
+import { useConfidential } from "@/lib/confidential";
 
-function Cells({ r }: { r: SectorRow }) {
+function Cells({ r, showRecettes }: { r: SectorRow; showRecettes: boolean }) {
   return (
     <>
       <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.cours)}</td>
       <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.inscriptions)}</td>
       <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.nouv)}</td>
       <td className="tnum px-3.5 py-2.5 text-right">{formatPct(r.pctNouv)}</td>
-      <td className="tnum px-3.5 py-2.5 text-right">{formatEur(r.recettes)}</td>
+      {showRecettes && <td className="tnum px-3.5 py-2.5 text-right">{formatEur(r.recettes)}</td>}
       <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(r.remplissage)}</td>
     </>
   );
@@ -23,7 +24,9 @@ export function SectorTable({
   rows: SectorRow[];
   total: SectorRow;
 }) {
-  const headers = ["Secteur", "Cours", "Inscriptions", "Nouv. inscrits", "% nouv.", "Recettes", "Remplissage"];
+  const { hidden } = useConfidential();
+  const showRecettes = !hidden("recettes");
+  const headers = ["Secteur", "Cours", "Inscriptions", "Nouv. inscrits", "% nouv.", ...(showRecettes ? ["Recettes"] : []), "Remplissage"];
   return (
     <div className="overflow-x-auto rounded-md border border-neutral-200">
       <table className="w-full min-w-[640px] border-collapse text-body-sm">
@@ -45,12 +48,12 @@ export function SectorTable({
           {rows.map((r) => (
             <tr key={r.secteur} className="even:bg-neutral-50 hover:bg-accent-50">
               <td className="px-3.5 py-2.5 font-medium text-neutral-800">{r.secteur}</td>
-              <Cells r={r} />
+              <Cells r={r} showRecettes={showRecettes} />
             </tr>
           ))}
           <tr className="border-t-2 border-neutral-300 bg-neutral-100 font-semibold text-neutral-900">
             <td className="px-3.5 py-2.5">{total.secteur}</td>
-            <Cells r={total} />
+            <Cells r={total} showRecettes={showRecettes} />
           </tr>
         </tbody>
       </table>

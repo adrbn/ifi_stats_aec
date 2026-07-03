@@ -102,9 +102,10 @@ export interface Snapshot {
     sousSecteurs?: string[];
     macros?: string[];
     categories?: string[];
+    niveaux?: string[];
     sectors: string[];
   };
-  dimOptions?: { secteurs: string[]; sousSecteurs: string[]; macros: string[]; categories: string[] };
+  dimOptions?: { secteurs: string[]; sousSecteurs: string[]; macros: string[]; categories: string[]; niveaux?: string[] };
   kpis: Kpi[];
   byAntenna: AntennaRow[];
   sectors: {

@@ -6,6 +6,7 @@ import { Panel } from "./Card";
 import { PageTitle } from "./PageTitle";
 import { HBar } from "./Charts";
 import { formatInt, formatEur, formatPct, formatDec1 } from "@/lib/format";
+import { useConfidential } from "@/lib/confidential";
 import type { BreakdownRow } from "@/lib/types";
 
 const DIMS: { key: string; label: string }[] = [
@@ -26,8 +27,13 @@ const METRICS: { key: keyof BreakdownRow; label: string; unit: "int" | "eur" }[]
 
 export function BreakdownView() {
   const { data } = useSnapshot();
+  const { hidden } = useConfidential();
+  const showRecettes = !hidden("recettes");
+  const metrics = showRecettes ? METRICS : METRICS.filter((m) => m.key !== "recettes");
   const [dim, setDim] = useState("secteur");
   const [metric, setMetric] = useState<keyof BreakdownRow>("inscriptions");
+  // Si « recettes » était sélectionné puis masqué, on retombe sur inscriptions.
+  const activeMetric: keyof BreakdownRow = metric === "recettes" && !showRecettes ? "inscriptions" : metric;
 
   const block = data.breakdowns?.[dim];
   const rows = block?.rows ?? [];
@@ -35,27 +41,27 @@ export function BreakdownView() {
 
   const chartData = rows
     .slice(0, 15)
-    .map((r) => ({ name: r.label, value: Number(r[metric]) }));
+    .map((r) => ({ name: r.label, value: Number(r[activeMetric]) }));
 
   return (
     <div className="space-y-5">
       <PageTitle eyebrow={`Cours · ${data.filters.year}`} title="Répartition">
-        Ventilez les inscriptions, cours et recettes par dimension d'analyse — du secteur à la catégorie de cours.
+        Ventilez les inscriptions, cours{showRecettes ? " et recettes" : ""} par dimension d'analyse — du secteur à la catégorie de cours.
       </PageTitle>
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <Switch label="Dimension" options={DIMS.map((d) => ({ value: d.key, label: d.label }))} value={dim} onChange={setDim} />
         <Switch
           label="Indicateur"
-          options={METRICS.map((m) => ({ value: m.key as string, label: m.label }))}
-          value={metric as string}
+          options={metrics.map((m) => ({ value: m.key as string, label: m.label }))}
+          value={activeMetric as string}
           onChange={(v) => setMetric(v as keyof BreakdownRow)}
         />
       </div>
 
-      <Panel title={`Top ${Math.min(15, rows.length)} · ${DIMS.find((d) => d.key === dim)?.label}`} subtitle={METRICS.find((m) => m.key === metric)?.label}>
+      <Panel title={`Top ${Math.min(15, rows.length)} · ${DIMS.find((d) => d.key === dim)?.label}`} subtitle={metrics.find((m) => m.key === activeMetric)?.label}>
         {chartData.length ? (
-          <HBar data={chartData} height={Math.max(220, chartData.length * 26)} unit={metric === "recettes" ? "eur" : "int"} />
+          <HBar data={chartData} height={Math.max(220, chartData.length * 26)} unit={activeMetric === "recettes" ? "eur" : "int"} />
         ) : (
           <p className="text-body-sm text-neutral-500">Aucune donnée pour cette dimension.</p>
         )}
@@ -66,7 +72,7 @@ export function BreakdownView() {
           <table className="w-full border-collapse text-body-sm">
             <thead>
               <tr>
-                {[DIMS.find((d) => d.key === dim)?.label ?? "", "Cours", "Inscriptions", "Nouv.", "% nouv.", "Recettes", "Rempl."].map((h, i) => (
+                {[DIMS.find((d) => d.key === dim)?.label ?? "", "Cours", "Inscriptions", "Nouv.", "% nouv.", ...(showRecettes ? ["Recettes"] : []), "Rempl."].map((h, i) => (
                   <th key={h} className={`sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-eyebrow font-semibold uppercase text-neutral-600 ${i === 0 ? "text-left" : "text-right"}`}>
                     {h}
                   </th>
@@ -81,7 +87,7 @@ export function BreakdownView() {
                   <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.inscriptions)}</td>
                   <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.nouv)}</td>
                   <td className="tnum px-3.5 py-2.5 text-right">{formatPct(r.pctNouv)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatEur(r.recettes)}</td>
+                  {showRecettes && <td className="tnum px-3.5 py-2.5 text-right">{formatEur(r.recettes)}</td>}
                   <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(r.remplissage)}</td>
                 </tr>
               ))}
@@ -92,7 +98,7 @@ export function BreakdownView() {
                   <td className="tnum px-3.5 py-2.5 text-right">{formatInt(total.inscriptions)}</td>
                   <td className="tnum px-3.5 py-2.5 text-right">{formatInt(total.nouv)}</td>
                   <td className="tnum px-3.5 py-2.5 text-right">{formatPct(total.pctNouv)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatEur(total.recettes)}</td>
+                  {showRecettes && <td className="tnum px-3.5 py-2.5 text-right">{formatEur(total.recettes)}</td>}
                   <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(total.remplissage)}</td>
                 </tr>
               )}
