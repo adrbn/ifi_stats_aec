@@ -4,7 +4,7 @@ import { EMPTY_SNAPSHOT } from "./fixture";
 export interface SnapshotQuery {
   years?: number[];
   antennas?: AntennaCode[];
-  dims?: { secteurs: string[]; sousSecteurs: string[]; macros: string[]; categories: string[] };
+  dims?: { secteurs: string[]; sousSecteurs: string[]; macros: string[]; categories: string[]; niveaux: string[] };
   mode?: "civil" | "school";
 }
 
@@ -19,7 +19,7 @@ export async function fetchSnapshot(q: SnapshotQuery = {}): Promise<Snapshot> {
   if (q.antennas?.length) params.set("antennas", q.antennas.join(","));
   if (q.dims) {
     // repeated params (?secteurs=A&secteurs=B) — safe for values containing commas
-    (["secteurs", "sousSecteurs", "macros", "categories"] as const).forEach((k) => {
+    (["secteurs", "sousSecteurs", "macros", "categories", "niveaux"] as const).forEach((k) => {
       q.dims![k].forEach((v) => params.append(k, v));
     });
   }

@@ -15,7 +15,36 @@ const DIM_LABELS: { key: DimKey; label: string }[] = [
   { key: "sousSecteurs", label: "Sous-secteur" },
   { key: "macros", label: "Macro-cat." },
   { key: "categories", label: "Catégorie" },
+  { key: "niveaux", label: "Niveau" },
 ];
+
+/** Slider « mode confidentiel » — masque les données de recettes (défaut ON). */
+function ConfidentialToggle() {
+  const confidential = useFilters((s) => s.confidential);
+  const setConfidential = useFilters((s) => s.setConfidential);
+  return (
+    <button
+      role="switch"
+      aria-checked={confidential}
+      onClick={() => setConfidential(!confidential)}
+      title={confidential ? "Mode confidentiel actif : recettes masquées. Cliquer pour afficher." : "Recettes visibles. Cliquer pour masquer."}
+      className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-body-sm font-medium transition-colors sm:px-3 ${
+        confidential ? "border-accent-200 bg-accent-50 text-accent-700" : "border-neutral-200 bg-surface text-neutral-500 hover:text-neutral-900"
+      }`}
+    >
+      <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="10" rx="2" />
+        {confidential ? <path d="M7 11V7a5 5 0 0 1 10 0v4" /> : <path d="M7 11V7a5 5 0 0 1 9.9-1" />}
+      </svg>
+      <span className="hidden sm:inline">Confidentiel</span>
+      <span
+        className={`relative h-4 w-7 flex-shrink-0 rounded-full transition-colors ${confidential ? "bg-accent-500" : "bg-neutral-300"}`}
+      >
+        <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${confidential ? "left-3.5" : "left-0.5"}`} />
+      </span>
+    </button>
+  );
+}
 
 export function TopBar() {
   const pathname = usePathname();
@@ -36,7 +65,7 @@ export function TopBar() {
     setEmbedded(typeof window !== "undefined" && window.self !== window.top);
   }, []);
   const { data, isOffline, isLoading } = useSnapshot();
-  const dimOptions = data.dimOptions ?? { secteurs: [], sousSecteurs: [], macros: [], categories: [] };
+  const dimOptions = data.dimOptions ?? { secteurs: [], sousSecteurs: [], macros: [], categories: [], niveaux: [] };
   const dimCount = Object.values(dims).reduce((n, a) => n + a.length, 0);
   // Résumé compact des filtres actifs (affiché dans l'en-tête repliable mobile).
   const yearSummary = years.length === 0
@@ -72,6 +101,7 @@ export function TopBar() {
           )}
         </div>
         <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+          <ConfidentialToggle />
           {!embedded && (
             <a
               href="/compare"
@@ -147,11 +177,11 @@ export function TopBar() {
             <MultiSelect
               key={d.key}
               label={d.label}
-              options={dimOptions[d.key]}
+              options={dimOptions[d.key] ?? []}
               selected={dims[d.key]}
               onToggle={(v) => toggleDim(d.key, v)}
               onClear={() => clearDim(d.key)}
-              disabled={isOffline || dimOptions[d.key].length === 0}
+              disabled={isOffline || (dimOptions[d.key] ?? []).length === 0}
             />
           ))}
           {dimCount > 0 && (

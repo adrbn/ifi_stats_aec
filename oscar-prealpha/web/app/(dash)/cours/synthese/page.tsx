@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSnapshot } from "@/lib/useSnapshot";
 import { useFilters } from "@/lib/store";
+import { useConfidential, isSensitiveKey } from "@/lib/confidential";
 import { KpiRow } from "@/components/KpiCard";
 import { Panel } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
@@ -18,9 +19,13 @@ export default function SynthesePage() {
   const { data } = useSnapshot();
   const yearMode = useFilters((s) => s.yearMode);
   const toggleDim = useFilters((s) => s.toggleDim);
+  const { filterKeyed } = useConfidential();
 
-  const indicators = data.indicators ?? [{ key: "inscriptions", label: "Inscriptions", format: "int" as const }];
-  const [ind, setInd] = useState("inscriptions");
+  // Mode confidentiel : on retire les indicateurs de recettes du sélecteur.
+  const indicators = filterKeyed(data.indicators ?? [{ key: "inscriptions", label: "Inscriptions", format: "int" as const }]);
+  const [indSel, setInd] = useState("inscriptions");
+  // Si l'indicateur choisi devient masqué, on retombe sur les inscriptions.
+  const ind = isSensitiveKey(indSel) && !indicators.some((i) => i.key === indSel) ? "inscriptions" : indSel;
   const indMeta = indicators.find((i) => i.key === ind) ?? indicators[0];
   const indLabel = indMeta?.label ?? "Inscriptions";
   const lower = indLabel.toLowerCase();
@@ -58,7 +63,7 @@ export default function SynthesePage() {
 
   // Détail par secteur : mêmes colonnes que les étiquettes KPI (même ordre) ;
   // la ligne TOTAL reprend les valeurs KPI (juste même pour élèves différents).
-  const kpiCols = data.kpis.map((k) => ({ key: k.key, label: k.label, format: k.format }));
+  const kpiCols = filterKeyed(data.kpis).map((k) => ({ key: k.key, label: k.label, format: k.format }));
   const kpiTotals = Object.fromEntries(data.kpis.map((k) => [k.key, k.value]));
   const sectorList = (data.bySectorIndicator?.inscriptions ?? []).map((x) => x.label);
 

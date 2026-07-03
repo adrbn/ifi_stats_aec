@@ -1,6 +1,8 @@
 "use client";
 
 import { useSnapshot } from "@/lib/useSnapshot";
+import { useFilters } from "@/lib/store";
+import { useConfidential } from "@/lib/confidential";
 import { Panel } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
 import { AntennaBar } from "@/components/Charts";
@@ -15,19 +17,27 @@ const ANT_ORDER = ["inscriptions", "cours", "heures", "heures_eleves", "eleves_d
 
 export default function AntennesPage() {
   const { data } = useSnapshot();
-  const indicators = data.indicators ?? [];
+  const { filterKeyed } = useConfidential();
+  const antennas = useFilters((s) => s.antennas);
+  // IFI = total réseau : n'a de sens QUE si les 4 antennes sont dans le périmètre.
+  // Sinon la « somme des antennes filtrées » = l'antenne seule (doublon trompeur)
+  // → on masque la ligne/carte IFI (bug corrigé).
+  const showIFI = antennas.length === 4;
+  const indicators = filterKeyed(data.indicators ?? []);
   const byInd = data.byAntennaIndicator ?? {};
-  // Indicateurs réordonnés selon ANT_ORDER (puis tout reliquat éventuel).
+  // Indicateurs réordonnés selon ANT_ORDER (puis tout reliquat éventuel), en
+  // retirant les indicateurs masqués par le mode confidentiel.
+  const visibleKeys = new Set(indicators.map((i) => i.key));
   const orderedInds = [
     ...ANT_ORDER.map((k) => indicators.find((i) => i.key === k)).filter(Boolean),
     ...indicators.filter((i) => !ANT_ORDER.includes(i.key)),
-  ] as { key: string; label: string; format: "int" | "eur" | "dec1" }[];
+  ].filter((i) => i && visibleKeys.has(i.key)) as { key: string; label: string; format: "int" | "eur" | "dec1" }[];
 
   const ifiInscr = data.byAntenna.reduce((s, a) => s + (a.inscriptions ?? 0), 0);
   const ifiCours = data.byAntenna.reduce((s, a) => s + (a.cours ?? 0), 0);
   const ifiRempl = ifiCours ? ifiInscr / ifiCours : 0;
   const cardRows = [
-    { code: "IFI", name: "IFI · Réseau", color: IFI_BLUE, inscriptions: ifiInscr },
+    ...(showIFI ? [{ code: "IFI", name: "IFI · Réseau", color: IFI_BLUE, inscriptions: ifiInscr }] : []),
     ...data.byAntenna,
   ];
   // Total IFI d'un indicateur : valeur KPI globale si dispo (juste pour les
@@ -43,14 +53,15 @@ export default function AntennesPage() {
     f === "eur" ? formatEur(v) : f === "dec1" ? formatDec1(v) : formatInt(v);
   const indRowsWithIFI = (key: string) => {
     const base = (byInd[key] ?? []).map((r) => ({ name: r.code, value: r.value, color: r.color }));
-    return [{ name: "IFI", value: ifiTotalFor(key), color: IFI_BLUE }, ...base];
+    return showIFI ? [{ name: "IFI", value: ifiTotalFor(key), color: IFI_BLUE }, ...base] : base;
   };
   const valueOf = (key: string, code: string) => (byInd[key] ?? []).find((r) => r.code === code)?.value ?? 0;
 
   return (
     <div className="space-y-5">
       <PageTitle eyebrow="Cours" title="Par antenne">
-        Comparaison des antennes du réseau IFI, tous indicateurs, sur le périmètre filtré. La ligne « IFI » = total réseau.
+        Comparaison des antennes du réseau IFI, tous indicateurs, sur le périmètre filtré.
+        {showIFI ? " La ligne « IFI » = total réseau." : " (Sélectionnez « IFI » / les 4 antennes pour afficher le total réseau.)"}
       </PageTitle>
       <FilterSummary />
 
@@ -119,17 +130,19 @@ export default function AntennesPage() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b-2 border-accent-200 bg-accent-50/40 font-semibold text-neutral-900">
-                <td className="px-3.5 py-2.5">
-                  <span className="inline-flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full" style={{ background: IFI_BLUE }} />
-                    IFI · Réseau
-                  </span>
-                </td>
-                {orderedInds.map((ind) => (
-                  <td key={ind.key} className="tnum px-3.5 py-2.5 text-right">{fmtVal(ifiTotalFor(ind.key), ind.format)}</td>
-                ))}
-              </tr>
+              {showIFI && (
+                <tr className="border-b-2 border-accent-200 bg-accent-50/40 font-semibold text-neutral-900">
+                  <td className="px-3.5 py-2.5">
+                    <span className="inline-flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full" style={{ background: IFI_BLUE }} />
+                      IFI · Réseau
+                    </span>
+                  </td>
+                  {orderedInds.map((ind) => (
+                    <td key={ind.key} className="tnum px-3.5 py-2.5 text-right">{fmtVal(ifiTotalFor(ind.key), ind.format)}</td>
+                  ))}
+                </tr>
+              )}
               {data.byAntenna.map((a) => (
                 <tr key={a.code} className="even:bg-neutral-50 hover:bg-accent-50">
                   <td className="px-3.5 py-2.5">

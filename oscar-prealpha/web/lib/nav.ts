@@ -19,6 +19,7 @@ export const NAV: NavGroup[] = [
       { label: "Synthèse", href: "/cours/synthese" },
       { label: "Par antenne", href: "/cours/antennes" },
       { label: "Par secteurs", href: "/cours/secteurs" },
+      { label: "Par niveau", href: "/cours/niveaux" },
       { label: "Répartition", href: "/cours/repartition" },
       { label: "Année vs année", href: "/cours/annee" },
       { label: "Rentabilité", href: "/cours/rentabilite" },
@@ -42,6 +43,12 @@ export const NAV: NavGroup[] = [
       { label: "Catalogue", href: "/produits/catalogue" },
       { label: "Par type", href: "/produits/types" },
       { label: "Tarifs", href: "/produits/tarifs" },
+    ],
+  },
+  {
+    title: "Paramètres",
+    items: [
+      { label: "Équivalences", href: "/parametres/equivalences" },
     ],
   },
 ];

@@ -279,6 +279,8 @@ _DIM_COL = {
     "sousSecteurs": "Sous-secteur",
     "macros": "Macro-catégorie",
     "categories": "Catégorie de cours",
+    # « niveaux » = dimension ORTHOGONALE (hors cascade secteur→…→catégorie).
+    "niveaux": "Niveau",
 }
 
 # Indicators shared by the per-sector / per-antenna analytical charts.
@@ -395,6 +397,7 @@ def compute(
     sousSecteurs: Optional[List[str]] = None,
     macros: Optional[List[str]] = None,
     categories: Optional[List[str]] = None,
+    niveaux: Optional[List[str]] = None,
     year_mode: str = "civil",
 ) -> dict:
     """Full snapshot-shaped payload for the given filters, computed live.
@@ -419,7 +422,8 @@ def compute(
     base = df[df["Année"].isin(years) & df["Sede"].isin(antennas)]
 
     sel = {"secteurs": secteurs or [], "sousSecteurs": sousSecteurs or [],
-           "macros": macros or [], "categories": categories or []}
+           "macros": macros or [], "categories": categories or [],
+           "niveaux": niveaux or []}
 
     # Cascade dropdown options: each level reflects the parent selection only.
     def _uniq(d, col):
@@ -435,10 +439,13 @@ def compute(
     if sel["macros"]:
         b = b[b["Macro-catégorie"].isin(sel["macros"])]
     dim_options["categories"] = _uniq(b, "Catégorie de cours")
+    # « niveaux » : dimension orthogonale → options calculées sur le périmètre
+    # année+antenne (base), indépendamment de la cascade secteur.
+    dim_options["niveaux"] = _uniq(base, "Niveau")
 
-    # Analytics dataframe: apply ALL active dimension filters.
+    # Analytics dataframe: apply ALL active dimension filters (dont niveaux).
     df_sel = base
-    for key in ("secteurs", "sousSecteurs", "macros", "categories"):
+    for key in ("secteurs", "sousSecteurs", "macros", "categories", "niveaux"):
         vals = sel[key]
         col = _DIM_COL[key]
         if vals and col in df_sel.columns:
@@ -448,7 +455,7 @@ def compute(
     # TOUTES les années → la comparaison N-1 porte sur le même périmètre filtré
     # (sinon on compare une valeur filtrée à un total non filtré → delta faux).
     df_scope = df[df["Sede"].isin(antennas)]
-    for key in ("secteurs", "sousSecteurs", "macros", "categories"):
+    for key in ("secteurs", "sousSecteurs", "macros", "categories", "niveaux"):
         vals = sel[key]
         col = _DIM_COL[key]
         if vals and col in df_scope.columns:
@@ -461,7 +468,8 @@ def compute(
             "years": years, "year": years[-1] if years else 0, "antennas": antennas,
             "yearMode": year_mode,
             "secteurs": sel["secteurs"], "sousSecteurs": sel["sousSecteurs"],
-            "macros": sel["macros"], "categories": sel["categories"], "sectors": [],
+            "macros": sel["macros"], "categories": sel["categories"],
+            "niveaux": sel["niveaux"], "sectors": [],
         },
         "dimOptions": dim_options,
         "indicators": INDICATOR_META,
