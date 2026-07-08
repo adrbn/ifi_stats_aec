@@ -9,11 +9,40 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import List, Optional
 
+import pandas as pd
+
 import oscar_core as core
 import build_snapshot as bs
+import mapping_store
 
 _DF = None
 _ELEVES = None
+_MAPPING_VERSION = None
+
+
+def _recompute_sector_columns(df) -> None:
+    """Recalcule Macro-catégorie / Sous-secteur / Secteur à partir de la
+    « Catégorie de cours » et du mapping courant (in place, sur le df caché)."""
+    levels = df["Catégorie de cours"].apply(core.map_category_to_levels)
+    df["Macro-catégorie"] = levels.apply(lambda x: x[0])
+    df["Sous-secteur"] = levels.apply(lambda x: x[1])
+    df["Secteur"] = levels.apply(lambda x: x[2])
+
+
+def sync_mapping(force: bool = False) -> None:
+    """Applique les overrides de correspondances (KV en prod / fichier en local)
+    au mapping courant. Si les overrides ont changé depuis la dernière fois,
+    recalcule les colonnes Secteur sur le DataFrame caché → les modifications
+    prennent effet EN TEMPS RÉEL au prochain /api/cours, sans redéploiement."""
+    global _MAPPING_VERSION
+    overrides = mapping_store.load_overrides()
+    version = mapping_store.version_of(overrides)
+    if not force and version == _MAPPING_VERSION:
+        return
+    core.set_runtime_overrides(mapping_store.to_tuples(overrides))
+    if _DF is not None and "Catégorie de cours" in _DF.columns:
+        _recompute_sector_columns(_DF)
+    _MAPPING_VERSION = version
 
 
 def get_df():
@@ -21,6 +50,7 @@ def get_df():
     global _DF
     if _DF is None:
         _DF = bs.load_all_years()
+        sync_mapping(force=True)  # applique les overrides sur le df fraîchement chargé
     return _DF
 
 
@@ -412,6 +442,7 @@ def compute(
     ventilations) regroupe alors par année scolaire sans autre changement.
     """
     year_mode = "school" if year_mode == "school" else "civil"
+    sync_mapping()  # applique d'éventuelles éditions de correspondances (temps réel)
     df = get_df()
     if year_mode == "school" and "Année scolaire" in df.columns:
         df = df.assign(**{"Année": df["Année scolaire"]})
@@ -484,4 +515,50 @@ def compute(
         "byAntennaIndicator": _by_antenna_indicators(df_sel, antennas),
         "sectorAntenna": _sector_antenna_matrix(df_sel, antennas),
         "flows": _flows(df_sel, antennas),
+        "diagnostics": {"nonRattache": _nonrattache_courses(df_sel)},
     }
+
+
+def _s(v) -> str:
+    """Chaîne propre (vide si NaN/None)."""
+    return "" if v is None or (isinstance(v, float) and pd.isna(v)) else str(v).strip()
+
+
+def _nonrattache_courses(df_sel, limit: int = 200) -> List[dict]:
+    """Liste des cours du périmètre dont le Secteur est « NON RATTACHÉ », avec
+    l'identité (nom, antenne, période) et la RAISON — pour comprendre depuis
+    OSCAR pourquoi un cours n'est pas rattaché (catégorie vide = erreur de saisie
+    AEC, ou catégorie absente du tableau de correspondances)."""
+    if "Secteur" not in df_sel.columns:
+        return []
+    nr = df_sel[df_sel["Secteur"] == "NON RATTACHÉ"]
+    out: List[dict] = []
+    for _, r in nr.iterrows():
+        cat_raw = r.get("Catégorie de cours") if "Catégorie de cours" in nr.columns else None
+        cat_empty = cat_raw is None or (isinstance(cat_raw, float) and pd.isna(cat_raw)) or str(cat_raw).strip() == ""
+        cat = None if cat_empty else str(cat_raw).strip()
+        reason = (
+            "Catégorie de cours vide dans l'export AEC — à renseigner dans AEC sur la fiche du cours."
+            if cat_empty else
+            f"Catégorie « {cat} » absente du tableau de correspondances — à ajouter dans Paramètres › Équivalences."
+        )
+        annee = None
+        if "Année" in nr.columns and pd.notna(r.get("Année")):
+            try:
+                annee = int(r["Année"])
+            except (ValueError, TypeError):
+                annee = None
+        out.append({
+            "code": _s(r.get("Code cours")),
+            "nom": _s(r.get("Nom du cours")),
+            "sede": _s(r.get("Sede")),
+            "annee": annee,
+            "semestre": _s(r.get("Semestre")),
+            "periode": _s(r.get("Période")),
+            "categorie": cat,          # None si vide
+            "categorieVide": bool(cat_empty),
+            "reason": reason,
+        })
+        if len(out) >= limit:
+            break
+    return out

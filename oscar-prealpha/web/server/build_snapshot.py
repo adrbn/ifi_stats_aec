@@ -126,6 +126,10 @@ def load_all_years():
         if os.path.exists(csv):
             try:
                 core.load_csv_mappings(csv)
+                # Ces correspondances CSV font partie du socle : sinon les
+                # overrides runtime (set_runtime_overrides) les effaceraient en
+                # réinitialisant au socle capturé à l'import.
+                core.refresh_base_mapping()
             except Exception:  # noqa: BLE001
                 pass
             break

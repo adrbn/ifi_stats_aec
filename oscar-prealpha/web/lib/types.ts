@@ -85,6 +85,18 @@ export interface ProfitabilityRow {
   arpi: number;
 }
 
+export interface NonRattacheCourse {
+  code: string;
+  nom: string;
+  sede: string;
+  annee: number | null;
+  semestre: string;
+  periode: string;
+  categorie: string | null; // null si la catégorie AEC est vide
+  categorieVide: boolean;
+  reason: string;
+}
+
 export interface Snapshot {
   meta: {
     app: string;
@@ -92,6 +104,7 @@ export interface Snapshot {
     source: "computed" | "partial" | "unavailable";
     updated: string;
     years: number[];
+    yearMode?: "civil" | "school";
     antennas: Antenna[];
   };
   filters: {
@@ -131,4 +144,5 @@ export interface Snapshot {
     matrices?: Record<string, number[][]>;
   };
   flows?: { source: string; target: string; value: number; values?: Record<string, number> }[];
+  diagnostics?: { nonRattache: NonRattacheCourse[] };
 }

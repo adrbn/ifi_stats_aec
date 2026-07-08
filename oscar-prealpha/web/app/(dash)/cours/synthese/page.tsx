@@ -10,6 +10,7 @@ import { PageTitle } from "@/components/PageTitle";
 import { AntennaBar, Donut } from "@/components/Charts";
 import { EvolutionPanel } from "@/components/EvolutionPanel";
 import { SectorIndicatorTable } from "@/components/SectorIndicatorTable";
+import { NonRattacheDiag } from "@/components/NonRattacheDiag";
 import { FilterSummary, yearLabel } from "@/components/Filters";
 import { Sankey, FlowTreemap, AcquisitionRetention } from "@/components/RichCharts";
 
@@ -139,6 +140,11 @@ export default function SynthesePage() {
 
       <Panel title="Détail par secteur" subtitle="Mêmes indicateurs que les étiquettes ci-dessus">
         <SectorIndicatorTable sectors={sectorList} byInd={data.bySectorIndicator ?? {}} columns={kpiCols} totals={kpiTotals} />
+        {(data.diagnostics?.nonRattache?.length ?? 0) > 0 && (
+          <div className="mt-4">
+            <NonRattacheDiag rows={data.diagnostics!.nonRattache} />
+          </div>
+        )}
       </Panel>
     </div>
   );
