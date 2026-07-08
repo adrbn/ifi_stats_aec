@@ -30,6 +30,11 @@ import urllib.request
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _LOCAL_PATH = os.path.join(_HERE, "data", "mapping_overrides.json")
 _KV_KEY = "oscar:mapping_overrides"
+# Overrides au niveau d'un COURS précis (Code cours → Catégorie de cours) : sert
+# à rattacher un cours dont la catégorie AEC est vide/erronée, sans toucher au
+# tableau catégorie→secteur.
+_COURSE_LOCAL_PATH = os.path.join(_HERE, "data", "course_overrides.json")
+_COURSE_KEY = "oscar:course_overrides"
 
 
 # ---------------------------------------------------------------------------
@@ -78,8 +83,8 @@ def _kv_command(args: list[str]) -> object:
     return payload.get("result")
 
 
-def _kv_get() -> dict:
-    raw = _kv_command(["GET", _KV_KEY])
+def _kv_get(key: str = _KV_KEY) -> dict:
+    raw = _kv_command(["GET", key])
     if not raw:
         return {}
     try:
@@ -89,31 +94,31 @@ def _kv_get() -> dict:
         return {}
 
 
-def _kv_set(overrides: dict) -> None:
-    _kv_command(["SET", _KV_KEY, json.dumps(overrides, ensure_ascii=False)])
+def _kv_set(overrides: dict, key: str = _KV_KEY) -> None:
+    _kv_command(["SET", key, json.dumps(overrides, ensure_ascii=False)])
 
 
 # ---------------------------------------------------------------------------
 # Fichier local
 # ---------------------------------------------------------------------------
 
-def _file_get() -> dict:
-    if not os.path.exists(_LOCAL_PATH):
+def _file_get(path: str = _LOCAL_PATH) -> dict:
+    if not os.path.exists(path):
         return {}
     try:
-        with open(_LOCAL_PATH, "r", encoding="utf-8") as fh:
+        with open(path, "r", encoding="utf-8") as fh:
             data = json.load(fh)
         return data if isinstance(data, dict) else {}
     except (OSError, ValueError):
         return {}
 
 
-def _file_set(overrides: dict) -> None:
-    os.makedirs(os.path.dirname(_LOCAL_PATH), exist_ok=True)
-    tmp = _LOCAL_PATH + ".tmp"
+def _file_set(overrides: dict, path: str = _LOCAL_PATH) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(overrides, fh, ensure_ascii=False, indent=2)
-    os.replace(tmp, _LOCAL_PATH)  # écriture atomique
+    os.replace(tmp, path)  # écriture atomique
 
 
 # ---------------------------------------------------------------------------
@@ -187,3 +192,45 @@ def to_tuples(overrides: dict) -> dict:
         cat: (v.get("macro", ""), v.get("sousSecteur", ""), v.get("secteur", ""))
         for cat, v in (overrides or {}).items()
     }
+
+
+# ---------------------------------------------------------------------------
+# Overrides au niveau d'un COURS (Code cours → Catégorie de cours)
+# ---------------------------------------------------------------------------
+
+def load_course_overrides() -> dict:
+    """Renvoie {code_cours: catégorie} — assigne une catégorie à un cours précis
+    (utile quand la catégorie AEC est vide/erronée)."""
+    try:
+        raw = _kv_get(_COURSE_KEY) if _kv() else _file_get(_COURSE_LOCAL_PATH)
+    except Exception:  # noqa: BLE001
+        return {}
+    return {str(k): _clean(v) for k, v in (raw or {}).items() if _clean(v)}
+
+
+def save_course_overrides(overrides: dict) -> None:
+    if _kv():
+        _kv_set(overrides, _COURSE_KEY)
+    else:
+        _file_set(overrides, _COURSE_LOCAL_PATH)
+
+
+def set_course_override(code: str, categorie: str) -> dict:
+    """Assigne (ou met à jour) la catégorie d'un cours précis. Renvoie le dict."""
+    c = _clean(code)
+    cat = _clean(categorie)
+    if not c:
+        raise ValueError("code cours vide")
+    if not cat:
+        raise ValueError("catégorie vide")
+    ovr = load_course_overrides()
+    ovr[c] = cat
+    save_course_overrides(ovr)
+    return ovr
+
+
+def remove_course_override(code: str) -> dict:
+    ovr = load_course_overrides()
+    ovr.pop(_clean(code), None)
+    save_course_overrides(ovr)
+    return ovr

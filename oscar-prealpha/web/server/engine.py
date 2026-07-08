@@ -29,18 +29,37 @@ def _recompute_sector_columns(df) -> None:
     df["Secteur"] = levels.apply(lambda x: x[2])
 
 
+def _apply_course_overrides(df, course_ovr: dict) -> None:
+    """Assigne une catégorie à des cours précis (Code cours → catégorie), à
+    partir de la catégorie d'ORIGINE conservée dans « _CatégorieBase » — ainsi
+    la suppression d'un override revient à la catégorie AEC réelle."""
+    if "_CatégorieBase" not in df.columns:
+        df["_CatégorieBase"] = df["Catégorie de cours"]
+    # Repart toujours de la catégorie d'origine (réversibilité).
+    df["Catégorie de cours"] = df["_CatégorieBase"]
+    if course_ovr and "Code cours" in df.columns:
+        codes = df["Code cours"].astype(str)
+        for code, cat in course_ovr.items():
+            mask = codes == str(code)
+            if mask.any():
+                df.loc[mask, "Catégorie de cours"] = cat
+
+
 def sync_mapping(force: bool = False) -> None:
-    """Applique les overrides de correspondances (KV en prod / fichier en local)
-    au mapping courant. Si les overrides ont changé depuis la dernière fois,
-    recalcule les colonnes Secteur sur le DataFrame caché → les modifications
-    prennent effet EN TEMPS RÉEL au prochain /api/cours, sans redéploiement."""
+    """Applique les overrides — correspondances catégorie→secteur ET cours→
+    catégorie (KV en prod / fichier en local) — au mapping courant. Si quelque
+    chose a changé, réassigne les catégories de cours puis recalcule les colonnes
+    Secteur sur le DataFrame caché → effet EN TEMPS RÉEL au prochain /api/cours,
+    sans redéploiement."""
     global _MAPPING_VERSION
     overrides = mapping_store.load_overrides()
-    version = mapping_store.version_of(overrides)
+    course_ovr = mapping_store.load_course_overrides()
+    version = mapping_store.version_of({"cat": overrides, "course": course_ovr})
     if not force and version == _MAPPING_VERSION:
         return
     core.set_runtime_overrides(mapping_store.to_tuples(overrides))
     if _DF is not None and "Catégorie de cours" in _DF.columns:
+        _apply_course_overrides(_DF, course_ovr)
         _recompute_sector_columns(_DF)
     _MAPPING_VERSION = version
 

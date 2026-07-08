@@ -248,6 +248,42 @@ def mapping_edit(payload: dict = Body(default={})) -> dict:
         return {"ok": False, "reason": "error", "message": str(e)[:200]}
 
 
+@app.post("/api/course-mapping")
+def course_mapping_edit(payload: dict = Body(default={})) -> dict:
+    """Assigne une catégorie à un COURS précis (Code cours → catégorie), pour
+    rattacher un cours dont la catégorie AEC est vide/erronée — sans toucher au
+    tableau catégorie→secteur. Protégé par la session (middleware Next).
+
+    Body : {action:"upsert", code, categorie} | {action:"delete", code}
+
+    Effet immédiat : la catégorie est réassignée et les secteurs recalculés
+    (temps réel). Réversible : delete rétablit la catégorie AEC d'origine."""
+    import engine
+    import mapping_store
+
+    if not mapping_store.is_writable():
+        return {"ok": False, "reason": "read_only",
+                "message": "Persistance non configurée (KV absent et FS en lecture seule)."}
+
+    action = str(payload.get("action", "upsert")).strip().lower()
+    code = str(payload.get("code", "")).strip()
+    if not code:
+        return {"ok": False, "reason": "empty_code", "message": "Code cours manquant."}
+
+    try:
+        if action == "delete":
+            mapping_store.remove_course_override(code)
+        else:
+            categorie = str(payload.get("categorie", "")).strip()
+            if not categorie:
+                return {"ok": False, "reason": "empty_category", "message": "Catégorie manquante."}
+            mapping_store.set_course_override(code, categorie)
+        engine.sync_mapping(force=True)  # application immédiate
+        return {"ok": True, "courseOverrides": mapping_store.load_course_overrides()}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "reason": "error", "message": str(e)[:200]}
+
+
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok"}

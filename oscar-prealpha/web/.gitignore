@@ -11,5 +11,6 @@ next-env.d.ts
 server/.venv
 **/__pycache__/
 *.pyc
-# Overrides du tableau de correspondances (persistance locale en dev)
+# Overrides (persistance locale en dev) : correspondances + rattachements de cours
 server/data/mapping_overrides.json
+server/data/course_overrides.json
