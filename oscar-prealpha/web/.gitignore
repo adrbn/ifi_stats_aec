@@ -6,3 +6,11 @@ next-env.d.ts
 .DS_Store
 .env*.local
 .vercel
+
+# Python (backend serverless / dev local)
+server/.venv
+**/__pycache__/
+*.pyc
+# Overrides (persistance locale en dev) : correspondances + rattachements de cours
+server/data/mapping_overrides.json
+server/data/course_overrides.json

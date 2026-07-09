@@ -251,6 +251,43 @@ except Exception:  # noqa: BLE001
     pass
 
 
+# Snapshot du mapping « de base » (dict codé en dur + surcharge CSV) une fois le
+# CSV chargé. Sert de socle stable pour ré-appliquer proprement les overrides
+# runtime (édités depuis le site) : on repart toujours de cette base, puis on
+# empile les overrides — de sorte qu'une suppression d'override revienne bien au
+# mapping par défaut.
+_BASE_CATEGORY_MAPPING: dict = dict(CATEGORY_MAPPING)
+
+
+def refresh_base_mapping() -> None:
+    """Re-capture le socle du mapping à partir de l'état COURANT de
+    CATEGORY_MAPPING. À appeler après tout chargement de CSV supplémentaire
+    (ex. build_snapshot charge server/data/category_mapping.csv) pour que ces
+    correspondances fassent partie du socle — sinon set_runtime_overrides les
+    effacerait en réinitialisant au socle d'import."""
+    global _BASE_CATEGORY_MAPPING
+    _BASE_CATEGORY_MAPPING = dict(CATEGORY_MAPPING)
+
+
+def set_runtime_overrides(overrides: dict) -> None:
+    """Réinitialise CATEGORY_MAPPING au socle (dict + CSV) puis applique les
+    overrides runtime édités depuis le site.
+
+    overrides : {catégorie: (macro, sous_secteur, secteur)}."""
+    CATEGORY_MAPPING.clear()
+    CATEGORY_MAPPING.update(_BASE_CATEGORY_MAPPING)
+    for cat, val in (overrides or {}).items():
+        key = str(cat).strip()
+        if not key:
+            continue
+        if isinstance(val, dict):
+            CATEGORY_MAPPING[key] = (
+                val.get("macro", ""), val.get("sousSecteur", ""), val.get("secteur", ""),
+            )
+        elif isinstance(val, (list, tuple)) and len(val) == 3:
+            CATEGORY_MAPPING[key] = tuple(val)
+
+
 # ---------------------------------------------------------------------------
 # Category mapping
 # ---------------------------------------------------------------------------

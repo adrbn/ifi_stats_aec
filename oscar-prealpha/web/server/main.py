@@ -154,39 +154,134 @@ def data(name: str) -> dict:
     return payload
 
 
+def _mapping_payload() -> dict:
+    """Construit le payload du tableau d'équivalences (mapping courant = base +
+    overrides), avec la liste des catégories présentes dans les données mais non
+    mappées, et le flag d'éditabilité."""
+    import engine
+    import oscar_core as core
+    import mapping_store
+
+    # Réveille le moteur ET applique les overrides (KV/fichier) sur CATEGORY_MAPPING.
+    engine.sync_mapping()
+    df = engine.get_df()
+    overrides = mapping_store.load_overrides()
+    overridden = set(overrides.keys())
+    rows = [
+        {"categorie": c, "macro": v[0], "sousSecteur": v[1], "secteur": v[2],
+         "override": c in overridden}
+        for c, v in core.CATEGORY_MAPPING.items()
+    ]
+    rows.sort(key=lambda r: (r["secteur"], r["sousSecteur"], r["macro"], r["categorie"]))
+    present = (
+        sorted(df["Catégorie de cours"].dropna().astype(str).str.strip().unique().tolist())
+        if "Catégorie de cours" in df.columns else []
+    )
+    mapped = {str(k).strip() for k in core.CATEGORY_MAPPING}
+    unmapped = [c for c in present if c not in mapped]  # → NON RATTACHÉ
+    return {
+        "rows": rows,
+        "sectorOrder": list(core.SECTOR_ORDER),
+        "sousSecteurOrder": list(core.SOUS_SECTEUR_ORDER),
+        "count": len(rows),
+        "present": present,
+        "unmapped": unmapped,
+        "csvPath": "data/category_mapping.csv",
+        "editable": mapping_store.is_writable(),
+        "storage": mapping_store.backend(),
+        "overridesCount": len(overridden),
+    }
+
+
 @app.get("/api/mapping")
 def mapping() -> dict:
     """Tableau des équivalences catégorie → (macro-catégorie, sous-secteur,
-    secteur). LECTURE SEULE (le FS serverless est en lecture seule) : la source
-    éditable reste data/category_mapping.csv (dict + override CSV). Sert l'onglet
-    « Paramètres » de la v3."""
+    secteur). Mapping = socle (dict + CSV) + overrides éditables depuis le site
+    (persistés en KV en prod / fichier en local). Sert l'onglet « Paramètres »."""
     try:
-        import engine
-        import oscar_core as core
-        # Réveille le moteur → applique les overrides CSV sur CATEGORY_MAPPING.
-        df = engine.get_df()
-        rows = [
-            {"categorie": c, "macro": v[0], "sousSecteur": v[1], "secteur": v[2]}
-            for c, v in core.CATEGORY_MAPPING.items()
-        ]
-        rows.sort(key=lambda r: (r["secteur"], r["sousSecteur"], r["macro"], r["categorie"]))
-        present = (
-            sorted(df["Catégorie de cours"].dropna().astype(str).str.strip().unique().tolist())
-            if "Catégorie de cours" in df.columns else []
-        )
-        mapped = {str(k).strip() for k in core.CATEGORY_MAPPING}
-        unmapped = [c for c in present if c not in mapped]  # → NON RATTACHÉ
-        return {
-            "rows": rows,
-            "sectorOrder": list(core.SECTOR_ORDER),
-            "count": len(rows),
-            "present": present,
-            "unmapped": unmapped,
-            "csvPath": "data/category_mapping.csv",
-            "editable": False,
-        }
+        return _mapping_payload()
     except Exception as e:  # noqa: BLE001
-        return {"rows": [], "sectorOrder": [], "count": 0, "present": [], "unmapped": [], "error": str(e)[:200]}
+        return {"rows": [], "sectorOrder": [], "count": 0, "present": [], "unmapped": [],
+                "editable": False, "error": str(e)[:200]}
+
+
+@app.post("/api/mapping")
+def mapping_edit(payload: dict = Body(default={})) -> dict:
+    """Édite le tableau des correspondances depuis le site (protégé par la
+    session — le middleware Next bloque les requêtes non authentifiées).
+
+    Body : {action:"upsert", categorie, macro?, sousSecteur?, secteur}
+        ou {action:"delete", categorie}
+
+    Après écriture, on ré-applique le mapping (temps réel) → le prochain
+    /api/cours reflète immédiatement la modification. La persistance survit aux
+    redéploiements (KV) ou reste locale (fichier)."""
+    import engine
+    import mapping_store
+
+    if not mapping_store.is_writable():
+        return {"ok": False, "reason": "read_only",
+                "message": "Persistance non configurée (KV absent et FS en lecture seule)."}
+
+    action = str(payload.get("action", "upsert")).strip().lower()
+    categorie = str(payload.get("categorie", "")).strip()
+    if not categorie:
+        return {"ok": False, "reason": "empty_category", "message": "Catégorie manquante."}
+
+    try:
+        if action == "delete":
+            mapping_store.remove(categorie)
+        else:
+            secteur = str(payload.get("secteur", "")).strip()
+            if not secteur:
+                return {"ok": False, "reason": "empty_sector", "message": "Secteur manquant."}
+            mapping_store.upsert(
+                categorie,
+                str(payload.get("macro", "")).strip(),
+                str(payload.get("sousSecteur", "")).strip(),
+                secteur,
+            )
+        # Application immédiate (recalcule les colonnes Secteur du df caché).
+        engine.sync_mapping(force=True)
+        return {"ok": True, **_mapping_payload()}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "reason": "error", "message": str(e)[:200]}
+
+
+@app.post("/api/course-mapping")
+def course_mapping_edit(payload: dict = Body(default={})) -> dict:
+    """Assigne une catégorie à un COURS précis (Code cours → catégorie), pour
+    rattacher un cours dont la catégorie AEC est vide/erronée — sans toucher au
+    tableau catégorie→secteur. Protégé par la session (middleware Next).
+
+    Body : {action:"upsert", code, categorie} | {action:"delete", code}
+
+    Effet immédiat : la catégorie est réassignée et les secteurs recalculés
+    (temps réel). Réversible : delete rétablit la catégorie AEC d'origine."""
+    import engine
+    import mapping_store
+
+    if not mapping_store.is_writable():
+        return {"ok": False, "reason": "read_only",
+                "message": "Persistance non configurée (KV absent et FS en lecture seule)."}
+
+    action = str(payload.get("action", "upsert")).strip().lower()
+    code = str(payload.get("code", "")).strip()
+    if not code:
+        return {"ok": False, "reason": "empty_code", "message": "Code cours manquant."}
+
+    try:
+        if action == "delete":
+            mapping_store.remove_course_override(code)
+        else:
+            categorie = str(payload.get("categorie", "")).strip()
+            if not categorie:
+                return {"ok": False, "reason": "empty_category", "message": "Catégorie manquante."}
+            mapping_store.set_course_override(code, categorie)
+        engine.sync_mapping(force=True)  # application immédiate
+        return {"ok": True, "courseOverrides": mapping_store.load_course_overrides()}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "reason": "error", "message": str(e)[:200]}
 
 
 @app.get("/api/health")
@@ -212,27 +307,52 @@ def warmup() -> dict:
 # --- Assistant LLM (API Albert / OpenAI-compatible) ----------------------------
 ASSISTANT_SYSTEM = (
     "Tu es OSCAR, l'assistant analyste de données de l'Institut français Italie "
-    "(réseau IFI : IFM Milano, IFF Firenze, IFN Napoli, IFP Palermo). Tu réponds "
-    "UNIQUEMENT à partir des données JSON fournies, qui correspondent au PÉRIMÈTRE "
-    "ACTUELLEMENT FILTRÉ par l'utilisateur (années + antennes sélectionnées). "
-    "Procède ainsi : (1) comprends la question, (2) montre brièvement tes étapes de "
-    "calcul / comparaison, (3) donne le résultat chiffré final. "
-    "Le JSON contient : totaux_IFI, par_antenne, par_secteur, evolution_par_annee, "
-    "et 'ventilation_par_dimension' = le détail du périmètre filtré par secteur, "
-    "sous_secteur, macro, categorie (ex. type de cours / français général…), niveau, "
-    "format (présentiel/en ligne) et tranche d'âge — chaque ligne a inscriptions, "
-    "cours, recettes, remplissage. Utilise cette ventilation pour les questions sur "
-    "une catégorie / un niveau / un type de cours précis. "
-    "IMPORTANT — si la question vise une antenne précise, une année précise ou une "
-    "sous-catégorie, et que le périmètre filtré ne correspond pas exactement, "
-    "calcule ce que tu peux à partir des données ET invite l'utilisateur à affiner "
-    "via les filtres en haut de page (boutons Antennes, Année, et « Affiner par "
-    "dimension ») puis à reposer la question. "
-    "Le SEMESTRE n'est pas disponible (seulement l'année entière — civile ou "
-    "scolaire) : signale-le si on te le demande. "
-    "Si une métrique n'existe pas (taux d'abandon, satisfaction, âge, nationalité…), "
-    "dis-le et liste les indicateurs disponibles. N'invente JAMAIS de chiffre. "
-    "Réponds en français, concis et structuré."
+    "(réseau IFI, 4 antennes : IFM = Milano, IFF = Firenze, IFN = Napoli, "
+    "IFP = Palermo ; « IFI » = total réseau).\n\n"
+    "RÈGLE ABSOLUE : réponds UNIQUEMENT à partir du JSON fourni. N'invente JAMAIS "
+    "un chiffre. Si l'information n'est pas dans le JSON, dis-le clairement.\n\n"
+    "== CE QUE REPRÉSENTE LE JSON ==\n"
+    "Le bloc `perimetre` indique le périmètre EXACT actuellement filtré par "
+    "l'utilisateur : `annees` (liste), `mode_annee` (civil = année civile, ou "
+    "scolaire = sept→août, libellé type 2024-25), `antennes`, et les filtres de "
+    "dimension actifs (secteurs, sous_secteurs, macros, categories, niveaux). "
+    "`annees_disponibles` liste TOUTES les années présentes dans les données "
+    "(au-delà du filtre courant). Tous les autres chiffres portent sur ce "
+    "périmètre filtré, PAS sur tout l'historique.\n\n"
+    "== INDICATEURS DISPONIBLES (domaine Cours) ==\n"
+    "inscriptions, élèves différents (Code Client distincts), cours (nombre), "
+    "Qté heures (heures enseignées), heures-élèves (heures vendues), recettes (€), "
+    "remplissage (= inscriptions / cours), nouveaux inscrits, réinscrits, "
+    "panier/inscription et panier/personne (€). Le bloc `dictionnaire` en donne la "
+    "définition. `totaux_IFI` = ces indicateurs sur le périmètre ; `par_antenne` "
+    "et `par_secteur` = leur ventilation ; `evolution_par_annee` = série "
+    "pluriannuelle par antenne.\n\n"
+    "== VENTILATIONS FINES ==\n"
+    "`ventilation_par_dimension` détaille le périmètre par secteur, sous_secteur, "
+    "macro, categorie (la catégorie AEC brute du cours), niveau (CECRL), format "
+    "(présentiel / en ligne / hybride) et tranche d'âge — chaque ligne porte "
+    "inscriptions, cours, recettes, remplissage. Utilise-la pour toute question "
+    "sur une catégorie, un niveau, un format ou un public précis.\n\n"
+    "== SECTEURS (métier IFI) ==\n"
+    "PROGRAMMÉS (cours collectifs au catalogue), PLATEFORMES (apprentissage en "
+    "ligne autonome/tutoré), ECOLES (public scolaire : PCTO, classes découverte, "
+    "matinées…), SUR MESURE (cours particuliers/petits groupes), SOCIÉTÉS "
+    "(entreprises), et NON RATTACHÉ (cours dont la catégorie AEC est vide ou "
+    "inconnue du mapping — anomalie de saisie ; le détail figure dans "
+    "`diagnostics.non_rattache` si présent, avec nom du cours, antenne et période).\n\n"
+    "== CE QUI N'EXISTE PAS ICI ==\n"
+    "Le SEMESTRE n'est pas disponible (seulement l'année entière). Le domaine "
+    "Cours n'a NI âge, NI genre, NI nationalité, NI motivation, NI taux "
+    "d'abandon/satisfaction/réussite : ces données sont dans les onglets "
+    "« Profils » (élèves), qui ne sont PAS dans ce JSON → si on te le demande, "
+    "dis-le et renvoie l'utilisateur vers les onglets Profils.\n\n"
+    "== MÉTHODE ==\n"
+    "(1) Comprends la question. (2) Montre brièvement ton calcul/comparaison. "
+    "(3) Donne le résultat chiffré final, formaté (milliers séparés, € pour les "
+    "recettes, 1 décimale pour les ratios). Si la question vise une antenne/année/"
+    "sous-catégorie hors du périmètre filtré, calcule ce que tu peux ET invite à "
+    "affiner via les filtres en haut de page (Antennes, Année, « Affiner par "
+    "dimension »). Réponds en français, concis et structuré."
 )
 
 

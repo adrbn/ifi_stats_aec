@@ -129,12 +129,46 @@ function answer(q: string, snap: Snapshot): string {
   return `${cap(ind.label)} — en tête par ${dimWord} ${scope} : ${b.name} (${fmtVal(b.value, ind.fmt)}).`;
 }
 
-/** Contexte data compact envoyé au LLM (= le périmètre actuellement filtré). */
+// Dictionnaire des indicateurs — donné au LLM pour qu'il sache CE QU'IL REGARDE
+// (définition + unité), au lieu de deviner à partir des seuls libellés.
+const DICTIONNAIRE: Record<string, string> = {
+  inscriptions: "Nombre d'inscriptions à des cours (un élève peut compter plusieurs fois).",
+  eleves_differents: "Élèves distincts (Code Client uniques) — non additif entre périmètres.",
+  cours: "Nombre de cours (sessions) ouverts.",
+  heures: "Qté d'heures enseignées.",
+  heures_eleves: "Heures-élèves = heures vendues (heures × élèves).",
+  remplissage: "Taux de remplissage = inscriptions / cours (élèves par cours).",
+  recettes: "Recettes en euros.",
+  nouveaux: "Nouveaux inscrits (première inscription).",
+  reinscrits: "Réinscrits (déjà venus).",
+  panier_inscr: "Panier moyen par inscription (recettes / inscriptions), en €.",
+  panier_pers: "Panier moyen par personne (recettes / élèves différents), en €.",
+};
+
+/** Contexte data envoyé au LLM. Contient (1) le PÉRIMÈTRE exact filtré + les
+ *  années disponibles, (2) un dictionnaire des indicateurs, (3) les totaux +
+ *  ventilations, (4) le diagnostic des cours NON RATTACHÉ — pour que l'assistant
+ *  comprenne précisément ce qu'il regarde. */
 function buildContext(d: Snapshot) {
+  const f = d.filters ?? ({} as Snapshot["filters"]);
+  const nr = d.diagnostics?.nonRattache ?? [];
   return {
-    perimetre: { annees: d.filters.years, antennes: d.filters.antennas },
-    indicateurs: (d.indicators ?? []).map((i) => ({ cle: i.key, libelle: i.label })),
-    totaux_IFI: d.kpis.map((k) => ({ cle: k.key, libelle: k.label, valeur: k.value })),
+    perimetre: {
+      annees: f.years ?? (f.year ? [f.year] : []),
+      mode_annee: d.meta?.yearMode === "school" ? "scolaire (sept→août)" : "civil (année civile)",
+      antennes: f.antennas,
+      filtres_dimension: {
+        secteurs: f.secteurs ?? [],
+        sous_secteurs: f.sousSecteurs ?? [],
+        macros: f.macros ?? [],
+        categories: f.categories ?? [],
+        niveaux: f.niveaux ?? [],
+      },
+      annees_disponibles: d.meta?.years ?? [],
+    },
+    dictionnaire: (d.indicators ?? [])
+      .map((i) => ({ cle: i.key, libelle: i.label, definition: DICTIONNAIRE[i.key] ?? "" })),
+    totaux_IFI: d.kpis.map((k) => ({ cle: k.key, libelle: k.label, valeur: k.value, variation: k.delta, variation_libelle: k.deltaLabel })),
     par_antenne: d.byAntennaIndicator,
     par_secteur: d.bySectorIndicator,
     evolution_par_annee: {
@@ -155,6 +189,13 @@ function buildContext(d: Snapshot) {
         })),
       ]),
     ),
+    // Cours non rattachés (catégorie vide/inconnue) présents dans le périmètre.
+    diagnostics: {
+      non_rattache: nr.map((c) => ({
+        cours: c.nom, code: c.code, antenne: c.sede,
+        annee: c.annee, periode: c.periode, categorie: c.categorie, raison: c.reason,
+      })),
+    },
   };
 }
 
