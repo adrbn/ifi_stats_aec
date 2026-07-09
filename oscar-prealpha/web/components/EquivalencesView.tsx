@@ -76,6 +76,12 @@ export function EquivalencesView() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // Garde-fou : confirmation avant toute écriture (l'édition recalcule les
+  // secteurs de TOUS les cours en temps réel dans le tableau de bord).
+  const [confirm, setConfirm] = useState<
+    | null
+    | { title: string; body: string; danger?: boolean; cta: string; onConfirm: () => void | Promise<void> }
+  >(null);
 
   const rows = data?.rows ?? [];
   const sectors = data?.sectorOrder ?? [];
@@ -151,11 +157,11 @@ export function EquivalencesView() {
     }
   }
 
-  async function saveDraft() {
-    if (!draft) return;
+  async function saveDraft(): Promise<boolean> {
+    if (!draft) return false;
     if (!draft.categorie.trim() || !draft.secteur.trim()) {
       setErr("Catégorie et secteur sont obligatoires.");
-      return;
+      return false;
     }
     const ok = await submit({
       action: "upsert",
@@ -165,10 +171,41 @@ export function EquivalencesView() {
       secteur: draft.secteur,
     });
     if (ok) setDraft(null);
+    return ok;
   }
 
   async function resetRow(categorie: string) {
     await submit({ action: "delete", categorie });
+  }
+
+  // Ouvre la confirmation au lieu d'écrire directement.
+  function requestSave() {
+    if (!draft) return;
+    if (!draft.categorie.trim() || !draft.secteur.trim()) {
+      setErr("Catégorie et secteur sont obligatoires.");
+      return;
+    }
+    setConfirm({
+      title: draft.isNew ? "Ajouter cette correspondance ?" : "Modifier cette correspondance ?",
+      body: `« ${draft.categorie} » → secteur « ${draft.secteur} ». Les secteurs de tous les cours de cette catégorie seront recalculés en temps réel dans tout le tableau de bord (KPI, secteurs, rapports).`,
+      cta: "Enregistrer",
+      onConfirm: async () => {
+        const ok = await saveDraft();
+        if (ok) setConfirm(null);
+      },
+    });
+  }
+  function requestReset(categorie: string) {
+    setConfirm({
+      title: "Réinitialiser cette correspondance ?",
+      body: `« ${categorie} » reviendra au mapping par défaut. Recalcul immédiat des secteurs dans tout le tableau de bord.`,
+      danger: true,
+      cta: "Réinitialiser",
+      onConfirm: async () => {
+        await resetRow(categorie);
+        setConfirm(null);
+      },
+    });
   }
 
   const startEdit = (r: MappingRow) =>
@@ -182,8 +219,10 @@ export function EquivalencesView() {
         Correspondance de chaque catégorie de cours AEC vers sa macro-catégorie, son sous-secteur et son secteur OSCAR.
       </PageTitle>
 
-      {/* Bandeau mode d'édition / persistance. */}
-      {editable ? (
+      {/* Bandeau mode d'édition / persistance — affiché UNIQUEMENT une fois le
+          mapping chargé (sinon « lecture seule » s'affiche à tort pendant le
+          chargement, avant qu'on connaisse l'état réel). */}
+      {data && (editable ? (
         <div className="flex items-start gap-2 rounded-md border border-accent-100 bg-accent-50 px-3 py-2.5 text-caption text-neutral-700">
           <span className="mt-0.5 flex-shrink-0 font-semibold text-accent-600">✎</span>
           <span>
@@ -205,9 +244,13 @@ export function EquivalencesView() {
             <code className="rounded-xs bg-neutral-200 px-1 py-0.5">{data?.csvPath ?? "data/category_mapping.csv"}</code>, committez et redéployez.
           </span>
         </div>
-      )}
+      ))}
 
-      {isLoading && <p className="text-body-sm text-neutral-500">Chargement du mapping…</p>}
+      {isLoading && (
+        <p className="text-body-sm text-neutral-500">
+          Chargement du mapping… <span className="text-neutral-400">(quelques secondes si le serveur se réveille)</span>
+        </p>
+      )}
       {isError && <p className="text-body-sm text-error">Impossible de charger le mapping (serveur indisponible).</p>}
       {err && (
         <div className="flex items-center justify-between rounded-md border border-error/40 bg-error-soft/60 px-3 py-2 text-body-sm text-error">
@@ -314,7 +357,7 @@ export function EquivalencesView() {
                     <EditorRow
                       draft={draft}
                       setDraft={setDraft}
-                      onSave={saveDraft}
+                      onSave={requestSave}
                       onCancel={() => setDraft(null)}
                       busy={busy}
                       sectorChoices={sectorChoices}
@@ -332,7 +375,7 @@ export function EquivalencesView() {
                           key={r.categorie}
                           draft={draft}
                           setDraft={setDraft}
-                          onSave={saveDraft}
+                          onSave={requestSave}
                           onCancel={() => setDraft(null)}
                           busy={busy}
                           sectorChoices={sectorChoices}
@@ -375,7 +418,7 @@ export function EquivalencesView() {
                               </button>
                               {r.override && (
                                 <button
-                                  onClick={() => resetRow(r.categorie)}
+                                  onClick={() => requestReset(r.categorie)}
                                   disabled={busy}
                                   title="Réinitialiser (retour au mapping par défaut)"
                                   className="grid h-[26px] w-[26px] place-items-center rounded-sm border border-neutral-200 text-neutral-500 transition-colors hover:border-error/50 hover:text-error disabled:opacity-50"
@@ -400,6 +443,76 @@ export function EquivalencesView() {
           </Panel>
         </>
       )}
+
+      {confirm && (
+        <ConfirmModal
+          title={confirm.title}
+          body={confirm.body}
+          cta={confirm.cta}
+          danger={confirm.danger}
+          busy={busy}
+          onCancel={() => setConfirm(null)}
+          onConfirm={confirm.onConfirm}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Fenêtre de confirmation (garde-fou avant toute écriture du mapping). */
+function ConfirmModal({
+  title,
+  body,
+  cta,
+  danger,
+  busy,
+  onCancel,
+  onConfirm,
+}: {
+  title: string;
+  body: string;
+  cta: string;
+  danger?: boolean;
+  busy: boolean;
+  onCancel: () => void;
+  onConfirm: () => void | Promise<void>;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4" onClick={onCancel}>
+      <div
+        className="w-full max-w-md rounded-lg border border-neutral-200 bg-surface p-5 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3">
+          <span
+            className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-full ${danger ? "bg-error-soft text-error" : "bg-accent-50 text-accent-600"}`}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            </svg>
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-body font-semibold text-neutral-900">{title}</h3>
+            <p className="mt-1 text-body-sm text-neutral-600">{body}</p>
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            disabled={busy}
+            className="rounded-md border border-neutral-200 bg-surface px-3.5 py-1.5 text-body-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900 disabled:opacity-50"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={busy}
+            className={`rounded-md px-3.5 py-1.5 text-body-sm font-semibold text-white transition-colors disabled:opacity-50 ${danger ? "bg-error hover:bg-error/90" : "bg-accent-500 hover:bg-accent-600"}`}
+          >
+            {busy ? "…" : cta}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
