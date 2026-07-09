@@ -42,9 +42,14 @@ _COURSE_KEY = "oscar:course_overrides"
 # ---------------------------------------------------------------------------
 
 def _kv() -> tuple[str, str] | None:
-    """(base_url, token) si un KV REST est configuré, sinon None."""
-    url = os.environ.get("KV_REST_API_URL", "").strip().rstrip("/")
-    token = os.environ.get("KV_REST_API_TOKEN", "").strip()
+    """(base_url, token) si un KV REST est configuré, sinon None.
+
+    Accepte les DEUX conventions de nommage : celle de Vercel KV
+    (`KV_REST_API_URL` / `KV_REST_API_TOKEN`) ET celle injectée par
+    l'intégration Marketplace Upstash (`UPSTASH_REDIS_REST_URL` /
+    `UPSTASH_REDIS_REST_TOKEN`) → marche quelle que soit celle que Vercel pose."""
+    url = (os.environ.get("KV_REST_API_URL") or os.environ.get("UPSTASH_REDIS_REST_URL") or "").strip().rstrip("/")
+    token = (os.environ.get("KV_REST_API_TOKEN") or os.environ.get("UPSTASH_REDIS_REST_TOKEN") or "").strip()
     return (url, token) if url and token else None
 
 
