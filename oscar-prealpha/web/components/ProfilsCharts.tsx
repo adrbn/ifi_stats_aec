@@ -7,13 +7,13 @@ import {
   Cell,
   ErrorBar,
   Legend,
-  ResponsiveContainer,
   Scatter,
   ComposedChart,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { ResponsiveContainer } from "./rc";
 import { formatInt } from "@/lib/format";
 
 const tooltipStyle = {

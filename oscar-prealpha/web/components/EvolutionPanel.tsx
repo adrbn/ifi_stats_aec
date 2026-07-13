@@ -8,11 +8,11 @@ import {
   Legend,
   Line,
   LineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { ResponsiveContainer } from "./rc";
 import type { EvolutionSeries } from "@/lib/types";
 import { formatInt } from "@/lib/format";
 import { useFilters } from "@/lib/store";

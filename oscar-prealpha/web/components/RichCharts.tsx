@@ -8,11 +8,11 @@ import {
   Cell,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { ResponsiveContainer } from "./rc";
 import { formatInt, formatEur, formatDec1 } from "@/lib/format";
 
 const tip = {

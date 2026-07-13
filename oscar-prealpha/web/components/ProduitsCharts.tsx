@@ -7,7 +7,6 @@ import {
   Cell,
   ErrorBar,
   ReferenceLine,
-  ResponsiveContainer,
   Scatter,
   ScatterChart,
   Tooltip,
@@ -15,6 +14,7 @@ import {
   YAxis,
   ZAxis,
 } from "recharts";
+import { ResponsiveContainer } from "./rc";
 import { formatInt, formatEur } from "@/lib/format";
 
 const tooltipStyle = {

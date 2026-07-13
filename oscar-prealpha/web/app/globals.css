@@ -123,13 +123,24 @@ body {
 }
 
 /* ── Plein écran d'un panneau (menu ⋮ → Plein écran) ──────────────────────────
-   Les graphes recharts remplissent la hauteur disponible : on surcharge l'inline
-   height de ResponsiveContainer (!important) → recharts re-render à la nouvelle
-   taille via son ResizeObserver. Le corps scrolle si le contenu déborde. */
-.oscar-fs-body .recharts-responsive-container {
-  height: min(76vh, 800px) !important;
-  min-height: 320px;
+   Le MÊME panneau est promu en modale (pas de re-render → les graphes ne cassent
+   pas). Le corps centre son contenu et l'agrandit : les graphes recharts
+   remplissent la hauteur (on surcharge l'inline height de ResponsiveContainer,
+   !important → recharts re-render à la nouvelle taille via son ResizeObserver). */
+.oscar-fs-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
+.oscar-fs-body > * {
+  width: 100%;
+  flex: 0 0 auto;
+}
+/* Tables en plein écran : pleine largeur, on lève la hauteur max interne
+   (le corps de la modale gère le scroll). */
 .oscar-fs-body table {
   width: 100%;
+}
+.oscar-fs-body [class*="max-h-"] {
+  max-height: none !important;
 }

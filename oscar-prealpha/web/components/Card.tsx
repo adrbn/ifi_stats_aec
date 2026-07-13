@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toBlob } from "html-to-image";
+import { ChartFsHeight } from "./rc";
 
 /** Déclenche le téléchargement d'un contenu (texte ou blob). */
 function triggerDownload(content: string | Blob, filename: string, mime: string) {
@@ -57,16 +58,12 @@ export function Panel({
   const [fs, setFs] = useState(false);
   const [csvAvailable, setCsvAvailable] = useState(false);
 
-  // CSV disponible si prop explicite OU si un <table> est présent dans le corps.
+  // CSV dispo si prop explicite OU si un <table> est présent dans le corps.
   useEffect(() => {
-    if (!!csv?.rows?.length) {
-      setCsvAvailable(true);
-      return;
-    }
-    setCsvAvailable(!!cardRef.current?.querySelector("table"));
+    setCsvAvailable(!!csv?.rows?.length || !!cardRef.current?.querySelector("table"));
   });
 
-  // Fermetures : Échap ferme le menu et le plein écran ; clic extérieur ferme le menu.
+  // Échap ferme le menu / le plein écran ; clic hors menu ferme le menu.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -74,26 +71,35 @@ export function Panel({
         setFs(false);
       }
     };
-    const onClick = (e: MouseEvent) => {
+    const onDown = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    window.addEventListener("mousedown", onClick);
+    window.addEventListener("mousedown", onDown);
     return () => {
       window.removeEventListener("keydown", onKey);
-      window.removeEventListener("mousedown", onClick);
+      window.removeEventListener("mousedown", onDown);
     };
   }, []);
 
-  // Empêche le scroll de fond quand le plein écran est ouvert.
+  // Bloque le scroll de fond en plein écran + suit la hauteur de la fenêtre
+  // (pour dimensionner les graphes en conséquence).
+  const [vh, setVh] = useState(0);
   useEffect(() => {
     if (!fs) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const upd = () => setVh(window.innerHeight);
+    upd();
+    window.addEventListener("resize", upd);
     return () => {
       document.body.style.overflow = prev;
+      window.removeEventListener("resize", upd);
     };
   }, [fs]);
+
+  // Hauteur imposée aux graphes en plein écran (≈ hauteur utile de la modale).
+  const fsHeight = fs ? Math.round(Math.min(840, (vh || (typeof window !== "undefined" ? window.innerHeight : 900)) * 0.76)) : undefined;
 
   const capture = () =>
     cardRef.current
@@ -105,7 +111,8 @@ export function Panel({
         })
       : Promise.resolve(null);
 
-  const copy = async () => {
+  const copyImage = async () => {
+    setMenuOpen(false);
     try {
       const blob = await capture();
       if (!blob) throw new Error("capture vide");
@@ -128,126 +135,52 @@ export function Panel({
       const blob = await capture();
       if (!blob) throw new Error("capture vide");
       triggerDownload(blob, `${slug(title)}.png`, "image/png");
+      setState("saved");
     } catch {
       setState("error");
-      setTimeout(() => setState("idle"), 1900);
     }
+    setTimeout(() => setState("idle"), 1900);
   };
 
   const exportCsv = () => {
     setMenuOpen(false);
-    let content: string | null = null;
-    let name = slug(csv?.filename ?? title);
-    if (csv?.rows?.length) {
-      content = csv.rows.map((r) => r.map((c) => csvCell(String(c))).join(",")).join("\n");
-    } else {
-      content = tableToCsv(cardRef.current);
-    }
-    if (content) triggerDownload(content, `${name}.csv`, "text/csv;charset=utf-8");
+    const content = csv?.rows?.length
+      ? csv.rows.map((r) => r.map((c) => csvCell(String(c))).join(",")).join("\n")
+      : tableToCsv(cardRef.current);
+    if (content) triggerDownload(content, `${slug(csv?.filename ?? title)}.csv`, "text/csv;charset=utf-8");
   };
 
-  const HeaderActions = (
-    <div ref={menuRef} data-no-export="true" className="relative flex flex-shrink-0 items-center gap-2">
-      {right}
-      {copyable && (
-        <button
-          onClick={copy}
-          title="Copier le graphique en image (presse-papiers)"
-          aria-label="Copier en image"
-          className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-caption font-medium transition-colors ${
-            state === "error"
-              ? "border-error/40 text-error"
-              : state !== "idle"
-                ? "border-success/40 text-success"
-                : "border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:text-neutral-800"
-          }`}
-        >
-          {state === "idle" ? (
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" />
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-            </svg>
-          ) : null}
-          {state === "idle" ? "Copier" : state === "copied" ? "Copié ✓" : state === "saved" ? "Téléchargé ✓" : "Erreur"}
-        </button>
-      )}
-
-      {/* Menu ⋮ : plein écran + exports. */}
-      <button
-        onClick={() => setMenuOpen((v) => !v)}
-        aria-label="Plus d'actions"
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        title="Plus d'actions"
-        className={`grid h-[26px] w-[26px] place-items-center rounded-md border transition-colors ${
-          menuOpen ? "border-neutral-300 text-neutral-800" : "border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:text-neutral-800"
-        }`}
-      >
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="5" r="1.6" />
-          <circle cx="12" cy="12" r="1.6" />
-          <circle cx="12" cy="19" r="1.6" />
-        </svg>
-      </button>
-
-      {menuOpen && (
-        <div
-          role="menu"
-          className="absolute right-0 top-[calc(100%+6px)] z-30 w-52 overflow-hidden rounded-md border border-neutral-200 bg-surface py-1 shadow-lg"
-        >
-          {!fs && (
-            <MenuItem onClick={() => { setMenuOpen(false); setFs(true); }} icon="fullscreen">
-              Plein écran
-            </MenuItem>
-          )}
-          <MenuItem onClick={exportPng} icon="image">Exporter en PNG</MenuItem>
-          {csvAvailable && (
-            <MenuItem onClick={exportCsv} icon="csv">Exporter en CSV</MenuItem>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
-  const Header = (title || right || copyable) && (
-    <header className="flex items-start justify-between gap-3 border-b border-neutral-200 px-5 py-4">
-      <div className="min-w-0">
-        {title && <h2 className="text-h2 font-semibold text-neutral-900">{title}</h2>}
-        {subtitle && <p className="mt-0.5 text-body-sm text-neutral-500">{subtitle}</p>}
-      </div>
-      {HeaderActions}
-    </header>
-  );
+  const showHeader = title || right || copyable;
 
   return (
     <>
-      <section ref={cardRef} className={`min-w-0 rounded-lg border border-neutral-200 bg-surface shadow-xs ${className}`}>
-        {Header}
-        <div className="bg-surface p-5">{children}</div>
-      </section>
+      {/* Fond assombri en plein écran (clic = fermer). */}
+      {fs && <div className="fixed inset-0 z-[55] bg-neutral-900/60 backdrop-blur-[2px]" onClick={() => setFs(false)} />}
 
-      {/* Plein écran — overlay dédié, contenu ré-rendu en grand (les graphes
-          recharts se redimensionnent via .oscar-fs, cf. globals.css). */}
-      {fs && (
-        <div className="fixed inset-0 z-[60] flex flex-col bg-neutral-900/50 p-3 sm:p-6" onMouseDown={() => setFs(false)}>
-          <div
-            className="oscar-fs mx-auto flex h-full w-full max-w-[1400px] flex-col overflow-hidden rounded-lg border border-neutral-200 bg-surface shadow-2xl"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <header className="flex items-start justify-between gap-3 border-b border-neutral-200 px-5 py-3.5">
-              <div className="min-w-0">
-                {title && <h2 className="text-h2 font-semibold text-neutral-900">{title}</h2>}
-                {subtitle && <p className="mt-0.5 text-body-sm text-neutral-500">{subtitle}</p>}
-              </div>
-              <div className="flex flex-shrink-0 items-center gap-2">
-                <button onClick={exportPng} className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 px-2 py-1 text-caption font-medium text-neutral-500 transition-colors hover:text-neutral-800">
-                  PNG
-                </button>
-                {csvAvailable && (
-                  <button onClick={exportCsv} className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 px-2 py-1 text-caption font-medium text-neutral-500 transition-colors hover:text-neutral-800">
-                    CSV
-                  </button>
-                )}
+      <section
+        ref={cardRef}
+        className={
+          fs
+            ? "oscar-fs fixed inset-3 z-[60] mx-auto flex max-w-[1600px] flex-col overflow-hidden rounded-xl border border-neutral-200 bg-surface shadow-2xl sm:inset-5"
+            : `min-w-0 rounded-lg border border-neutral-200 bg-surface shadow-xs ${className}`
+        }
+      >
+        {showHeader && (
+          <header className="flex flex-shrink-0 items-start justify-between gap-3 border-b border-neutral-200 px-5 py-4">
+            <div className="min-w-0">
+              {title && <h2 className="text-h2 font-semibold text-neutral-900">{title}</h2>}
+              {subtitle && <p className="mt-0.5 text-body-sm text-neutral-500">{subtitle}</p>}
+            </div>
+
+            <div ref={menuRef} data-no-export="true" className="relative flex flex-shrink-0 items-center gap-2">
+              {right}
+              {state !== "idle" && (
+                <span className={`text-caption font-medium ${state === "error" ? "text-error" : "text-success"}`}>
+                  {state === "copied" ? "Copié ✓" : state === "saved" ? "Téléchargé ✓" : "Erreur"}
+                </span>
+              )}
+
+              {fs && (
                 <button
                   onClick={() => setFs(false)}
                   aria-label="Quitter le plein écran"
@@ -258,27 +191,70 @@ export function Panel({
                     <path d="M18 6 6 18M6 6l12 12" />
                   </svg>
                 </button>
-              </div>
-            </header>
-            <div className="oscar-fs-body thin-scroll flex-1 overflow-auto p-6">{children}</div>
-          </div>
+              )}
+
+              {copyable && (
+                <>
+                  <button
+                    onClick={() => setMenuOpen((v) => !v)}
+                    aria-label="Actions du graphique"
+                    aria-haspopup="menu"
+                    aria-expanded={menuOpen}
+                    title="Copier, exporter, plein écran"
+                    className={`grid h-[28px] w-[28px] place-items-center rounded-md border transition-colors ${
+                      menuOpen ? "border-neutral-300 text-neutral-800" : "border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:text-neutral-800"
+                    }`}
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="1.7" />
+                      <circle cx="12" cy="12" r="1.7" />
+                      <circle cx="12" cy="19" r="1.7" />
+                    </svg>
+                  </button>
+
+                  {menuOpen && (
+                    <div role="menu" className="absolute right-0 top-[calc(100%+6px)] z-[70] w-56 overflow-hidden rounded-md border border-neutral-200 bg-surface py-1 shadow-lg">
+                      {!fs && (
+                        <MenuItem icon="fullscreen" onClick={() => { setMenuOpen(false); setFs(true); }}>
+                          Plein écran
+                        </MenuItem>
+                      )}
+                      <MenuItem icon="copy" onClick={copyImage}>Copier l'image</MenuItem>
+                      <MenuItem icon="image" onClick={exportPng}>Exporter en PNG</MenuItem>
+                      {csvAvailable && <MenuItem icon="csv" onClick={exportCsv}>Exporter en CSV</MenuItem>}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </header>
+        )}
+
+        <div className={fs ? "oscar-fs-body thin-scroll flex-1 overflow-auto p-6" : "bg-surface p-5"}>
+          <ChartFsHeight height={fsHeight}>{children}</ChartFsHeight>
         </div>
-      )}
+      </section>
     </>
   );
 }
 
-function MenuItem({ children, onClick, icon }: { children: ReactNode; onClick: () => void; icon: "fullscreen" | "image" | "csv" }) {
+function MenuItem({ children, onClick, icon }: { children: ReactNode; onClick: () => void; icon: "fullscreen" | "copy" | "image" | "csv" }) {
   return (
     <button
       role="menuitem"
       onClick={onClick}
       className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-body-sm text-neutral-700 transition-colors hover:bg-accent-50 hover:text-accent-700"
     >
-      <span className="text-neutral-400">
+      <span className="flex-shrink-0 text-neutral-400">
         {icon === "fullscreen" && (
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
+        )}
+        {icon === "copy" && (
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
           </svg>
         )}
         {icon === "image" && (

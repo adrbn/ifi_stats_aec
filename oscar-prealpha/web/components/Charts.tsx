@@ -9,12 +9,12 @@ import {
   LineChart,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
   Legend,
 } from "recharts";
+import { ResponsiveContainer } from "./rc";
 import type { EvolutionSeries } from "@/lib/types";
 import { formatInt, formatEur, formatDec1 } from "@/lib/format";
 
