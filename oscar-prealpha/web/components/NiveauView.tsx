@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { useSnapshot } from "@/lib/useSnapshot";
 import { useFilters } from "@/lib/store";
-import { useConfidential } from "@/lib/confidential";
+import { useConfidential, isSensitiveKey } from "@/lib/confidential";
 import { Panel } from "./Card";
 import { PageTitle } from "./PageTitle";
 import { FilterSummary } from "./Filters";
 import { HBar } from "./Charts";
-import { formatInt, formatEur, formatPct, formatDec1 } from "@/lib/format";
-import type { BreakdownRow } from "@/lib/types";
+import { SectorIndicatorTable } from "./SectorIndicatorTable";
 
 const CEFR_ORDER = [
   "A1", "A1.1", "A1.2", "A2", "A2.1", "A2.2",
@@ -26,6 +25,7 @@ function isMultiLevel(label: string): boolean {
  *  et « Tous les niveaux » (multi-niveaux) toujours en dernier. */
 function levelRank(label: string): number {
   const s = label.trim();
+  if (/non renseign/i.test(s)) return 10001; // toujours en dernier, après multi-niveaux
   if (isMultiLevel(s)) return 9999;
   const m = s.match(/^([ABC][12](?:\.[12])?)/);
   if (m) {
@@ -42,32 +42,29 @@ function niveauLabel(label: string): string {
   return isMultiLevel(label) ? "Tous niveaux (cours multi-niveaux)" : label.trim();
 }
 
-type Metric = "inscriptions" | "cours" | "heures_eleves" | "recettes";
-
 export function NiveauView() {
   const { data } = useSnapshot();
-  const { hidden } = useConfidential();
-  const showRecettes = !hidden("recettes");
+  const { filterKeyed } = useConfidential();
   const setDim = useFilters((s) => s.toggleDim);
   const activeNiveaux = useFilters((s) => s.dims.niveaux);
 
-  const metricsAll: { key: Metric; label: string; unit: "int" | "eur" }[] = [
-    { key: "inscriptions", label: "Inscriptions", unit: "int" },
-    { key: "cours", label: "Cours", unit: "int" },
-    { key: "recettes", label: "Recettes", unit: "eur" },
-  ];
-  const metrics = showRecettes ? metricsAll : metricsAll.filter((m) => m.key !== "recettes");
-  const [metricSel, setMetric] = useState<Metric>("inscriptions");
-  const metric: Metric = metricSel === "recettes" && !showRecettes ? "inscriptions" : metricSel;
-  const metricMeta = metrics.find((m) => m.key === metric) ?? metrics[0];
+  // Sélecteur : TOUS les indicateurs (comme Synthèse / Par secteurs), confidentiel respecté.
+  const indicators = filterKeyed(data.indicators ?? []);
+  const [indSel, setInd] = useState("inscriptions");
+  const ind = isSensitiveKey(indSel) && !indicators.some((i) => i.key === indSel) ? "inscriptions" : indSel;
+  const meta = indicators.find((i) => i.key === ind);
+  const unit = (meta?.format ?? "int") as "int" | "eur" | "dec1";
 
-  const block = data.breakdowns?.niveau;
-  const rows = [...(block?.rows ?? [])].sort((a, b) => levelRank(a.label) - levelRank(b.label));
-  const total = block?.total;
+  const byNiv = data.byNiveauIndicator ?? {};
+  // Liste des niveaux (à partir des inscriptions, toujours présentes), triée CEFR.
+  const niveaux = (byNiv.inscriptions ?? []).map((r) => r.label).sort((a, b) => levelRank(a) - levelRank(b));
 
-  const chartData = rows
-    .map((r) => ({ name: niveauLabel(r.label), value: Number(r[metric as keyof BreakdownRow] ?? 0) }))
+  const chartData = niveaux
+    .map((lab) => ({ name: niveauLabel(lab), value: byNiv[ind]?.find((r) => r.label === lab)?.value ?? 0 }))
     .filter((r) => r.value > 0);
+
+  const kpiCols = filterKeyed(data.kpis).map((k) => ({ key: k.key, label: k.label, format: k.format }));
+  const kpiTotals = Object.fromEntries(data.kpis.map((k) => [k.key, k.value]));
 
   return (
     <div className="space-y-5">
@@ -88,75 +85,48 @@ export function NiveauView() {
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="text-eyebrow font-semibold uppercase tracking-[0.06em] text-neutral-400">Indicateur</span>
         <div className="inline-flex flex-wrap gap-1 rounded-pill bg-neutral-100 p-[3px]">
-          {metrics.map((m) => (
+          {indicators.map((i) => (
             <button
-              key={m.key}
-              onClick={() => setMetric(m.key)}
+              key={i.key}
+              onClick={() => setInd(i.key)}
               className={`rounded-pill px-3 py-1.5 text-body-sm font-medium transition-all duration-150 ease-out-soft ${
-                metric === m.key ? "bg-accent-500 text-white shadow-sm" : "text-neutral-600 hover:bg-surface hover:text-neutral-900"
+                ind === i.key ? "bg-accent-500 text-white shadow-sm" : "text-neutral-600 hover:bg-surface hover:text-neutral-900"
               }`}
             >
-              {m.label}
+              {i.label}
             </button>
           ))}
         </div>
       </div>
 
-      <Panel title={`Par niveau · ${metricMeta?.label}`} subtitle="Niveaux CEFR ordonnés (multi-niveaux en fin)">
+      <Panel title={`Par niveau · ${meta?.label ?? ""}`} subtitle="Niveaux CEFR ordonnés (multi-niveaux en fin)">
         {chartData.length ? (
-          <HBar data={chartData} height={Math.max(220, chartData.length * 26)} unit={metricMeta?.unit ?? "int"} />
+          <HBar data={chartData} height={Math.max(220, chartData.length * 26)} unit={unit} />
         ) : (
           <p className="text-body-sm text-neutral-500">Aucune donnée pour ce périmètre.</p>
         )}
       </Panel>
 
-      <Panel title="Détail par niveau" subtitle={`${rows.length} niveaux · clic = filtre`}>
-        <div className="thin-scroll max-h-[520px] overflow-auto rounded-md border border-neutral-200">
-          <table className="w-full border-collapse text-body-sm">
-            <thead>
-              <tr>
-                {["Niveau", "Cours", "Inscriptions", "Nouv.", "% nouv.", ...(showRecettes ? ["Recettes"] : []), "Rempl."].map((h, i) => (
-                  <th key={h} className={`sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-eyebrow font-semibold uppercase text-neutral-600 ${i === 0 ? "text-left" : "text-right"}`}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const active = activeNiveaux.includes(r.label);
-                return (
-                  <tr
-                    key={r.label}
-                    onClick={() => setDim("niveaux", r.label)}
-                    className={`cursor-pointer even:bg-neutral-50 hover:bg-accent-50 ${active ? "bg-accent-50 font-semibold" : ""}`}
-                  >
-                    <td className="px-3.5 py-2.5 font-medium text-neutral-800">
-                      {niveauLabel(r.label)}
-                      {isMultiLevel(r.label) && <span className="ml-1.5 rounded-xs bg-neutral-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-neutral-600">multi</span>}
-                    </td>
-                    <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.cours)}</td>
-                    <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.inscriptions)}</td>
-                    <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.nouv)}</td>
-                    <td className="tnum px-3.5 py-2.5 text-right">{formatPct(r.pctNouv)}</td>
-                    {showRecettes && <td className="tnum px-3.5 py-2.5 text-right">{formatEur(r.recettes)}</td>}
-                    <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(r.remplissage)}</td>
-                  </tr>
-                );
-              })}
-              {total && (
-                <tr className="sticky bottom-0 border-t-2 border-neutral-300 bg-neutral-100 font-semibold text-neutral-900">
-                  <td className="px-3.5 py-2.5">Tous niveaux confondus</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(total.cours)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(total.inscriptions)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(total.nouv)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatPct(total.pctNouv)}</td>
-                  {showRecettes && <td className="tnum px-3.5 py-2.5 text-right">{formatEur(total.recettes)}</td>}
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(total.remplissage)}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      <Panel title="Détail par niveau" subtitle={`${niveaux.length} niveaux · tous indicateurs · clic = filtre`}>
+        <div className="thin-scroll max-h-[520px] overflow-auto">
+          <SectorIndicatorTable
+            sectors={niveaux}
+            byInd={byNiv}
+            columns={kpiCols}
+            totals={kpiTotals}
+            firstHeader="Niveau"
+            totalLabel="Total"
+            onRowClick={(label) => setDim("niveaux", label)}
+            activeLabels={activeNiveaux}
+            renderLabel={(label) => (
+              <span className="inline-flex items-center">
+                {niveauLabel(label)}
+                {isMultiLevel(label) && (
+                  <span className="ml-1.5 rounded-xs bg-neutral-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-neutral-600">multi</span>
+                )}
+              </span>
+            )}
+          />
         </div>
       </Panel>
     </div>

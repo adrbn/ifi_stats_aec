@@ -5,9 +5,8 @@ import { useSnapshot } from "@/lib/useSnapshot";
 import { Panel } from "./Card";
 import { PageTitle } from "./PageTitle";
 import { HBar } from "./Charts";
-import { formatInt, formatEur, formatPct, formatDec1 } from "@/lib/format";
-import { useConfidential } from "@/lib/confidential";
-import type { BreakdownRow } from "@/lib/types";
+import { SectorIndicatorTable } from "./SectorIndicatorTable";
+import { useConfidential, isSensitiveKey } from "@/lib/confidential";
 
 const DIMS: { key: string; label: string }[] = [
   { key: "secteur", label: "Secteur" },
@@ -19,91 +18,55 @@ const DIMS: { key: string; label: string }[] = [
   { key: "age", label: "Tranche d'âge" },
 ];
 
-const METRICS: { key: keyof BreakdownRow; label: string; unit: "int" | "eur" }[] = [
-  { key: "inscriptions", label: "Inscriptions", unit: "int" },
-  { key: "cours", label: "Cours", unit: "int" },
-  { key: "recettes", label: "Recettes", unit: "eur" },
-];
-
 export function BreakdownView() {
   const { data } = useSnapshot();
-  const { hidden } = useConfidential();
-  const showRecettes = !hidden("recettes");
-  const metrics = showRecettes ? METRICS : METRICS.filter((m) => m.key !== "recettes");
+  const { filterKeyed } = useConfidential();
+
   const [dim, setDim] = useState("secteur");
-  const [metric, setMetric] = useState<keyof BreakdownRow>("inscriptions");
-  // Si « recettes » était sélectionné puis masqué, on retombe sur inscriptions.
-  const activeMetric: keyof BreakdownRow = metric === "recettes" && !showRecettes ? "inscriptions" : metric;
+  // Sélecteur : TOUS les indicateurs (comme Synthèse / Par secteurs), confidentiel respecté.
+  const indicators = filterKeyed(data.indicators ?? []);
+  const [indSel, setInd] = useState("inscriptions");
+  const ind = isSensitiveKey(indSel) && !indicators.some((i) => i.key === indSel) ? "inscriptions" : indSel;
+  const indMeta = indicators.find((i) => i.key === ind);
+  const unit = (indMeta?.format ?? "int") as "int" | "eur" | "dec1";
 
-  const block = data.breakdowns?.[dim];
-  const rows = block?.rows ?? [];
-  const total = block?.total;
+  const dimLabel = DIMS.find((d) => d.key === dim)?.label ?? "";
+  const byDim = data.byDimensionIndicator?.[dim] ?? {};
+  const labels = (byDim.inscriptions ?? []).map((r) => r.label);
+  const chartData = (byDim[ind] ?? []).slice(0, 15).map((r) => ({ name: r.label, value: r.value }));
 
-  const chartData = rows
-    .slice(0, 15)
-    .map((r) => ({ name: r.label, value: Number(r[activeMetric]) }));
+  const kpiCols = filterKeyed(data.kpis).map((k) => ({ key: k.key, label: k.label, format: k.format }));
+  const kpiTotals = Object.fromEntries(data.kpis.map((k) => [k.key, k.value]));
 
   return (
     <div className="space-y-5">
       <PageTitle eyebrow={`Cours · ${data.filters.year}`} title="Répartition">
-        Ventilez les inscriptions, cours{showRecettes ? " et recettes" : ""} par dimension d'analyse — du secteur à la catégorie de cours.
+        Ventilez tous les indicateurs par dimension d'analyse — du secteur à la catégorie de cours.
       </PageTitle>
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <Switch label="Dimension" options={DIMS.map((d) => ({ value: d.key, label: d.label }))} value={dim} onChange={setDim} />
-        <Switch
-          label="Indicateur"
-          options={metrics.map((m) => ({ value: m.key as string, label: m.label }))}
-          value={activeMetric as string}
-          onChange={(v) => setMetric(v as keyof BreakdownRow)}
-        />
+        <Switch label="Indicateur" options={indicators.map((i) => ({ value: i.key, label: i.label }))} value={ind} onChange={setInd} />
       </div>
 
-      <Panel title={`Top ${Math.min(15, rows.length)} · ${DIMS.find((d) => d.key === dim)?.label}`} subtitle={metrics.find((m) => m.key === activeMetric)?.label}>
+      <Panel title={`Top ${Math.min(15, chartData.length)} · ${dimLabel}`} subtitle={indMeta?.label}>
         {chartData.length ? (
-          <HBar data={chartData} height={Math.max(220, chartData.length * 26)} unit={activeMetric === "recettes" ? "eur" : "int"} />
+          <HBar data={chartData} height={Math.max(220, chartData.length * 26)} unit={unit} />
         ) : (
           <p className="text-body-sm text-neutral-500">Aucune donnée pour cette dimension.</p>
         )}
       </Panel>
 
-      <Panel title="Détail" subtitle={`${rows.length} lignes · ${DIMS.find((d) => d.key === dim)?.label}`}>
-        <div className="thin-scroll max-h-[520px] overflow-auto rounded-md border border-neutral-200">
-          <table className="w-full border-collapse text-body-sm">
-            <thead>
-              <tr>
-                {[DIMS.find((d) => d.key === dim)?.label ?? "", "Cours", "Inscriptions", "Nouv.", "% nouv.", ...(showRecettes ? ["Recettes"] : []), "Rempl."].map((h, i) => (
-                  <th key={h} className={`sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-eyebrow font-semibold uppercase text-neutral-600 ${i === 0 ? "text-left" : "text-right"}`}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.label} className="even:bg-neutral-50 hover:bg-accent-50">
-                  <td className="px-3.5 py-2.5 font-medium text-neutral-800">{r.label}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.cours)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.inscriptions)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(r.nouv)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatPct(r.pctNouv)}</td>
-                  {showRecettes && <td className="tnum px-3.5 py-2.5 text-right">{formatEur(r.recettes)}</td>}
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(r.remplissage)}</td>
-                </tr>
-              ))}
-              {total && (
-                <tr className="sticky bottom-0 border-t-2 border-neutral-300 bg-neutral-100 font-semibold text-neutral-900">
-                  <td className="px-3.5 py-2.5">{total.label}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(total.cours)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(total.inscriptions)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatInt(total.nouv)}</td>
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatPct(total.pctNouv)}</td>
-                  {showRecettes && <td className="tnum px-3.5 py-2.5 text-right">{formatEur(total.recettes)}</td>}
-                  <td className="tnum px-3.5 py-2.5 text-right">{formatDec1(total.remplissage)}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      <Panel title="Détail" subtitle={`${labels.length} lignes · ${dimLabel} · tous indicateurs`}>
+        <div className="thin-scroll max-h-[520px] overflow-auto">
+          <SectorIndicatorTable
+            sectors={labels}
+            byInd={byDim}
+            columns={kpiCols}
+            totals={kpiTotals}
+            firstHeader={dimLabel}
+            totalLabel="Total"
+          />
         </div>
       </Panel>
     </div>

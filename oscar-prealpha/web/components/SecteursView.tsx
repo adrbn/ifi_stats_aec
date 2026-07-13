@@ -7,7 +7,7 @@ import { useConfidential, isSensitiveKey } from "@/lib/confidential";
 import { Panel } from "./Card";
 import { PageTitle } from "./PageTitle";
 import { FilterSummary } from "./Filters";
-import { SectorTable } from "./SectorTable";
+import { SectorIndicatorTable } from "./SectorIndicatorTable";
 import { IndicatorBarPie, Heatmap } from "./RichCharts";
 import { HBar } from "./Charts";
 
@@ -16,6 +16,10 @@ export function SecteursView() {
   const { filterKeyed } = useConfidential();
   const antennas = useFilters((s) => s.antennas);
   const indicators = filterKeyed(data.indicators ?? []);
+  // Détail tous-indicateurs (mêmes colonnes que les KPI, confidentiel respecté).
+  const kpiCols = filterKeyed(data.kpis).map((k) => ({ key: k.key, label: k.label, format: k.format }));
+  const kpiTotals = Object.fromEntries(data.kpis.map((k) => [k.key, k.value]));
+  const sectorList = (data.bySectorIndicator?.inscriptions ?? []).map((x) => x.label);
   const [indSel, setInd] = useState("inscriptions");
   const ind = isSensitiveKey(indSel) && !indicators.some((i) => i.key === indSel) ? "inscriptions" : indSel;
   const meta = indicators.find((i) => i.key === ind);
@@ -90,7 +94,7 @@ export function SecteursView() {
       </Panel>
 
       <Panel title="Tableau détaillé" subtitle="Tous secteurs · tous indicateurs">
-        <SectorTable rows={data.sectors.rows} total={data.sectors.total} />
+        <SectorIndicatorTable sectors={sectorList} byInd={data.bySectorIndicator ?? {}} columns={kpiCols} totals={kpiTotals} />
       </Panel>
     </div>
   );

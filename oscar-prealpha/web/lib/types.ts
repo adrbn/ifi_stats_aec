@@ -68,6 +68,9 @@ export interface BreakdownBlock {
 
 export interface YoyRow {
   year: number;
+  values: Record<string, number>;
+  deltas: Record<string, number | null>;
+  // Champs à plat (rétro-compat : rapport / présentation).
   inscriptions: number;
   cours: number;
   recettes: number;
@@ -138,6 +141,8 @@ export interface Snapshot {
   // une antenne sélectionnée au total IFI (valeur + %).
   networkTotals?: Record<string, number>;
   bySectorIndicator?: Record<string, { label: string; value: number }[]>;
+  byNiveauIndicator?: Record<string, { label: string; value: number }[]>;
+  byDimensionIndicator?: Record<string, Record<string, { label: string; value: number }[]>>;
   byAntennaIndicator?: Record<string, { code: AntennaCode; color: string; value: number }[]>;
   sectorAntenna?: {
     sectors: string[];
