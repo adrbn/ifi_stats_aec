@@ -121,3 +121,15 @@ body {
     print-color-adjust: exact !important;
   }
 }
+
+/* ── Plein écran d'un panneau (menu ⋮ → Plein écran) ──────────────────────────
+   Les graphes recharts remplissent la hauteur disponible : on surcharge l'inline
+   height de ResponsiveContainer (!important) → recharts re-render à la nouvelle
+   taille via son ResizeObserver. Le corps scrolle si le contenu déborde. */
+.oscar-fs-body .recharts-responsive-container {
+  height: min(76vh, 800px) !important;
+  min-height: 320px;
+}
+.oscar-fs-body table {
+  width: 100%;
+}
