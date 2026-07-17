@@ -218,6 +218,15 @@ def parse_aec_export(
     df["Mois début"] = df["Date début"].dt.month.astype(int)
     df["Semestre"] = df["Mois début"].apply(_semester_from_month)
     df["Période"] = df["Année"].astype(str) + " " + df["Semestre"]
+    # « Période AEC » : période commerciale ANNÉE-MOIS CALCULÉE sur la date de
+    # début réelle (ex. « 2025-OCTOBRE »). On IGNORE volontairement la colonne
+    # « Période » brute d'AEC : saisie à la main, elle est parfois multi-mois et
+    # incohérente avec les dates réelles. Sert la dimension « par période ».
+    _MONTHS_FR_UP = ["JANVIER", "FEVRIER", "MARS", "AVRIL", "MAI", "JUIN",
+                     "JUILLET", "AOUT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DECEMBRE"]
+    df["Période AEC"] = df["Année"].astype(str) + "-" + df["Mois début"].map(
+        lambda m: _MONTHS_FR_UP[int(m) - 1] if 1 <= int(m) <= 12 else "?"
+    )
 
     # Ensure the v2 categorical columns exist
     for c in ("Catégorie de cours", "Niveau", "Tranche d'âge du cours",

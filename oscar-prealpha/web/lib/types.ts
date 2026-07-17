@@ -121,7 +121,7 @@ export interface Snapshot {
     niveaux?: string[];
     sectors: string[];
   };
-  dimOptions?: { secteurs: string[]; sousSecteurs: string[]; macros: string[]; categories: string[]; niveaux?: string[] };
+  dimOptions?: Record<string, string[]>;
   kpis: Kpi[];
   byAntenna: AntennaRow[];
   sectors: {

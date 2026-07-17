@@ -3,9 +3,13 @@
 import { create } from "zustand";
 import type { AntennaCode } from "./types";
 
-// « niveaux » est une dimension ORTHOGONALE (un cours a à la fois un secteur et
-// un niveau) : elle ne participe pas à la cascade secteur→…→catégorie.
-export type DimKey = "secteurs" | "sousSecteurs" | "macros" | "categories" | "niveaux";
+// Dimensions ORTHOGONALES (un cours a à la fois un secteur ET un niveau, une
+// tranche d'âge, une période, une matière, un volume d'UE) : elles ne
+// participent pas à la cascade secteur→sous-secteur→macro→catégorie.
+export type DimKey =
+  | "secteurs" | "sousSecteurs" | "macros" | "categories"
+  | "niveaux" | "ages" | "periodes" | "matieres" | "ues";
+export const ORTHOGONAL_DIMS: DimKey[] = ["niveaux", "ages", "periodes", "matieres", "ues"];
 export type YearMode = "civil" | "school";
 
 interface FilterState {
@@ -28,17 +32,24 @@ interface FilterState {
 }
 
 const ALL: AntennaCode[] = ["IFM", "IFF", "IFN", "IFP"];
-const EMPTY_DIMS: Record<DimKey, string[]> = { secteurs: [], sousSecteurs: [], macros: [], categories: [], niveaux: [] };
+const EMPTY_DIMS: Record<DimKey, string[]> = {
+  secteurs: [], sousSecteurs: [], macros: [], categories: [],
+  niveaux: [], ages: [], periodes: [], matieres: [], ues: [],
+};
 
 // Selecting a parent dimension resets its descendants (cascade integrity).
-// « niveaux » est hors cascade : aucun parent ne le réinitialise, et lui-même
-// n'a pas de descendant.
+// Les dimensions orthogonales sont hors cascade : aucun parent ne les
+// réinitialise, et elles n'ont pas de descendant.
 const DESCENDANTS: Record<DimKey, DimKey[]> = {
   secteurs: ["sousSecteurs", "macros", "categories"],
   sousSecteurs: ["macros", "categories"],
   macros: ["categories"],
   categories: [],
   niveaux: [],
+  ages: [],
+  periodes: [],
+  matieres: [],
+  ues: [],
 };
 
 export const useFilters = create<FilterState>((set) => ({

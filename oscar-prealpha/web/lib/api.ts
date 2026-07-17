@@ -1,10 +1,17 @@
 import type { Snapshot, AntennaCode } from "./types";
+import type { DimKey } from "./store";
 import { EMPTY_SNAPSHOT } from "./fixture";
+
+/** Toutes les dimensions filtrables envoyées au backend. */
+const DIM_KEYS: DimKey[] = [
+  "secteurs", "sousSecteurs", "macros", "categories",
+  "niveaux", "ages", "periodes", "matieres", "ues",
+];
 
 export interface SnapshotQuery {
   years?: number[];
   antennas?: AntennaCode[];
-  dims?: { secteurs: string[]; sousSecteurs: string[]; macros: string[]; categories: string[]; niveaux: string[] };
+  dims?: Partial<Record<DimKey, string[]>>;
   mode?: "civil" | "school";
 }
 
@@ -19,8 +26,8 @@ export async function fetchSnapshot(q: SnapshotQuery = {}): Promise<Snapshot> {
   if (q.antennas?.length) params.set("antennas", q.antennas.join(","));
   if (q.dims) {
     // repeated params (?secteurs=A&secteurs=B) — safe for values containing commas
-    (["secteurs", "sousSecteurs", "macros", "categories", "niveaux"] as const).forEach((k) => {
-      q.dims![k].forEach((v) => params.append(k, v));
+    DIM_KEYS.forEach((k) => {
+      (q.dims?.[k] ?? []).forEach((v) => params.append(k, v));
     });
   }
   if (q.mode === "school") params.set("mode", "school");

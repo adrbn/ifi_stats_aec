@@ -354,9 +354,25 @@ _DIM_COL = {
     "sousSecteurs": "Sous-secteur",
     "macros": "Macro-catégorie",
     "categories": "Catégorie de cours",
-    # « niveaux » = dimension ORTHOGONALE (hors cascade secteur→…→catégorie).
+    # Dimensions ORTHOGONALES (hors cascade secteur→…→catégorie) : elles
+    # filtrent le périmètre sans dépendre du secteur sélectionné.
     "niveaux": "Niveau",
+    "ages": "Tranche d'âge du cours",
+    "periodes": "Période AEC",
+    "matieres": "Matière",
+    "ues": "UE",
 }
+
+# Tri spécifique des options de filtre : chronologique pour les périodes,
+# numérique pour les UE (sinon « 10 » passerait avant « 2 »).
+_DIM_SORT = {
+    "periodes": bs.periode_sort_key,
+    "ues": bs.ue_sort_key,
+}
+
+# Dimensions orthogonales : options calculées sur le périmètre année+antenne
+# (base), pas sur la cascade secteur → sous-secteur → macro → catégorie.
+_ORTHOGONAL_DIMS = ("niveaux", "ages", "periodes", "matieres", "ues")
 
 # Indicators shared by the per-sector / per-antenna analytical charts.
 # « eleves_differents » est un COMPTE DISTINCT (non additif) : col=None, calculé
@@ -505,6 +521,10 @@ def compute(
     macros: Optional[List[str]] = None,
     categories: Optional[List[str]] = None,
     niveaux: Optional[List[str]] = None,
+    ages: Optional[List[str]] = None,
+    periodes: Optional[List[str]] = None,
+    matieres: Optional[List[str]] = None,
+    ues: Optional[List[str]] = None,
     year_mode: str = "civil",
 ) -> dict:
     """Full snapshot-shaped payload for the given filters, computed live.
@@ -531,7 +551,9 @@ def compute(
 
     sel = {"secteurs": secteurs or [], "sousSecteurs": sousSecteurs or [],
            "macros": macros or [], "categories": categories or [],
-           "niveaux": niveaux or []}
+           "niveaux": niveaux or [], "ages": ages or [],
+           "periodes": periodes or [], "matieres": matieres or [],
+           "ues": ues or []}
 
     # Cascade dropdown options: each level reflects the parent selection only.
     def _uniq(d, col):
@@ -547,27 +569,31 @@ def compute(
     if sel["macros"]:
         b = b[b["Macro-catégorie"].isin(sel["macros"])]
     dim_options["categories"] = _uniq(b, "Catégorie de cours")
-    # « niveaux » : dimension orthogonale → options calculées sur le périmètre
-    # année+antenne (base), indépendamment de la cascade secteur.
-    dim_options["niveaux"] = _uniq(base, "Niveau")
+    # Dimensions ORTHOGONALES (niveau, tranche d'âge, période, matière, UE) :
+    # options calculées sur le périmètre année+antenne (base), indépendamment
+    # de la cascade secteur.
+    for key in _ORTHOGONAL_DIMS:
+        vals = _uniq(base, _DIM_COL[key])
+        sorter = _DIM_SORT.get(key)
+        dim_options[key] = sorted(vals, key=sorter) if sorter else vals
 
-    # Analytics dataframe: apply ALL active dimension filters (dont niveaux).
+    # Analytics dataframe: apply ALL active dimension filters.
     df_sel = base
-    for key in ("secteurs", "sousSecteurs", "macros", "categories", "niveaux"):
+    for key in _DIM_COL:
         vals = sel[key]
         col = _DIM_COL[key]
         if vals and col in df_sel.columns:
-            df_sel = df_sel[df_sel[col].isin(vals)]
+            df_sel = df_sel[df_sel[col].astype(str).isin(vals)]
 
     # Référentiel pour le delta N-1 : MÊMES filtres dimension + antennes, mais
     # TOUTES les années → la comparaison N-1 porte sur le même périmètre filtré
     # (sinon on compare une valeur filtrée à un total non filtré → delta faux).
     df_scope = df[df["Sede"].isin(antennas)]
-    for key in ("secteurs", "sousSecteurs", "macros", "categories", "niveaux"):
+    for key in _DIM_COL:
         vals = sel[key]
         col = _DIM_COL[key]
         if vals and col in df_scope.columns:
-            df_scope = df_scope[df_scope[col].isin(vals)]
+            df_scope = df_scope[df_scope[col].astype(str).isin(vals)]
 
     # Totaux RÉSEAU (IFI) = TOUTES les 4 antennes, mêmes filtres année+dimensions
     # mais SANS le filtre antenne → permet de comparer une antenne au total réseau
@@ -588,7 +614,9 @@ def compute(
             "yearMode": year_mode,
             "secteurs": sel["secteurs"], "sousSecteurs": sel["sousSecteurs"],
             "macros": sel["macros"], "categories": sel["categories"],
-            "niveaux": sel["niveaux"], "sectors": [],
+            "niveaux": sel["niveaux"], "ages": sel["ages"],
+            "periodes": sel["periodes"], "matieres": sel["matieres"],
+            "ues": sel["ues"], "sectors": [],
         },
         "dimOptions": dim_options,
         "indicators": INDICATOR_META,
