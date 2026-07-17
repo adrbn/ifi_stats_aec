@@ -131,6 +131,18 @@ def _year_text(y: int, mode: str) -> str:
     return f"{y}-{(y + 1) % 100:02d}" if mode == "school" else str(y)
 
 
+# Seuil de représentativité de l'ANNÉE DE BASE d'une variation. En dessous, la
+# variation vs cette année n'a aucun sens (ex. 2022 = 5 cours résiduels dans
+# l'export → « +148 000 % » en 2023). On masque le delta plutôt que d'afficher
+# ce bruit. Les vraies années font 800–1300 cours : 50 sépare proprement.
+_MIN_BASE_COURS = 50
+
+
+def _base_representative(cours_base: float) -> bool:
+    """Vrai si l'année de base a assez de cours pour qu'une variation ait du sens."""
+    return (cours_base or 0) >= _MIN_BASE_COURS
+
+
 def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode: str = "civil"):
     """Totals over the selected years. Delta vs previous year only when a single
     year is selected (and the prior year exists for the same antennas).
@@ -158,7 +170,9 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
     if len(years) == 1:
         prev = years[0] - 1
         prev_sel = df_all[(df_all["Année"] == prev) & (df_all["Sede"].isin(antennas))]
-        if len(prev_sel):
+        # Année de base non représentative (trop peu de cours) → pas de delta :
+        # une variation vs une année résiduelle est du bruit, pas de l'info.
+        if len(prev_sel) and _base_representative(_sum(prev_sel, "Nb. de Cours")):
             # Comparaison à l'année (civile ou scolaire) précédente — df_all est
             # déjà aligné sur le mode actif, donc « prev » est la bonne année.
             dlabel = f"vs {_year_text(prev, year_mode)}"
@@ -297,9 +311,11 @@ def _yoy(df_sel, years: List[int]):
         d = df_sel[df_sel["Année"] == yr]
         values = {key: _indic_value(d, key, col) for key, _l, col, _f in INDICATORS}
         deltas = {}
+        # Variations masquées si l'année de base est trop maigre (cf. _MIN_BASE_COURS).
+        base_ok = bool(prev) and _base_representative(prev.get("cours"))
         for key in values:
             pv = prev.get(key) if prev else None
-            deltas[key] = round((values[key] - pv) / pv * 100, 1) if pv else None
+            deltas[key] = round((values[key] - pv) / pv * 100, 1) if (base_ok and pv) else None
         # Rétro-compat : quelques champs à plat encore utilisés ailleurs.
         rows.append({
             "year": yr,
