@@ -14,28 +14,26 @@ Pilotage statistique du réseau de l'**Institut français Italia** — cours, pr
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 
 </div>
 
 ---
 
-## 🧭 Deux interfaces, une même donnée
+## 🧭 L'application
 
-| | **v3** — *recommandée* | **v2** |
-|---|---|---|
-| **Stack** | Next.js + FastAPI | Streamlit |
-| **Hébergement** | Vercel (serverless) · 🔒 mot de passe | [Streamlit Cloud](https://ifi-stats-aec.streamlit.app) |
-| **Source de données** | cache « Tous les cours » par cours, recalcul live | ZIP annuels « rapport par catégorie » |
-| **Emplacement** | [`oscar-prealpha/web/`](oscar-prealpha/web/) | [`dashboard_aec_v2.py`](dashboard_aec_v2.py) |
-| **Statut** | ✅ actif | ✅ actif |
+| | **OSCAR** |
+|---|---|
+| **Stack** | Next.js + FastAPI |
+| **Hébergement** | Vercel (serverless) · 🔒 protégé par mot de passe |
+| **Source de données** | cache « Tous les cours » (1 ligne = 1 cours), recalcul live |
+| **Emplacement** | [`oscar-prealpha/web/`](oscar-prealpha/web/) |
 
-> 🏷️ **Note de nommage** : dans d'anciennes docs, `dashboard_aec_v2.py` était étiqueté « v3.0 » — ce « v3 » désignait la *génération du parser AEC*, pas l'UI. Ici **v2 = Streamlit**, **v3 = Next.js**.
+> 🏷️ **Historique** : une ancienne interface **Streamlit** (« v2 ») et son comparateur `/compare` ont existé jusqu'en juillet 2026. Elles ont été **retirées** — l'app Next.js (« v3 ») est désormais la seule version. Le code v2 reste récupérable dans l'historique git (voir *Sauvegardes*).
 
 ---
 
-## ✨ Fonctionnalités (v3)
+## ✨ Fonctionnalités
 
 | Domaine | Vues |
 |---|---|
@@ -45,7 +43,8 @@ Pilotage statistique du réseau de l'**Institut français Italia** — cours, pr
 
 - 📊 **Indicateurs** : inscriptions, élèves différents, cours, heures, remplissage, recettes, **panier / inscription**, **panier / personne**
 - 🎛️ Filtres en cascade (année · antenne · secteur), bascule **année civile / scolaire**
-- 🤖 Assistant IA (API Albert) · 📋 copie de graphique en image · 🆚 page `/compare` (v2 ⇄ v3)
+- 🤖 Assistant IA (API Albert) · 🔒 **mode confidentiel** (masque les recettes, actif par défaut)
+- ⋮ Sur chaque panneau : **copier l'image**, **export PNG**, **export CSV**, **plein écran**
 
 ---
 
@@ -70,7 +69,7 @@ flowchart LR
 ## 🚀 Démarrage rapide
 
 <details>
-<summary><strong>v3 — Next.js + FastAPI</strong> (local)</summary>
+<summary><strong>Next.js + FastAPI</strong> (local)</summary>
 
 ```bash
 # 1) Backend FastAPI — http://localhost:8000
@@ -84,16 +83,7 @@ Auth locale : créer `oscar-prealpha/web/.env.local` (voir `.env.local.example`)
 `OSCAR_PASSWORD_SHA256` et `OSCAR_SESSION_SECRET`.
 </details>
 
-<details>
-<summary><strong>v2 — Streamlit</strong> (local)</summary>
-
-```bash
-pip install -r requirements.txt
-streamlit run dashboard_aec_v2.py
-```
-</details>
-
-> **Déploiement** : un `git push origin main` redéploie **automatiquement** la v3 (Vercel) et la v2 (Streamlit Cloud).
+> **Déploiement** : un `git push origin main` redéploie **automatiquement** la production (Vercel).
 
 ---
 
@@ -125,15 +115,13 @@ python oscar-prealpha/web/server/build_snapshot.py
 
 ```
 ifi_stats_aec/
-├─ dashboard_aec_v2.py          # v2 — app Streamlit (prod)
 ├─ merge_cours.py               # fusion export « Tous les cours » + historique
 ├─ merge_eleves.py              # fusion caches « élèves par classe »
 ├─ export_eleves_par_classe.py  # scraping AEC (Playwright)
-├─ data/                        # données v2 (ZIP annuels, produits, profils)
+├─ data/                        # données sources (exports produits, profils, historique)
 └─ oscar-prealpha/
-   ├─ shell/                    # comparateur v2/v3 standalone
-   └─ web/                      # v3 — Next.js + FastAPI
-      ├─ app/                   # routes (cours, profils, produits, compare, login)
+   └─ web/                      # l'application — Next.js + FastAPI
+      ├─ app/                   # routes (cours, profils, produits, paramètres, login)
       ├─ components/            # KPI, charts, filtres, carte 3D, assistant…
       ├─ lib/                   # types, client API, store, formatters
       └─ server/               # backend FastAPI
@@ -152,6 +140,8 @@ ifi_stats_aec/
 | Réf git | Contenu |
 |---|---|
 | `archive/desktop-oscar` | Ancienne app desktop OSCAR + `dashboard_aec_v2_legacy_backup.py` (récupérables) |
+| historique de `main` | L'ancienne **v2 Streamlit** (`dashboard_aec_v2.py`) et le comparateur, retirés en juillet 2026 |
+| `backup/latest` | Sauvegarde automatique quotidienne (données, exports bruts, scripts d'outillage) |
 | `backup-restore-attempt-2026-05-27` | Ancienne tentative de restauration |
 | tags `backup-*` | Snapshots de `main` avant les grosses passes |
 
@@ -163,6 +153,6 @@ git checkout archive/desktop-oscar -- <chemin/du/fichier>   # ressortir un fichi
 
 ## 🔐 Confidentialité
 
-Données analysées côté serveur (Streamlit / fonction serverless Vercel), agrégées au niveau cours — aucune donnée nominative exposée dans l'UI. La v3 est protégée par mot de passe.
+Données analysées côté serveur (fonction serverless Vercel), agrégées au niveau cours — aucune donnée nominative exposée dans l'UI. L'application est protégée par mot de passe, et le **mode confidentiel** masque les recettes par défaut.
 
 <div align="center"><sub>© Institut français Italia — usage interne uniquement</sub></div>

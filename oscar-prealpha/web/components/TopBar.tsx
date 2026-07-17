@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { crumbFor } from "@/lib/nav";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { YearSegment, AntennaToggles, yearLabel } from "./Filters";
 import { MultiSelect } from "./MultiSelect";
 import { MobileNav } from "./MobileNav";
@@ -58,12 +58,6 @@ export function TopBar() {
   const antennas = useFilters((s) => s.antennas);
   const [showDims, setShowDims] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false); // mobile : filtres repliés par défaut
-  // Masque le lien "Comparer" quand le dashboard est lui-même affiché dans le
-  // comparateur (iframe) — sinon recliquer ouvre /compare en cascade.
-  const [embedded, setEmbedded] = useState(false);
-  useEffect(() => {
-    setEmbedded(typeof window !== "undefined" && window.self !== window.top);
-  }, []);
   const { data, isOffline, isLoading } = useSnapshot();
   const dimOptions = data.dimOptions ?? { secteurs: [], sousSecteurs: [], macros: [], categories: [], niveaux: [] };
   const dimCount = Object.values(dims).reduce((n, a) => n + a.length, 0);
@@ -102,15 +96,6 @@ export function TopBar() {
         </div>
         <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
           <ConfidentialToggle />
-          {!embedded && (
-            <a
-              href="/compare"
-              className="hidden items-center gap-2 rounded-md border border-neutral-200 bg-surface px-3 py-1.5 text-body-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900 lg:inline-flex"
-              title="Basculer entre la v2 (Streamlit) et la v3 (nouvelle UI)"
-            >
-              Comparer v2 ⇄ v3
-            </a>
-          )}
           <button
             onClick={() => setAiOpen(true)}
             aria-label="Assistant OSCAR"

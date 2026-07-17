@@ -6,12 +6,6 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "oscar-prealpha/web", "run", "dev", "--", "-p", "3011"],
       "port": 3011
-    },
-    {
-      "name": "oscar-shell",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8090", "--directory", "oscar-prealpha/shell"],
-      "port": 8090
     }
   ]
 }

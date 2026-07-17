@@ -1,17 +1,17 @@
-# OSCAR — UI v3 (Next.js + FastAPI, déployée sur Vercel)
+# OSCAR — l'application (Next.js + FastAPI, déployée sur Vercel)
 
-Réécriture de l'UI OSCAR hors Streamlit, **déployée sur Vercel** et **protégée par mot de
-passe**. Reprend la logique de calcul pandas de l'app Streamlit (copiée, pas importée — la v2
-exécute Streamlit à l'import) sans rien casser de la v2. Tout vit dans `oscar-prealpha/`.
+L'UI OSCAR, **déployée sur Vercel** et **protégée par mot de passe**. Tout vit dans
+`oscar-prealpha/`.
 
-> Pour le vocabulaire des versions et le pipeline de données, voir le
-> [README principal](../README.md). La v2 Streamlit reste intacte.
+> Pour le pipeline de données, voir le [README principal](../README.md).
+> ℹ️ L'ancienne UI Streamlit (« v2 ») et son comparateur `/compare` ont été retirés en
+> juillet 2026 : c'est désormais la seule version.
 
 ## Stack
 
 | Couche | Choix | Notes |
 |-------|--------|-------|
-| **Calcul** | Python / pandas (réutilisé) | Fonctions pures copiées de `dashboard_aec_v2.py` dans `web/server/oscar_core.py`, dépouillées de `st.*`. |
+| **Calcul** | Python / pandas | Fonctions pures dans `web/server/oscar_core.py` (héritées de l'ancienne app Streamlit, dépouillées de `st.*`). |
 | **Backend** | FastAPI | API JSON ; **recalcul en direct** par filtre via `web/server/engine.py` (`/api/cours`). En prod = **fonction serverless** `web/api/index.py`. |
 | **Frontend** | Next.js 14 (App Router) + TS | |
 | **Styling** | Tailwind + tokens OSCAR | IBM Plex Sans, neutres ardoise, accent bleu IFI, radius 6px. |
@@ -64,8 +64,10 @@ En dev, `/api/*` est proxifié vers le backend (`web/next.config.mjs`).
 - **Profils** : Synthèse, Démographie, Nationalités, Motivation (`build_profils.py` →
   `fixtures/profils.json`).
 - **Produits** : Catalogue, Types, Tarifs (`build_produits.py` → `fixtures/produits.json`).
-- Assistant IA (API Albert, repli local déterministe), copie de graphique en image,
-  page `/compare` (v2 ⇄ v3), mode année civile/scolaire.
+- **Paramètres › Équivalences** : table catégorie → secteur éditable en direct (persistée en KV).
+- Assistant IA (API Albert, repli local déterministe), mode année civile/scolaire,
+  **mode confidentiel** (masque les recettes, actif par défaut), et sur chaque panneau un
+  menu **⋮** : copier l'image · export PNG · export CSV · plein écran.
 
 ## Arborescence
 
@@ -74,19 +76,19 @@ oscar-prealpha/
   web/
     api/index.py         point d'entrée serverless Vercel (importe server/main.py:app)
     server/              backend FastAPI
-      oscar_core.py        fonctions pandas copiées de dashboard_aec_v2.py (sans streamlit)
+      oscar_core.py        fonctions pandas pures + mapping catégorie → secteur
       aec_parser_v3.py     parser « Tous les cours » (chargeur de prod)
       engine.py            recalcul live par filtre (/api/cours)
+      mapping_store.py     overrides des équivalences (KV en prod, fichier en dev)
       build_snapshot.py    (re)génère fixtures/snapshot.json (fallback)
       build_profils.py     → fixtures/profils.json
       build_produits.py    → fixtures/produits.json
-      main.py              endpoints: /api/cours /api/data/{name} /api/meta /api/snapshot
+      main.py              endpoints: /api/cours /api/mapping /api/course-mapping
+                                       /api/data/{name} /api/meta /api/snapshot
                                        /api/assistant /api/warmup /api/health
       data/new_cours/      cache_cours.xlsx, cache_eleves.xlsx (embarqués Vercel)
       fixtures/            snapshot.json, profils.json, produits.json
-    app/                 routes (welcome + shell dashboard + login + compare + vues)
+    app/                 routes (welcome + dashboard + paramètres + login + vues)
     components/          KPI, charts, table, filtres, rail, modal IA, carte 3D
     lib/                 types, client API, fallback, formatters, store
-  shell/                 coque standalone de comparaison v2/v3 (iframes)
-  start-compare.sh
 ```
