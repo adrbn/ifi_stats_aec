@@ -138,7 +138,17 @@ export function YoyView() {
       {chartType === "index100" ? (
         /* Courbes superposées, base 100 à la 1re année : compare les ÉVOLUTIONS
            relatives des indicateurs sélectionnés sur un seul graphe. */
-        <Panel title="Évolutions comparées · base 100" subtitle="Chaque indicateur ramené à 100 à la première année du périmètre">
+        <Panel
+          title="Évolutions comparées · base 100"
+          subtitle="Chaque indicateur ramené à 100 à la première année du périmètre"
+          csv={{
+            filename: "annee_vs_annee_base100",
+            rows: [
+              ["Année", ...active.map((k) => labelOf(k))],
+              ...yoy.rows.map((r) => [yearLabel(r.year, yearMode), ...active.map((k) => r.values?.[k] ?? 0)]),
+            ],
+          }}
+        >
           <IndexedLines
             years={yoy.rows.map((r) => yearLabel(r.year, yearMode))}
             series={active.map((key) => ({
@@ -150,22 +160,34 @@ export function YoyView() {
           />
         </Panel>
       ) : (
-        /* Small multiples : un graphe par indicateur sélectionné (échelle propre). */
+        /* Small multiples : un graphe par indicateur sélectionné (échelle propre).
+           Chaque graphe est un Panel → il hérite du menu ⋮ (copier l'image,
+           export PNG, plein écran) et reçoit son propre export CSV. */
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {active.map((key) => {
             const seriesData = yoy.rows.map((r) => ({ year: yearLabel(r.year, yearMode), value: r.values?.[key] ?? 0 }));
             return (
-              <div key={key} className="rounded-md border border-neutral-200 bg-surface p-3">
-                <div className="mb-1 flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: indColor(key) }} />
-                  <span className="text-body-sm font-semibold text-neutral-800">{labelOf(key)}</span>
-                </div>
+              <Panel
+                key={key}
+                title={labelOf(key)}
+                right={
+                  <span
+                    className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                    style={{ background: indColor(key) }}
+                    aria-hidden
+                  />
+                }
+                csv={{
+                  filename: `annee_vs_annee_${key}`,
+                  rows: [["Année", labelOf(key)], ...seriesData.map((d) => [d.year, d.value])],
+                }}
+              >
                 {chartType === "bar" ? (
                   <YearBars data={seriesData} color={indColor(key)} unit={fmtOf(key)} />
                 ) : (
                   <YearLine data={seriesData} color={indColor(key)} unit={fmtOf(key)} />
                 )}
-              </div>
+              </Panel>
             );
           })}
         </div>
