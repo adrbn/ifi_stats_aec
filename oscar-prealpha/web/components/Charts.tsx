@@ -9,6 +9,7 @@ import {
   LineChart,
   Pie,
   PieChart,
+  ReferenceLine,
   Tooltip,
   XAxis,
   YAxis,
@@ -88,15 +89,15 @@ export function HBar({
   data: { name: string; value: number }[];
   height?: number;
   color?: string;
-  unit?: "int" | "eur";
+  unit?: Unit;
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart layout="vertical" data={data} margin={{ top: 4, right: 24, bottom: 4, left: 8 }}>
         <CartesianGrid horizontal={false} />
-        <XAxis type="number" tickLine={false} axisLine={false} tickFormatter={(v) => formatInt(v)} />
+        <XAxis type="number" tickLine={false} axisLine={false} tickFormatter={(v) => fmtUnit(v, unit)} />
         <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} width={130} />
-        <Tooltip cursor={{ fill: "var(--accent-50)" }} contentStyle={tooltipStyle} formatter={(v: number) => formatInt(v)} />
+        <Tooltip cursor={{ fill: "var(--accent-50)" }} contentStyle={tooltipStyle} formatter={(v: number) => fmtUnit(v, unit)} />
         <Bar dataKey="value" radius={[0, 3, 3, 0]} maxBarSize={26} fill={color} />
       </BarChart>
     </ResponsiveContainer>
@@ -120,6 +121,106 @@ export function GroupedYearBar({
         <Tooltip cursor={{ fill: "var(--accent-50)" }} contentStyle={tooltipStyle} formatter={(v: number) => formatInt(v)} />
         <Bar dataKey="value" radius={[3, 3, 0, 0]} maxBarSize={56} fill="#3B82F6" />
       </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Mini-histogramme par année pour UN indicateur (small multiple). Sa propre
+ *  échelle Y (jamais mélanger deux indicateurs sur un même axe). Les libellés
+ *  d'année (« 2025 » / « 2025-26 ») sont déjà mis en forme par l'appelant. */
+export function YearBars({
+  data,
+  color,
+  unit = "int",
+  height = 190,
+}: {
+  data: { year: string; value: number }[];
+  color: string;
+  unit?: Unit;
+  height?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
+        <CartesianGrid vertical={false} stroke="var(--neutral-200)" />
+        <XAxis dataKey="year" tickLine={false} axisLine={{ stroke: "var(--neutral-300)" }} tick={{ fontSize: 11 }} />
+        <YAxis tickLine={false} axisLine={false} width={unit === "eur" ? 58 : 44} tick={{ fontSize: 11 }} tickFormatter={(v) => fmtUnit(v, unit)} />
+        <Tooltip cursor={{ fill: "var(--accent-50)" }} contentStyle={tooltipStyle} formatter={(v: number) => [fmtUnit(v, unit), ""]} />
+        <Bar dataKey="value" radius={[3, 3, 0, 0]} maxBarSize={48} fill={color} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Variante COURBE du small multiple (mêmes données/échelle que YearBars). */
+export function YearLine({
+  data,
+  color,
+  unit = "int",
+  height = 190,
+}: {
+  data: { year: string; value: number }[];
+  color: string;
+  unit?: Unit;
+  height?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
+        <CartesianGrid vertical={false} stroke="var(--neutral-200)" />
+        <XAxis dataKey="year" tickLine={false} axisLine={{ stroke: "var(--neutral-300)" }} tick={{ fontSize: 11 }} />
+        <YAxis tickLine={false} axisLine={false} width={unit === "eur" ? 58 : 44} tick={{ fontSize: 11 }} tickFormatter={(v) => fmtUnit(v, unit)} />
+        <Tooltip cursor={{ stroke: "var(--neutral-300)" }} contentStyle={tooltipStyle} formatter={(v: number) => [fmtUnit(v, unit), ""]} />
+        <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={{ r: 3, fill: color, strokeWidth: 0 }} activeDot={{ r: 5 }} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Plusieurs indicateurs sur UN graphe, ramenés en base 100 à la 1re année
+ *  (première valeur non nulle) → comparaison des ÉVOLUTIONS relatives sans
+ *  mélanger des échelles hétérogènes. Une couleur + une entrée de légende par
+ *  indicateur ; ligne de référence à 100. */
+export function IndexedLines({
+  years,
+  series,
+  height = 320,
+}: {
+  years: string[];
+  series: { key: string; name: string; color: string; values: number[] }[];
+  height?: number;
+}) {
+  const based = series.map((s) => {
+    const base = s.values.find((v) => v !== 0) ?? 0;
+    return { ...s, idx: s.values.map((v) => (base ? (v / base) * 100 : 0)) };
+  });
+  const data = years.map((y, i) => {
+    const row: Record<string, number | string> = { year: y };
+    based.forEach((s) => (row[s.key] = Math.round(s.idx[i] * 10) / 10));
+    return row;
+  });
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={data} margin={{ top: 16, right: 24, bottom: 8, left: 8 }}>
+        <CartesianGrid vertical={false} stroke="var(--neutral-200)" />
+        <XAxis dataKey="year" tickLine={false} axisLine={{ stroke: "var(--neutral-300)" }} tick={{ fontSize: 12 }} />
+        <YAxis tickLine={false} axisLine={false} width={44} tick={{ fontSize: 12 }} tickFormatter={(v) => String(v)} />
+        <ReferenceLine y={100} stroke="var(--neutral-300)" strokeDasharray="3 3" />
+        <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n) => [`${formatDec1(v)} (base 100)`, n as string]} />
+        <Legend iconType="plainline" wrapperStyle={{ fontSize: 12, color: "var(--neutral-600)", paddingTop: 8 }} />
+        {based.map((s) => (
+          <Line
+            key={s.key}
+            type="monotone"
+            dataKey={s.key}
+            name={s.name}
+            stroke={s.color}
+            strokeWidth={2}
+            dot={{ r: 3, fill: s.color, strokeWidth: 0 }}
+            activeDot={{ r: 5 }}
+          />
+        ))}
+      </LineChart>
     </ResponsiveContainer>
   );
 }

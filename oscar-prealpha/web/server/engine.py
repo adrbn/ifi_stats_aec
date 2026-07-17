@@ -286,23 +286,33 @@ def _evolution(df_sel, years: List[int], antennas: List[str]):
 
 
 def _yoy(df_sel, years: List[int]):
+    """Tableau année vs année : TOUS les indicateurs par année + variation (%)
+    de CHAQUE indicateur vs l'année précédente sélectionnée. Le libellé d'année
+    (civile « 2025 » / scolaire « 2025-26 ») est mis en forme côté client selon
+    le mode d'année actif."""
     rows = []
     yrs = sorted(years)
-    prev_vals = None
+    prev = None
     for yr in yrs:
         d = df_sel[df_sel["Année"] == yr]
-        inscr = _sum(d, "Nb. d'inscriptions")
-        cours = _sum(d, "Nb. de Cours")
-        rec = _sum(d, "Recettes")
-        heures = _sum(d, "Nombre total d'heures vendues (heures-étudiants)")
-        iv = rv = None
-        if prev_vals:
-            iv = round((inscr - prev_vals[0]) / prev_vals[0] * 100, 1) if prev_vals[0] else None
-            rv = round((rec - prev_vals[1]) / prev_vals[1] * 100, 1) if prev_vals[1] else None
-        rows.append({"year": yr, "inscriptions": bs._round(inscr), "cours": bs._round(cours),
-                     "recettes": bs._round(rec), "heures": bs._round(heures),
-                     "inscriptionsVar": iv, "recettesVar": rv})
-        prev_vals = (inscr, rec)
+        values = {key: _indic_value(d, key, col) for key, _l, col, _f in INDICATORS}
+        deltas = {}
+        for key in values:
+            pv = prev.get(key) if prev else None
+            deltas[key] = round((values[key] - pv) / pv * 100, 1) if pv else None
+        # Rétro-compat : quelques champs à plat encore utilisés ailleurs.
+        rows.append({
+            "year": yr,
+            "values": values,
+            "deltas": deltas,
+            "inscriptions": values.get("inscriptions", 0),
+            "cours": values.get("cours", 0),
+            "recettes": values.get("recettes", 0),
+            "heures": values.get("heures", 0),
+            "inscriptionsVar": deltas.get("inscriptions"),
+            "recettesVar": deltas.get("recettes"),
+        })
+        prev = values
     return {"years": yrs, "rows": rows}
 
 
@@ -378,12 +388,44 @@ def _indic_value(d, key, col):
     return bs._round(_sum(d, col))
 
 
-def _by_sector_indicators(df_sel):
+NON_RENSEIGNE = "(Non renseigné)"
+
+
+def _dim_series(df_sel, col):
+    """Série de clés de regroupement pour une dimension : les valeurs vides /
+    NaN / « nan » sont normalisées en « (Non renseigné) » (au lieu d'apparaître
+    comme la chaîne brute « nan »)."""
+    s = df_sel[col].astype(str).str.strip()
+    blank = df_sel[col].isna() | (s == "") | (s.str.lower() == "nan") | (s == "None")
+    return s.mask(blank, NON_RENSEIGNE)
+
+
+def _by_dimension_indicators(df_sel, col, order=None):
+    """{indicateur: [{label, value}]} en groupant par `col` — pour TOUS les
+    indicateurs (y compris non additifs : élèves différents, remplissage,
+    paniers, calculés par groupe via _indic_value). Généralise le détail par
+    secteur à n'importe quelle dimension (niveau, format, catégorie…). Les
+    valeurs vides sont regroupées sous « (Non renseigné) »."""
+    if col not in df_sel.columns:
+        return {key: [] for key, _l, _c, _f in INDICATORS}
+    keys = _dim_series(df_sel, col)
+    present = list(keys.unique())
+    if order:
+        labels = [v for v in order if v in present] + [v for v in present if v not in order]
+    elif "Nb. d'inscriptions" in df_sel.columns and present:
+        sums = df_sel.groupby(keys)["Nb. d'inscriptions"].sum()
+        labels = [str(v) for v in sums.sort_values(ascending=False).index]
+    else:
+        labels = sorted(present)
+    subs = {lab: df_sel[keys == lab] for lab in labels}
     out = {}
-    secteurs = _ordered_sectors(df_sel)
-    for key, _l, col, _f in INDICATORS:
-        out[key] = [{"label": sec, "value": _indic_value(df_sel[df_sel["Secteur"] == sec], key, col)} for sec in secteurs]
+    for key, _l, icol, _f in INDICATORS:
+        out[key] = [{"label": lab, "value": _indic_value(subs[lab], key, icol)} for lab in labels]
     return out
+
+
+def _by_sector_indicators(df_sel):
+    return _by_dimension_indicators(df_sel, "Secteur", core.SECTOR_ORDER)
 
 
 def _by_antenna_indicators(df_sel, antennas):
@@ -543,6 +585,11 @@ def compute(
         "profitability": _profitability(df_sel),
         "networkTotals": network_totals,
         "bySectorIndicator": _by_sector_indicators(df_sel),
+        "byNiveauIndicator": _by_dimension_indicators(df_sel, "Niveau"),
+        "byDimensionIndicator": {
+            k: _by_dimension_indicators(df_sel, col)
+            for k, col, _l in bs.DIMENSIONS if col in df_sel.columns
+        },
         "byAntennaIndicator": _by_antenna_indicators(df_sel, antennas),
         "sectorAntenna": _sector_antenna_matrix(df_sel, antennas),
         "flows": _flows(df_sel, antennas),
