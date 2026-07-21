@@ -83,6 +83,8 @@ def cours(
     periodes: Optional[List[str]] = Query(default=None),
     matieres: Optional[List[str]] = Query(default=None),
     ues: Optional[List[str]] = Query(default=None),
+    triYears: Optional[List[int]] = Query(default=None),
+    triQuarters: Optional[List[int]] = Query(default=None),
     mode: Optional[str] = Query(default="civil"),
 ):
     """Live, filter-aware Cours payload (multi-year + multi-antenna + cascading
@@ -97,6 +99,7 @@ def cours(
             _parse_years(years), _parse_antennas(antennas),
             secteurs=secteurs, sousSecteurs=sousSecteurs, macros=macros, categories=categories,
             niveaux=niveaux, ages=ages, periodes=periodes, matieres=matieres, ues=ues,
+            tri_years=triYears, tri_quarters=triQuarters,
             year_mode=(mode if mode in ("school", "trimester") else "civil"),
         )
     except Exception as e:  # noqa: BLE001

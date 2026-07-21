@@ -52,42 +52,110 @@ export function YearModeToggle() {
   );
 }
 
+/** Pastille de sélection réutilisable (« Tout » + valeurs). */
+function Pills({
+  allActive,
+  onAll,
+  items,
+}: {
+  allActive: boolean;
+  onAll: () => void;
+  items: { key: string | number; label: string; active: boolean; onClick: () => void }[];
+}) {
+  return (
+    <div className="inline-flex flex-wrap gap-1 rounded-pill bg-neutral-100 p-[3px]">
+      <button
+        onClick={onAll}
+        className={`rounded-pill px-3 py-1.5 text-body-sm font-medium italic transition-all duration-150 ease-out-soft ${
+          allActive ? "bg-accent-500 text-white shadow-sm" : "text-neutral-500 hover:bg-surface hover:text-neutral-900"
+        }`}
+      >
+        Tout
+      </button>
+      {items.map((it) => (
+        <button
+          key={it.key}
+          onClick={it.onClick}
+          className={`tnum rounded-pill px-3 py-1.5 text-body-sm font-medium transition-all duration-150 ease-out-soft ${
+            it.active ? "bg-accent-500 text-white shadow-sm" : "text-neutral-600 hover:bg-surface hover:text-neutral-900"
+          }`}
+        >
+          {it.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const QUARTER_LABEL: Record<number, string> = {
+  1: "T1 · sept-déc",
+  2: "T2 · janv-avr",
+  3: "T3 · mai-août",
+};
+
 export function YearSegment() {
   const years = useFilters((s) => s.years);
   const yearMode = useFilters((s) => s.yearMode);
   const toggleYear = useFilters((s) => s.toggleYear);
   const setAllYears = useFilters((s) => s.setAllYears);
+  const triYears = useFilters((s) => s.triYears);
+  const triQuarters = useFilters((s) => s.triQuarters);
+  const toggleTriYear = useFilters((s) => s.toggleTriYear);
+  const setAllTriYears = useFilters((s) => s.setAllTriYears);
+  const toggleTriQuarter = useFilters((s) => s.toggleTriQuarter);
+  const setAllTriQuarters = useFilters((s) => s.setAllTriQuarters);
   const { data } = useSnapshot();
-  const available = data.meta.years.length ? data.meta.years : [2023, 2024, 2025];
-  const allActive = years.length === 0;
 
+  // Mode TRIMESTRE : sélecteur à 2 axes (années scolaires × T1/T2/T3) — bien
+  // plus lisible qu'une longue liste de « 2025-26 T1 ».
+  if (yearMode === "trimester") {
+    const keys = data.meta.years.length ? data.meta.years : [];
+    const schoolYears = Array.from(new Set(keys.map((k) => Math.floor(k / 10)))).sort((a, b) => a - b);
+    return (
+      <div className="inline-flex flex-col gap-2">
+        <YearModeToggle />
+        <div className="inline-flex flex-wrap items-center gap-2">
+          <span className="text-eyebrow font-semibold uppercase tracking-[0.06em] text-neutral-400">Année</span>
+          <Pills
+            allActive={triYears.length === 0}
+            onAll={setAllTriYears}
+            items={schoolYears.map((sy) => ({
+              key: sy,
+              label: `${sy}-${String((sy + 1) % 100).padStart(2, "0")}`,
+              active: triYears.includes(sy),
+              onClick: () => toggleTriYear(sy),
+            }))}
+          />
+          <span className="text-eyebrow font-semibold uppercase tracking-[0.06em] text-neutral-400">Trimestre</span>
+          <Pills
+            allActive={triQuarters.length === 0}
+            onAll={setAllTriQuarters}
+            items={[1, 2, 3].map((q) => ({
+              key: q,
+              label: QUARTER_LABEL[q],
+              active: triQuarters.includes(q),
+              onClick: () => toggleTriQuarter(q),
+            }))}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const available = data.meta.years.length ? data.meta.years : [2023, 2024, 2025];
   return (
     <div className="inline-flex flex-wrap items-center gap-2">
       <YearModeToggle />
-      <div className="inline-flex flex-wrap gap-1 rounded-pill bg-neutral-100 p-[3px]">
-        <button
-          onClick={setAllYears}
-          className={`rounded-pill px-3 py-1.5 text-body-sm font-medium italic transition-all duration-150 ease-out-soft ${
-            allActive ? "bg-accent-500 text-white shadow-sm" : "text-neutral-500 hover:bg-surface hover:text-neutral-900"
-          }`}
-        >
-          Toutes
-        </button>
-        {available.map((y) => {
-          const active = years.includes(y);
-          return (
-            <button
-              key={y}
-              onClick={() => toggleYear(y)}
-              className={`tnum rounded-pill px-3 py-1.5 text-body-sm font-medium transition-all duration-150 ease-out-soft ${
-                active ? "bg-accent-500 text-white shadow-sm" : "text-neutral-600 hover:bg-surface hover:text-neutral-900"
-              }`}
-            >
-              {yearLabel(y, yearMode)}
-            </button>
-          );
-        })}
-      </div>
+      <Pills
+        allActive={years.length === 0}
+        onAll={setAllYears}
+        items={available.map((y) => ({
+          key: y,
+          label: yearLabel(y, yearMode),
+          active: years.includes(y),
+          onClick: () => toggleYear(y),
+        }))}
+      />
     </div>
   );
 }
@@ -134,12 +202,19 @@ export function AntennaToggles() {
 export function FilterSummary() {
   const years = useFilters((s) => s.years);
   const yearMode = useFilters((s) => s.yearMode);
+  const triYears = useFilters((s) => s.triYears);
+  const triQuarters = useFilters((s) => s.triQuarters);
   const antennas = useFilters((s) => s.antennas);
   const reset = useFilters((s) => s.reset);
-  const allLabel =
-    yearMode === "trimester" ? "Tous trimestres" : yearMode === "school" ? "Toutes années scolaires" : "Toutes années";
-  const yearsLabel =
-    years.length === 0 ? allLabel : years.map((y) => yearLabel(y, yearMode)).join(", ");
+  let yearsLabel: string;
+  if (yearMode === "trimester") {
+    const yPart = triYears.length ? triYears.map((sy) => `${sy}-${String((sy + 1) % 100).padStart(2, "0")}`).join(", ") : "toutes années";
+    const qPart = triQuarters.length ? triQuarters.map((q) => `T${q}`).join(", ") : "tous trimestres";
+    yearsLabel = triYears.length || triQuarters.length ? `${yPart} · ${qPart}` : "Tous trimestres";
+  } else {
+    const allLabel = yearMode === "school" ? "Toutes années scolaires" : "Toutes années";
+    yearsLabel = years.length === 0 ? allLabel : years.map((y) => yearLabel(y, yearMode)).join(", ");
+  }
   const antLabel = antennas.length === 4 ? "Toutes antennes" : antennas.join(", ");
   return (
     <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-neutral-200 bg-surface px-3 py-2">

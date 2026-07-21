@@ -537,6 +537,8 @@ def compute(
     periodes: Optional[List[str]] = None,
     matieres: Optional[List[str]] = None,
     ues: Optional[List[str]] = None,
+    tri_years: Optional[List[int]] = None,
+    tri_quarters: Optional[List[int]] = None,
     year_mode: str = "civil",
 ) -> dict:
     """Full snapshot-shaped payload for the given filters, computed live.
@@ -561,7 +563,16 @@ def compute(
     if year_mode != "civil" and icol in df.columns:
         df = df.assign(**{"Année": df[icol]})
     all_years = sorted(int(y) for y in df["Année"].unique())
-    years = [y for y in (years or all_years) if y in all_years] or all_years
+    if year_mode == "trimester":
+        # Sélection à 2 axes : années scolaires × trimestres (produit croisé).
+        # Vides = tout. Chaque clé d'intervalle = année_scolaire × 10 + trimestre.
+        sy_all = sorted({k // 10 for k in all_years})
+        sy_sel = [s for s in (tri_years or sy_all) if s in sy_all] or sy_all
+        q_sel = [q for q in (tri_quarters or (1, 2, 3)) if q in (1, 2, 3)] or [1, 2, 3]
+        wanted = {sy * 10 + q for sy in sy_sel for q in q_sel}
+        years = [y for y in all_years if y in wanted] or all_years
+    else:
+        years = [y for y in (years or all_years) if y in all_years] or all_years
     antennas = [a for a in (antennas or bs.ANTENNA_ORDER) if a in bs.ANTENNA_ORDER] or list(bs.ANTENNA_ORDER)
 
     base = df[df["Année"].isin(years) & df["Sede"].isin(antennas)]

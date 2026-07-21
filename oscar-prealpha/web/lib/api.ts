@@ -13,6 +13,9 @@ export interface SnapshotQuery {
   antennas?: AntennaCode[];
   dims?: Partial<Record<DimKey, string[]>>;
   mode?: "civil" | "school" | "trimester";
+  // Mode trimestre : sélection à 2 axes (années scolaires × trimestres).
+  triYears?: number[];
+  triQuarters?: number[];
 }
 
 /**
@@ -31,6 +34,10 @@ export async function fetchSnapshot(q: SnapshotQuery = {}): Promise<Snapshot> {
     });
   }
   if (q.mode && q.mode !== "civil") params.set("mode", q.mode);
+  if (q.mode === "trimester") {
+    (q.triYears ?? []).forEach((y) => params.append("triYears", String(y)));
+    (q.triQuarters ?? []).forEach((t) => params.append("triQuarters", String(t)));
+  }
   const qs = params.toString();
   try {
     const res = await fetch(`/api/cours${qs ? `?${qs}` : ""}`, {
