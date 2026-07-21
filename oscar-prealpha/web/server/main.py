@@ -97,7 +97,7 @@ def cours(
             _parse_years(years), _parse_antennas(antennas),
             secteurs=secteurs, sousSecteurs=sousSecteurs, macros=macros, categories=categories,
             niveaux=niveaux, ages=ages, periodes=periodes, matieres=matieres, ues=ues,
-            year_mode=("school" if mode == "school" else "civil"),
+            year_mode=(mode if mode in ("school", "trimester") else "civil"),
         )
     except Exception as e:  # noqa: BLE001
         print(f"[main] /api/cours compute failed ({e}); serving static snapshot.")

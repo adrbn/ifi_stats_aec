@@ -12,21 +12,28 @@ const ANTENNAS: { code: AntennaCode; label: string; color: string }[] = [
   { code: "IFP", label: "IFP", color: "#EF4444" },
 ];
 
-/** Libellé d'une année selon le mode : civile « 2024 » / scolaire « 2024-25 ». */
+/** Libellé d'un intervalle selon le mode : civile « 2024 » / scolaire « 2024-25 »
+ *  / trimestre « 2024-25 T1 » (clé = année scolaire × 10 + n° trimestre). */
 export function yearLabel(y: number, mode: YearMode): string {
+  if (mode === "trimester") {
+    const sy = Math.floor(y / 10);
+    const t = y % 10;
+    return `${sy}-${String((sy + 1) % 100).padStart(2, "0")} T${t}`;
+  }
   return mode === "school" ? `${y}-${String((y + 1) % 100).padStart(2, "0")}` : String(y);
 }
 
-/** Bascule année civile ⇄ scolaire. */
+/** Sélecteur d'INTERVALLE : année civile / année scolaire / trimestre. */
 export function YearModeToggle() {
   const yearMode = useFilters((s) => s.yearMode);
   const setYearMode = useFilters((s) => s.setYearMode);
   const opts: { value: YearMode; label: string }[] = [
-    { value: "civil", label: "Civile" },
-    { value: "school", label: "Scolaire" },
+    { value: "civil", label: "Année civile" },
+    { value: "school", label: "Année scolaire" },
+    { value: "trimester", label: "Trimestre" },
   ];
   return (
-    <div className="inline-flex gap-1 rounded-pill bg-neutral-100 p-[3px]" title="Année civile (jan→déc) ou scolaire (sep→août)">
+    <div className="inline-flex gap-1 rounded-pill bg-neutral-100 p-[3px]" title="Intervalle : année civile (jan→déc), scolaire (sep→août), ou trimestre (T1 sep-déc · T2 janv-avril · T3 mai-août)">
       {opts.map((o) => {
         const active = yearMode === o.value;
         return (
@@ -129,10 +136,10 @@ export function FilterSummary() {
   const yearMode = useFilters((s) => s.yearMode);
   const antennas = useFilters((s) => s.antennas);
   const reset = useFilters((s) => s.reset);
+  const allLabel =
+    yearMode === "trimester" ? "Tous trimestres" : yearMode === "school" ? "Toutes années scolaires" : "Toutes années";
   const yearsLabel =
-    years.length === 0
-      ? yearMode === "school" ? "Toutes années scolaires" : "Toutes années"
-      : years.map((y) => yearLabel(y, yearMode)).join(", ");
+    years.length === 0 ? allLabel : years.map((y) => yearLabel(y, yearMode)).join(", ");
   const antLabel = antennas.length === 4 ? "Toutes antennes" : antennas.join(", ");
   return (
     <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-neutral-200 bg-surface px-3 py-2">

@@ -144,7 +144,7 @@ export function TopBar() {
 
       <div className={`${filtersOpen ? "block" : "hidden"} lg:block`}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-neutral-100 px-4 py-2.5 sm:gap-x-6 sm:px-6 lg:border-t">
-        <FilterField label="Année">
+        <FilterField label="Intervalle">
           <YearSegment />
         </FilterField>
         <FilterField label="Antennes">

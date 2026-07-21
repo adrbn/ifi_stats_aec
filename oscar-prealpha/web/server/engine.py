@@ -94,9 +94,13 @@ def _distinct_students(df_scope) -> Optional[int]:
     return int(el[el["Code cours"].isin(codes)]["Code Client"].nunique())
 
 
+def _norm_mode(mode: str) -> str:
+    return mode if mode in ("school", "trimester") else "civil"
+
+
 def _year_col(mode: str) -> str:
-    """Colonne d'année selon le mode : civile (défaut) ou scolaire."""
-    return "Année scolaire" if mode == "school" else "Année"
+    """Colonne d'INTERVALLE selon le mode : civile / scolaire / trimestre."""
+    return {"school": "Année scolaire", "trimester": "Trimestre clé"}.get(mode, "Année")
 
 
 def available_years(mode: str = "civil") -> List[int]:
@@ -127,7 +131,11 @@ def _sum(d, col):
 
 
 def _year_text(y: int, mode: str) -> str:
-    """Libellé d'année : civile « 2024 » / scolaire « 2024-25 »."""
+    """Libellé d'un intervalle : civile « 2024 » / scolaire « 2024-25 » /
+    trimestre « 2024-25 T1 » (clé = année scolaire × 10 + n° trimestre)."""
+    if mode == "trimester":
+        sy, t = divmod(int(y), 10)
+        return f"{sy}-{(sy + 1) % 100:02d} T{t}"
     return f"{y}-{(y + 1) % 100:02d}" if mode == "school" else str(y)
 
 
@@ -168,13 +176,17 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
              "panier_inscr": None, "panier_pers": None}
     dlabel = ""
     if len(years) == 1:
-        prev = years[0] - 1
-        prev_sel = df_all[(df_all["Année"] == prev) & (df_all["Sede"].isin(antennas))]
-        # Année de base non représentative (trop peu de cours) → pas de delta :
-        # une variation vs une année résiduelle est du bruit, pas de l'info.
-        if len(prev_sel) and _base_representative(_sum(prev_sel, "Nb. de Cours")):
-            # Comparaison à l'année (civile ou scolaire) précédente — df_all est
-            # déjà aligné sur le mode actif, donc « prev » est la bonne année.
+        # Intervalle PRÉCÉDENT = le plus grand intervalle réellement présent qui
+        # soit < à l'intervalle courant. Robuste pour les trimestres (la borne
+        # d'année scolaire n'est pas « clé-1 » : 2026 T1 = 20261, précédent réel
+        # = 2025 T3 = 20253), et équivalent à « année-1 » en civil/scolaire.
+        keys = [int(k) for k in df_all["Année"].unique()] if "Année" in df_all.columns else []
+        earlier = [k for k in keys if k < years[0]]
+        prev = max(earlier) if earlier else None
+        prev_sel = df_all[(df_all["Année"] == prev) & (df_all["Sede"].isin(antennas))] if prev is not None else df_all.iloc[0:0]
+        # Intervalle de base non représentatif (trop peu de cours) → pas de delta :
+        # une variation vs un intervalle résiduel est du bruit, pas de l'info.
+        if prev is not None and len(prev_sel) and _base_representative(_sum(prev_sel, "Nb. de Cours")):
             dlabel = f"vs {_year_text(prev, year_mode)}"
             p_inscr = _sum(prev_sel, "Nb. d'inscriptions")
             p_cours = _sum(prev_sel, "Nb. de Cours")
@@ -538,11 +550,16 @@ def compute(
     « Année scolaire » : tout le pipeline aval (filtres, KPI, évolution, YoY,
     ventilations) regroupe alors par année scolaire sans autre changement.
     """
-    year_mode = "school" if year_mode == "school" else "civil"
+    year_mode = _norm_mode(year_mode)
     sync_mapping()  # applique d'éventuelles éditions de correspondances (temps réel)
     df = get_df()
-    if year_mode == "school" and "Année scolaire" in df.columns:
-        df = df.assign(**{"Année": df["Année scolaire"]})
+    # Mode d'intervalle : on remplace la colonne « Année » par la colonne
+    # d'intervalle (année scolaire, ou clé trimestre) → tout le pipeline aval
+    # (filtres, KPI, évolution, YoY, ventilations) regroupe par cet intervalle
+    # sans autre changement. Les libellés sont mis en forme par _year_text.
+    icol = _year_col(year_mode)
+    if year_mode != "civil" and icol in df.columns:
+        df = df.assign(**{"Année": df[icol]})
     all_years = sorted(int(y) for y in df["Année"].unique())
     years = [y for y in (years or all_years) if y in all_years] or all_years
     antennas = [a for a in (antennas or bs.ANTENNA_ORDER) if a in bs.ANTENNA_ORDER] or list(bs.ANTENNA_ORDER)

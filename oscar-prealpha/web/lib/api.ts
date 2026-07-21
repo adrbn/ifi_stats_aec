@@ -12,7 +12,7 @@ export interface SnapshotQuery {
   years?: number[];
   antennas?: AntennaCode[];
   dims?: Partial<Record<DimKey, string[]>>;
-  mode?: "civil" | "school";
+  mode?: "civil" | "school" | "trimester";
 }
 
 /**
@@ -30,7 +30,7 @@ export async function fetchSnapshot(q: SnapshotQuery = {}): Promise<Snapshot> {
       (q.dims?.[k] ?? []).forEach((v) => params.append(k, v));
     });
   }
-  if (q.mode === "school") params.set("mode", "school");
+  if (q.mode && q.mode !== "civil") params.set("mode", q.mode);
   const qs = params.toString();
   try {
     const res = await fetch(`/api/cours${qs ? `?${qs}` : ""}`, {

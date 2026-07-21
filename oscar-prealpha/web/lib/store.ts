@@ -10,7 +10,8 @@ export type DimKey =
   | "secteurs" | "sousSecteurs" | "macros" | "categories"
   | "niveaux" | "ages" | "periodes" | "matieres" | "ues";
 export const ORTHOGONAL_DIMS: DimKey[] = ["niveaux", "ages", "periodes", "matieres", "ues"];
-export type YearMode = "civil" | "school";
+// Mode d'INTERVALLE du sélecteur : année civile, année scolaire, ou trimestre.
+export type YearMode = "civil" | "school" | "trimester";
 
 interface FilterState {
   years: number[]; // empty = all available years

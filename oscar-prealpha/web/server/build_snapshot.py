@@ -158,8 +158,13 @@ def load_all_years():
     # démarrant en jan–août N appartient à l'année scolaire N-1.
     if "Mois début" in df.columns:
         df["Année scolaire"] = df["Année"] - (df["Mois début"] < 9).astype(int)
+        # Clé TRIMESTRE (intervalle) triable : année scolaire × 10 + n° trimestre.
+        # T1 = sept-déc, T2 = janv-avril, T3 = mai-août (rattachés à l'année
+        # scolaire). Ex. 2025-26 T1 → 20251, T2 → 20252, T3 → 20253.
+        df["Trimestre clé"] = df["Année scolaire"] * 10 + df["Mois début"].map(trimester_num)
     else:
         df["Année scolaire"] = df["Année"]
+        df["Trimestre clé"] = df["Année"] * 10
     return df
 
 
@@ -338,6 +343,20 @@ def compute_evolution(df):
             "inscriptions": inscr_list, "recettes": rec_list,
         })
     return {"years": years, "series": series}
+
+
+# ── Trimestres (mode d'intervalle) ─────────────────────────────────────────
+def trimester_num(month) -> int:
+    """N° de trimestre d'un mois : T1 = sept-déc, T2 = janv-avril, T3 = mai-août."""
+    try:
+        m = int(month)
+    except (TypeError, ValueError):
+        return 0
+    if m in (9, 10, 11, 12):
+        return 1
+    if m in (1, 2, 3, 4):
+        return 2
+    return 3  # 5,6,7,8
 
 
 # ── Normalisation / tri des dimensions issues d'AEC ────────────────────────
