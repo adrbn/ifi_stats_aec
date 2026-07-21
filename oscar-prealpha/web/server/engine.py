@@ -94,9 +94,13 @@ def _distinct_students(df_scope) -> Optional[int]:
     return int(el[el["Code cours"].isin(codes)]["Code Client"].nunique())
 
 
+def _norm_mode(mode: str) -> str:
+    return mode if mode in ("school", "trimester") else "civil"
+
+
 def _year_col(mode: str) -> str:
-    """Colonne d'année selon le mode : civile (défaut) ou scolaire."""
-    return "Année scolaire" if mode == "school" else "Année"
+    """Colonne d'INTERVALLE selon le mode : civile / scolaire / trimestre."""
+    return {"school": "Année scolaire", "trimester": "Trimestre clé"}.get(mode, "Année")
 
 
 def available_years(mode: str = "civil") -> List[int]:
@@ -127,7 +131,11 @@ def _sum(d, col):
 
 
 def _year_text(y: int, mode: str) -> str:
-    """Libellé d'année : civile « 2024 » / scolaire « 2024-25 »."""
+    """Libellé d'un intervalle : civile « 2024 » / scolaire « 2024-25 » /
+    trimestre « 2024-25 T1 » (clé = année scolaire × 10 + n° trimestre)."""
+    if mode == "trimester":
+        sy, t = divmod(int(y), 10)
+        return f"{sy}-{(sy + 1) % 100:02d} T{t}"
     return f"{y}-{(y + 1) % 100:02d}" if mode == "school" else str(y)
 
 
@@ -168,13 +176,17 @@ def _kpis(df_sel, years: List[int], antennas: List[str], df_all=None, year_mode:
              "panier_inscr": None, "panier_pers": None}
     dlabel = ""
     if len(years) == 1:
-        prev = years[0] - 1
-        prev_sel = df_all[(df_all["Année"] == prev) & (df_all["Sede"].isin(antennas))]
-        # Année de base non représentative (trop peu de cours) → pas de delta :
-        # une variation vs une année résiduelle est du bruit, pas de l'info.
-        if len(prev_sel) and _base_representative(_sum(prev_sel, "Nb. de Cours")):
-            # Comparaison à l'année (civile ou scolaire) précédente — df_all est
-            # déjà aligné sur le mode actif, donc « prev » est la bonne année.
+        # Intervalle PRÉCÉDENT = le plus grand intervalle réellement présent qui
+        # soit < à l'intervalle courant. Robuste pour les trimestres (la borne
+        # d'année scolaire n'est pas « clé-1 » : 2026 T1 = 20261, précédent réel
+        # = 2025 T3 = 20253), et équivalent à « année-1 » en civil/scolaire.
+        keys = [int(k) for k in df_all["Année"].unique()] if "Année" in df_all.columns else []
+        earlier = [k for k in keys if k < years[0]]
+        prev = max(earlier) if earlier else None
+        prev_sel = df_all[(df_all["Année"] == prev) & (df_all["Sede"].isin(antennas))] if prev is not None else df_all.iloc[0:0]
+        # Intervalle de base non représentatif (trop peu de cours) → pas de delta :
+        # une variation vs un intervalle résiduel est du bruit, pas de l'info.
+        if prev is not None and len(prev_sel) and _base_representative(_sum(prev_sel, "Nb. de Cours")):
             dlabel = f"vs {_year_text(prev, year_mode)}"
             p_inscr = _sum(prev_sel, "Nb. d'inscriptions")
             p_cours = _sum(prev_sel, "Nb. de Cours")
@@ -354,9 +366,25 @@ _DIM_COL = {
     "sousSecteurs": "Sous-secteur",
     "macros": "Macro-catégorie",
     "categories": "Catégorie de cours",
-    # « niveaux » = dimension ORTHOGONALE (hors cascade secteur→…→catégorie).
+    # Dimensions ORTHOGONALES (hors cascade secteur→…→catégorie) : elles
+    # filtrent le périmètre sans dépendre du secteur sélectionné.
     "niveaux": "Niveau",
+    "ages": "Tranche d'âge du cours",
+    "periodes": "Période AEC",
+    "matieres": "Matière",
+    "ues": "UE",
 }
+
+# Tri spécifique des options de filtre : chronologique pour les périodes,
+# numérique pour les UE (sinon « 10 » passerait avant « 2 »).
+_DIM_SORT = {
+    "periodes": bs.periode_sort_key,
+    "ues": bs.ue_sort_key,
+}
+
+# Dimensions orthogonales : options calculées sur le périmètre année+antenne
+# (base), pas sur la cascade secteur → sous-secteur → macro → catégorie.
+_ORTHOGONAL_DIMS = ("niveaux", "ages", "periodes", "matieres", "ues")
 
 # Indicators shared by the per-sector / per-antenna analytical charts.
 # « eleves_differents » est un COMPTE DISTINCT (non additif) : col=None, calculé
@@ -505,6 +533,12 @@ def compute(
     macros: Optional[List[str]] = None,
     categories: Optional[List[str]] = None,
     niveaux: Optional[List[str]] = None,
+    ages: Optional[List[str]] = None,
+    periodes: Optional[List[str]] = None,
+    matieres: Optional[List[str]] = None,
+    ues: Optional[List[str]] = None,
+    tri_years: Optional[List[int]] = None,
+    tri_quarters: Optional[List[int]] = None,
     year_mode: str = "civil",
 ) -> dict:
     """Full snapshot-shaped payload for the given filters, computed live.
@@ -518,20 +552,36 @@ def compute(
     « Année scolaire » : tout le pipeline aval (filtres, KPI, évolution, YoY,
     ventilations) regroupe alors par année scolaire sans autre changement.
     """
-    year_mode = "school" if year_mode == "school" else "civil"
+    year_mode = _norm_mode(year_mode)
     sync_mapping()  # applique d'éventuelles éditions de correspondances (temps réel)
     df = get_df()
-    if year_mode == "school" and "Année scolaire" in df.columns:
-        df = df.assign(**{"Année": df["Année scolaire"]})
+    # Mode d'intervalle : on remplace la colonne « Année » par la colonne
+    # d'intervalle (année scolaire, ou clé trimestre) → tout le pipeline aval
+    # (filtres, KPI, évolution, YoY, ventilations) regroupe par cet intervalle
+    # sans autre changement. Les libellés sont mis en forme par _year_text.
+    icol = _year_col(year_mode)
+    if year_mode != "civil" and icol in df.columns:
+        df = df.assign(**{"Année": df[icol]})
     all_years = sorted(int(y) for y in df["Année"].unique())
-    years = [y for y in (years or all_years) if y in all_years] or all_years
+    if year_mode == "trimester":
+        # Sélection à 2 axes : années scolaires × trimestres (produit croisé).
+        # Vides = tout. Chaque clé d'intervalle = année_scolaire × 10 + trimestre.
+        sy_all = sorted({k // 10 for k in all_years})
+        sy_sel = [s for s in (tri_years or sy_all) if s in sy_all] or sy_all
+        q_sel = [q for q in (tri_quarters or (1, 2, 3)) if q in (1, 2, 3)] or [1, 2, 3]
+        wanted = {sy * 10 + q for sy in sy_sel for q in q_sel}
+        years = [y for y in all_years if y in wanted] or all_years
+    else:
+        years = [y for y in (years or all_years) if y in all_years] or all_years
     antennas = [a for a in (antennas or bs.ANTENNA_ORDER) if a in bs.ANTENNA_ORDER] or list(bs.ANTENNA_ORDER)
 
     base = df[df["Année"].isin(years) & df["Sede"].isin(antennas)]
 
     sel = {"secteurs": secteurs or [], "sousSecteurs": sousSecteurs or [],
            "macros": macros or [], "categories": categories or [],
-           "niveaux": niveaux or []}
+           "niveaux": niveaux or [], "ages": ages or [],
+           "periodes": periodes or [], "matieres": matieres or [],
+           "ues": ues or []}
 
     # Cascade dropdown options: each level reflects the parent selection only.
     def _uniq(d, col):
@@ -547,27 +597,31 @@ def compute(
     if sel["macros"]:
         b = b[b["Macro-catégorie"].isin(sel["macros"])]
     dim_options["categories"] = _uniq(b, "Catégorie de cours")
-    # « niveaux » : dimension orthogonale → options calculées sur le périmètre
-    # année+antenne (base), indépendamment de la cascade secteur.
-    dim_options["niveaux"] = _uniq(base, "Niveau")
+    # Dimensions ORTHOGONALES (niveau, tranche d'âge, période, matière, UE) :
+    # options calculées sur le périmètre année+antenne (base), indépendamment
+    # de la cascade secteur.
+    for key in _ORTHOGONAL_DIMS:
+        vals = _uniq(base, _DIM_COL[key])
+        sorter = _DIM_SORT.get(key)
+        dim_options[key] = sorted(vals, key=sorter) if sorter else vals
 
-    # Analytics dataframe: apply ALL active dimension filters (dont niveaux).
+    # Analytics dataframe: apply ALL active dimension filters.
     df_sel = base
-    for key in ("secteurs", "sousSecteurs", "macros", "categories", "niveaux"):
+    for key in _DIM_COL:
         vals = sel[key]
         col = _DIM_COL[key]
         if vals and col in df_sel.columns:
-            df_sel = df_sel[df_sel[col].isin(vals)]
+            df_sel = df_sel[df_sel[col].astype(str).isin(vals)]
 
     # Référentiel pour le delta N-1 : MÊMES filtres dimension + antennes, mais
     # TOUTES les années → la comparaison N-1 porte sur le même périmètre filtré
     # (sinon on compare une valeur filtrée à un total non filtré → delta faux).
     df_scope = df[df["Sede"].isin(antennas)]
-    for key in ("secteurs", "sousSecteurs", "macros", "categories", "niveaux"):
+    for key in _DIM_COL:
         vals = sel[key]
         col = _DIM_COL[key]
         if vals and col in df_scope.columns:
-            df_scope = df_scope[df_scope[col].isin(vals)]
+            df_scope = df_scope[df_scope[col].astype(str).isin(vals)]
 
     # Totaux RÉSEAU (IFI) = TOUTES les 4 antennes, mêmes filtres année+dimensions
     # mais SANS le filtre antenne → permet de comparer une antenne au total réseau
@@ -588,7 +642,9 @@ def compute(
             "yearMode": year_mode,
             "secteurs": sel["secteurs"], "sousSecteurs": sel["sousSecteurs"],
             "macros": sel["macros"], "categories": sel["categories"],
-            "niveaux": sel["niveaux"], "sectors": [],
+            "niveaux": sel["niveaux"], "ages": sel["ages"],
+            "periodes": sel["periodes"], "matieres": sel["matieres"],
+            "ues": sel["ues"], "sectors": [],
         },
         "dimOptions": dim_options,
         "indicators": INDICATOR_META,

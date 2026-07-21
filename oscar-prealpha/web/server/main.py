@@ -79,11 +79,17 @@ def cours(
     macros: Optional[List[str]] = Query(default=None),
     categories: Optional[List[str]] = Query(default=None),
     niveaux: Optional[List[str]] = Query(default=None),
+    ages: Optional[List[str]] = Query(default=None),
+    periodes: Optional[List[str]] = Query(default=None),
+    matieres: Optional[List[str]] = Query(default=None),
+    ues: Optional[List[str]] = Query(default=None),
+    triYears: Optional[List[int]] = Query(default=None),
+    triQuarters: Optional[List[int]] = Query(default=None),
     mode: Optional[str] = Query(default="civil"),
 ):
     """Live, filter-aware Cours payload (multi-year + multi-antenna + cascading
-    dimension filters + filtre niveau orthogonal), computed on demand — same
-    granularity as OSCAR Online.
+    dimension filters + filtres orthogonaux niveau / tranche d'âge / période /
+    matière / UE), computed on demand — same granularity as OSCAR Online.
 
     mode : "civil" (année civile) ou "school" (année scolaire)."""
     import engine
@@ -92,8 +98,9 @@ def cours(
         return engine.compute(
             _parse_years(years), _parse_antennas(antennas),
             secteurs=secteurs, sousSecteurs=sousSecteurs, macros=macros, categories=categories,
-            niveaux=niveaux,
-            year_mode=("school" if mode == "school" else "civil"),
+            niveaux=niveaux, ages=ages, periodes=periodes, matieres=matieres, ues=ues,
+            tri_years=triYears, tri_quarters=triQuarters,
+            year_mode=(mode if mode in ("school", "trimester") else "civil"),
         )
     except Exception as e:  # noqa: BLE001
         print(f"[main] /api/cours compute failed ({e}); serving static snapshot.")

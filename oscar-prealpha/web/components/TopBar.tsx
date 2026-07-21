@@ -11,11 +11,17 @@ import { useSnapshot } from "@/lib/useSnapshot";
 import { IconSparkles, IconChevronRight } from "./icons";
 
 const DIM_LABELS: { key: DimKey; label: string }[] = [
+  // Cascade secteur → sous-secteur → macro → catégorie
   { key: "secteurs", label: "Secteur" },
   { key: "sousSecteurs", label: "Sous-secteur" },
   { key: "macros", label: "Macro-cat." },
   { key: "categories", label: "Catégorie" },
+  // Dimensions orthogonales (indépendantes de la cascade)
   { key: "niveaux", label: "Niveau" },
+  { key: "ages", label: "Tranche d'âge" },
+  { key: "periodes", label: "Période" },
+  { key: "matieres", label: "Matière" },
+  { key: "ues", label: "UE planifiées" },
 ];
 
 /** Slider « mode confidentiel » — masque les données de recettes (défaut ON). */
@@ -59,7 +65,7 @@ export function TopBar() {
   const [showDims, setShowDims] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false); // mobile : filtres repliés par défaut
   const { data, isOffline, isLoading } = useSnapshot();
-  const dimOptions = data.dimOptions ?? { secteurs: [], sousSecteurs: [], macros: [], categories: [], niveaux: [] };
+  const dimOptions = data.dimOptions ?? {};
   const dimCount = Object.values(dims).reduce((n, a) => n + a.length, 0);
   // Résumé compact des filtres actifs (affiché dans l'en-tête repliable mobile).
   const yearSummary = years.length === 0
@@ -138,7 +144,7 @@ export function TopBar() {
 
       <div className={`${filtersOpen ? "block" : "hidden"} lg:block`}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-neutral-100 px-4 py-2.5 sm:gap-x-6 sm:px-6 lg:border-t">
-        <FilterField label="Année">
+        <FilterField label="Intervalle">
           <YearSegment />
         </FilterField>
         <FilterField label="Antennes">

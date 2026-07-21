@@ -20,6 +20,8 @@ export const NAV: NavGroup[] = [
       { label: "Par antenne", href: "/cours/antennes" },
       { label: "Par secteurs", href: "/cours/secteurs" },
       { label: "Par niveau", href: "/cours/niveaux" },
+      { label: "Par période", href: "/cours/periodes" },
+      { label: "Par tranches d'âge", href: "/cours/tranches-age" },
       { label: "Répartition", href: "/cours/repartition" },
       { label: "Année vs année", href: "/cours/annee" },
       { label: "Rentabilité", href: "/cours/rentabilite" },

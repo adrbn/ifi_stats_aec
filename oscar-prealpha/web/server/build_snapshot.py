@@ -120,6 +120,19 @@ def load_all_years():
         df, _stats = parser.parse_aec_export(f.read(), aggregate=False)
     df["Nb. de Cours"] = 1   # 1 ligne = 1 cours → somme = nombre de cours
 
+    # ── Normalisation des colonnes servant de DIMENSIONS ──────────────────
+    # AEC livre des valeurs incohérentes : accents variables (« FÉVRIER » vs
+    # « FEVRIER »), espaces finaux (« JANVIER  ») → sans ça on obtient des
+    # doublons de lignes dans les ventilations.
+    if "Période AEC" in df.columns:
+        df["Période AEC"] = df["Période AEC"].map(normalize_periode)
+    if "Matière" in df.columns:
+        df["Matière"] = df["Matière"].map(_clean_text)
+    # UE planifiées : la dimension est un LIBELLÉ (« 20 », « 1.5 ») ; la colonne
+    # numérique d'origine est conservée pour d'éventuels calculs.
+    if "UE Planifiées" in df.columns:
+        df["UE"] = df["UE Planifiées"].map(_ue_label)
+
     # Mapping catégorie→secteur complet (sinon beaucoup de NON RATTACHÉ).
     for csv in (os.path.join(DATA_DIR, "category_mapping.csv"),
                 os.path.join(HERE, "..", "..", "..", "data", "category_mapping.csv")):
@@ -145,8 +158,13 @@ def load_all_years():
     # démarrant en jan–août N appartient à l'année scolaire N-1.
     if "Mois début" in df.columns:
         df["Année scolaire"] = df["Année"] - (df["Mois début"] < 9).astype(int)
+        # Clé TRIMESTRE (intervalle) triable : année scolaire × 10 + n° trimestre.
+        # T1 = sept-déc, T2 = janv-avril, T3 = mai-août (rattachés à l'année
+        # scolaire). Ex. 2025-26 T1 → 20251, T2 → 20252, T3 → 20253.
+        df["Trimestre clé"] = df["Année scolaire"] * 10 + df["Mois début"].map(trimester_num)
     else:
         df["Année scolaire"] = df["Année"]
+        df["Trimestre clé"] = df["Année"] * 10
     return df
 
 
@@ -327,6 +345,77 @@ def compute_evolution(df):
     return {"years": years, "series": series}
 
 
+# ── Trimestres (mode d'intervalle) ─────────────────────────────────────────
+def trimester_num(month) -> int:
+    """N° de trimestre d'un mois : T1 = sept-déc, T2 = janv-avril, T3 = mai-août."""
+    try:
+        m = int(month)
+    except (TypeError, ValueError):
+        return 0
+    if m in (9, 10, 11, 12):
+        return 1
+    if m in (1, 2, 3, 4):
+        return 2
+    return 3  # 5,6,7,8
+
+
+# ── Normalisation / tri des dimensions issues d'AEC ────────────────────────
+MONTHS_FR = {
+    "JANVIER": 1, "FEVRIER": 2, "MARS": 3, "AVRIL": 4, "MAI": 5, "JUIN": 6,
+    "JUILLET": 7, "AOUT": 8, "SEPTEMBRE": 9, "OCTOBRE": 10, "NOVEMBRE": 11,
+    "DECEMBRE": 12,
+}
+
+
+def _strip_accents(s: str) -> str:
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
+
+
+def _clean_text(v):
+    """Texte nettoyé (espaces), None si vide/NaN."""
+    import pandas as _pd
+    if v is None or (isinstance(v, float) and _pd.isna(v)):
+        return None
+    s = str(v).strip()
+    return s or None
+
+
+def normalize_periode(v):
+    """« 2023-FÉVRIER  » / « 2023-FEVRIER » → « 2023-FEVRIER » (sans accent,
+    majuscules, sans espaces) : sinon AEC produit des doublons de périodes."""
+    s = _clean_text(v)
+    return _strip_accents(s).upper() if s else None
+
+
+def periode_sort_key(label: str):
+    """Tri CHRONOLOGIQUE d'une période « ANNÉE-MOIS » (2025-OCTOBRE)."""
+    s = str(label or "")
+    year, _, month = s.partition("-")
+    try:
+        y = int(year.strip())
+    except ValueError:
+        return (9999, 99, s)
+    return (y, MONTHS_FR.get(month.strip(), 99), s)
+
+
+def _ue_label(v):
+    """Libellé d'une valeur d'UE : 20.0 → « 20 », 1.5 → « 1.5 »."""
+    import pandas as _pd
+    if v is None or _pd.isna(v):
+        return None
+    f = float(v)
+    return str(int(f)) if f.is_integer() else str(round(f, 2))
+
+
+def ue_sort_key(label: str):
+    """Tri NUMÉRIQUE des UE (sinon « 10 » passerait avant « 2 »)."""
+    try:
+        return (0, float(label))
+    except (TypeError, ValueError):
+        return (1, 0.0)
+
+
 DIMENSIONS = [
     ("secteur", "Secteur", "Secteur"),
     ("sous_secteur", "Sous-secteur", "Sous-secteur"),
@@ -336,6 +425,13 @@ DIMENSIONS = [
     ("niveau", "Niveau", "Niveau"),
     ("format", "Format", "Présentiel / en ligne"),
     ("age", "Tranche d'âge du cours", "Tranche d'âge"),
+    # « Période AEC » = période commerciale ANNÉE-MOIS (ex. 2025-OCTOBRE),
+    # préservée par le parser (« Période » est écrasée par « Année Semestre »).
+    ("periode", "Période AEC", "Période"),
+    ("matiere", "Matière", "Matière"),
+    # UE planifiées : valeur exacte (colonne libellé « UE »). NB : les UE
+    # FACTURÉES sont vides chez les cours programmés → on utilise les planifiées.
+    ("ue", "UE", "UE planifiées"),
 ]
 
 

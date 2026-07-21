@@ -9,6 +9,8 @@ import { EMPTY_SNAPSHOT } from "./fixture";
 export function useSnapshot(): { data: Snapshot; isLoading: boolean; isOffline: boolean } {
   const years = useFilters((s) => s.years);
   const yearMode = useFilters((s) => s.yearMode);
+  const triYears = useFilters((s) => s.triYears);
+  const triQuarters = useFilters((s) => s.triQuarters);
   const antennas = useFilters((s) => s.antennas);
   const dims = useFilters((s) => s.dims);
   const q = useQuery({
@@ -16,10 +18,12 @@ export function useSnapshot(): { data: Snapshot; isLoading: boolean; isOffline: 
       "cours",
       yearMode,
       [...years].sort().join(","),
+      [...triYears].sort().join(","),
+      [...triQuarters].sort().join(","),
       [...antennas].sort().join(","),
       JSON.stringify(dims),
     ],
-    queryFn: () => fetchSnapshot({ years, antennas, dims, mode: yearMode }),
+    queryFn: () => fetchSnapshot({ years, antennas, dims, mode: yearMode, triYears, triQuarters }),
     placeholderData: (prev) => prev,
     staleTime: 15_000,
   });

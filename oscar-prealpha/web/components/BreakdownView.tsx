@@ -16,6 +16,9 @@ const DIMS: { key: string; label: string }[] = [
   { key: "niveau", label: "Niveau" },
   { key: "format", label: "Présentiel / en ligne" },
   { key: "age", label: "Tranche d'âge" },
+  { key: "periode", label: "Période" },
+  { key: "matiere", label: "Matière" },
+  { key: "ue", label: "UE planifiées" },
 ];
 
 export function BreakdownView() {
