@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { IconArrowUp, IconGrid, IconSparkles } from "@/components/icons";
+import { DataFreshness } from "@/components/DataFreshness";
 
 export default function Home() {
   return (
@@ -86,6 +87,8 @@ export default function Home() {
             </div>
           ))}
         </section>
+
+        <DataFreshness />
       </main>
 
       <footer className="border-t border-neutral-200 py-6">
