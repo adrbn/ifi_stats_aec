@@ -7,9 +7,10 @@ const MONTHS: Record<string, number> = {
   JUILLET: 7, AOUT: 8, SEPTEMBRE: 9, OCTOBRE: 10, NOVEMBRE: 11, DECEMBRE: 12,
 };
 
-/** Sans accents ni casse : « 2023-FÉVRIER » doit correspondre à « FEVRIER ». */
+/** Sans accents ni casse : « 2023-FÉVRIER » doit correspondre à « FEVRIER ».
+ *  (NFD sépare la lettre de son accent, `\p{Diacritic}` retire ce dernier.) */
 function fold(s: string): string {
-  return (s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
+  return (s ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toUpperCase();
 }
 
 /** Tri chronologique des libellés de période AEC.
