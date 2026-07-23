@@ -704,7 +704,9 @@ def _nonrattache_courses(df_sel, limit: int = 200) -> List[dict]:
             "sede": _s(r.get("Sede")),
             "annee": annee,
             "semestre": _s(r.get("Semestre")),
-            "periode": _s(r.get("Période")),
+            # Période telle qu'elle est saisie dans AEC (« 2025-OCTOBRE ») : c'est
+            # ce libellé qui permet de retrouver le cours dans AEC pour le corriger.
+            "periode": _s(r.get("Période AEC")) or _s(r.get("Période")),
             "categorie": cat,          # None si vide
             "categorieVide": bool(cat_empty),
             "reason": reason,
