@@ -41,6 +41,11 @@ DEFAULT_ALLOWED_STATUSES: tuple[str, ...] = (
 
 DEFAULT_DATE_FLOOR: datetime = datetime(2022, 9, 1)
 
+# Étiquette des cours dont le champ « Période » d'AEC est vide. Ce champ est
+# obligatoire dans la fiche de cours : un cours qui atterrit ici signale une
+# anomalie à corriger dans AEC, pas un cas à absorber silencieusement.
+PERIODE_NON_RENSEIGNEE: str = "NON RENSEIGNÉ"
+
 # Map "Lieu du cours" / "Centre" full string → Sede code.
 SEDE_FROM_LIEU_KEYWORDS: dict[str, str] = {
     "milano": "IFM",
@@ -217,16 +222,28 @@ def parse_aec_export(
     df["Année"] = df["Date début"].dt.year.astype(int)
     df["Mois début"] = df["Date début"].dt.month.astype(int)
     df["Semestre"] = df["Mois début"].apply(_semester_from_month)
+
+    # « Période AEC » = l'étiquette SAISIE DANS AEC, reprise telle quelle.
+    # C'est l'outil de regroupement des équipes (aujourd'hui « ANNÉE-MOIS », et
+    # demain « 2025 - Semestre 1 » si les libellés sont reparamétrés) : la
+    # dimension « Période » du tableau de bord doit suivre AEC, sinon un
+    # changement de nomenclature côté métier devient invisible côté OSCAR.
+    # ⚠ À capturer AVANT la ligne qui écrase « Période » par « Année Semestre ».
+    # NB : un cours peut porter PLUSIEURS périodes (« 2024-MARS, 2024-JUILLET ») ;
+    # on conserve le libellé complet plutôt que d'en choisir un arbitrairement.
+    if "Période" in df.columns:
+        _brute = df["Période"].astype(str).str.strip().replace(
+            {"nan": "", "None": "", "NaT": "", "<NA>": ""})
+    else:
+        _brute = pd.Series("", index=df.index)
+    # Le champ Période est OBLIGATOIRE dans la fiche de cours AEC : s'il arrive
+    # vide, c'est une anomalie à corriger DANS AEC. On l'étiquette donc au lieu
+    # de la masquer par un repli calculé sur la date de début — la valeur
+    # apparaît dans le filtre « Période » (en fin de liste, faute d'année) et
+    # rend le problème visible.
+    df["Période AEC"] = _brute.where(_brute != "", PERIODE_NON_RENSEIGNEE)
+
     df["Période"] = df["Année"].astype(str) + " " + df["Semestre"]
-    # « Période AEC » : période commerciale ANNÉE-MOIS CALCULÉE sur la date de
-    # début réelle (ex. « 2025-OCTOBRE »). On IGNORE volontairement la colonne
-    # « Période » brute d'AEC : saisie à la main, elle est parfois multi-mois et
-    # incohérente avec les dates réelles. Sert la dimension « par période ».
-    _MONTHS_FR_UP = ["JANVIER", "FEVRIER", "MARS", "AVRIL", "MAI", "JUIN",
-                     "JUILLET", "AOUT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DECEMBRE"]
-    df["Période AEC"] = df["Année"].astype(str) + "-" + df["Mois début"].map(
-        lambda m: _MONTHS_FR_UP[int(m) - 1] if 1 <= int(m) <= 12 else "?"
-    )
 
     # Ensure the v2 categorical columns exist
     for c in ("Catégorie de cours", "Niveau", "Tranche d'âge du cours",
@@ -287,6 +304,7 @@ __all__ = [
     "ParseStats",
     "DEFAULT_ALLOWED_STATUSES",
     "DEFAULT_DATE_FLOOR",
+    "PERIODE_NON_RENSEIGNEE",
     "COLUMN_RENAME_MAP",
     "AGG_RULES",
 ]

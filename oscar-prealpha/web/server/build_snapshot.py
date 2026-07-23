@@ -22,6 +22,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import zipfile
 from datetime import datetime, timezone
 
@@ -382,21 +383,38 @@ def _clean_text(v):
 
 
 def normalize_periode(v):
-    """« 2023-FÉVRIER  » / « 2023-FEVRIER » → « 2023-FEVRIER » (sans accent,
-    majuscules, sans espaces) : sinon AEC produit des doublons de périodes."""
-    s = _clean_text(v)
-    return _strip_accents(s).upper() if s else None
+    """Libellé de période AEC, affiché TEL QUEL (espaces de bord retirés).
+
+    On ne force plus majuscules et suppression des accents : les périodes sont
+    créées une seule fois par mois/année dans AEC, donc « 2023-FÉVRIER » n'a pas
+    de jumeau « 2023-FEVRIER » (vérifié : 58 libellés bruts → 58 après
+    normalisation, aucune collision). Uniformiser ne protégeait de rien et
+    déformait l'affichage ; le tri, lui, ignore accents et casse de son côté.
+    """
+    return _clean_text(v)
 
 
 def periode_sort_key(label: str):
-    """Tri CHRONOLOGIQUE d'une période « ANNÉE-MOIS » (2025-OCTOBRE)."""
-    s = str(label or "")
-    year, _, month = s.partition("-")
-    try:
-        y = int(year.strip())
-    except ValueError:
-        return (9999, 99, s)
-    return (y, MONTHS_FR.get(month.strip(), 99), s)
+    """Tri CHRONOLOGIQUE d'une période AEC.
+
+    Les libellés viennent d'AEC et sont paramétrables : « 2025-OCTOBRE »
+    aujourd'hui, peut-être « 2025 - Semestre 1 » demain, et parfois plusieurs
+    périodes accolées (« 2024-MARS, 2024-JUILLET »). On trie donc sur la 1ʳᵉ
+    année trouvée, puis sur le 1ᵉʳ mois reconnu, puis alphabétiquement — un
+    libellé inattendu se range proprement au lieu de finir en vrac.
+    """
+    # Accents et casse retirés ICI seulement (le libellé affiché, lui, reste
+    # celui d'AEC) : sinon « 2023-FÉVRIER » ne correspondrait pas à « FEVRIER »
+    # et se retrouverait rangé après décembre.
+    s = _strip_accents(str(label or "")).upper()
+    m = re.search(r"(20\d{2})", s)
+    y = int(m.group(1)) if m else 9999
+    mois, pos = 99, len(s) + 1
+    for nom, num in MONTHS_FR.items():
+        i = s.find(nom)
+        if i != -1 and i < pos:
+            pos, mois = i, num
+    return (y, mois, s)
 
 
 def _ue_label(v):
@@ -425,8 +443,10 @@ DIMENSIONS = [
     ("niveau", "Niveau", "Niveau"),
     ("format", "Format", "Présentiel / en ligne"),
     ("age", "Tranche d'âge du cours", "Tranche d'âge"),
-    # « Période AEC » = période commerciale ANNÉE-MOIS (ex. 2025-OCTOBRE),
-    # préservée par le parser (« Période » est écrasée par « Année Semestre »).
+    # « Période AEC » = l'étiquette de période SAISIE DANS AEC, reprise telle
+    # quelle par le parser (la colonne « Période » du dataframe, elle, est
+    # écrasée par « Année Semestre »). Si les libellés changent dans AEC, la
+    # dimension suit automatiquement.
     ("periode", "Période AEC", "Période"),
     ("matiere", "Matière", "Matière"),
     # UE planifiées : valeur exacte (colonne libellé « UE »). NB : les UE
