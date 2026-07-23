@@ -3,7 +3,7 @@
     "app": "OSCAR",
     "subtitle": "Institut français Italia — pilotage statistique",
     "source": "computed",
-    "updated": "2026-07-03T15:49:56Z",
+    "updated": "2026-07-23T16:27:55Z",
     "years": [
       2022,
       2023,
@@ -66,73 +66,73 @@
     {
       "key": "inscriptions",
       "label": "Inscriptions",
-      "value": 9117,
+      "value": 9177,
       "format": "int",
-      "delta": -25.6,
+      "delta": -25.1,
       "deltaLabel": "vs 2025"
     },
     {
       "key": "eleves_differents",
       "label": "Élèves différents",
-      "value": 1983,
+      "value": 1961,
       "format": "int",
-      "delta": -39.1,
+      "delta": -39.4,
       "deltaLabel": "vs 2025"
     },
     {
       "key": "cours",
       "label": "Cours",
-      "value": 817,
+      "value": 919,
       "format": "int",
-      "delta": -32.6,
+      "delta": -24.2,
       "deltaLabel": "vs 2025"
     },
     {
       "key": "heures",
       "label": "Qté heures",
-      "value": 15375,
+      "value": 18395,
       "format": "int",
-      "delta": -33.6,
+      "delta": -20.6,
       "deltaLabel": "vs 2025"
     },
     {
       "key": "remplissage",
       "label": "Élèves / cours",
-      "value": 11.2,
+      "value": 10.0,
       "format": "dec1",
-      "delta": 1.1,
+      "delta": -0.1,
       "deltaLabel": "vs 2025"
     },
     {
       "key": "heures_eleves",
       "label": "Heures-élèves",
-      "value": 84310,
+      "value": 86437,
       "format": "int",
-      "delta": -47.0,
+      "delta": -45.7,
       "deltaLabel": "vs 2025"
     },
     {
       "key": "recettes",
       "label": "Recettes",
-      "value": 836185,
+      "value": 868329,
       "format": "eur",
-      "delta": -50.8,
+      "delta": -49.8,
       "deltaLabel": "vs 2025"
     },
     {
       "key": "panier_inscr",
       "label": "Panier / inscr.",
-      "value": 92,
+      "value": 95,
       "format": "eur",
-      "delta": -33.9,
+      "delta": -33.0,
       "deltaLabel": "vs 2025"
     },
     {
       "key": "panier_pers",
       "label": "Panier / personne",
-      "value": 422,
+      "value": 443,
       "format": "eur",
-      "delta": -19.2,
+      "delta": -17.2,
       "deltaLabel": "vs 2025"
     }
   ],
@@ -141,37 +141,37 @@
       "code": "IFM",
       "name": "IFM Milano",
       "color": "#FF8C00",
-      "inscriptions": 6877,
-      "cours": 540,
-      "recettes": 534519,
-      "remplissage": 12.7
+      "inscriptions": 6909,
+      "cours": 580,
+      "recettes": 564574,
+      "remplissage": 11.9
     },
     {
       "code": "IFF",
       "name": "IFF Firenze",
       "color": "#8B5CF6",
-      "inscriptions": 1322,
-      "cours": 159,
-      "recettes": 141399,
-      "remplissage": 8.3
+      "inscriptions": 1323,
+      "cours": 169,
+      "recettes": 142148,
+      "remplissage": 7.8
     },
     {
       "code": "IFN",
       "name": "IFN Napoli",
       "color": "#22C55E",
-      "inscriptions": 404,
-      "cours": 60,
-      "recettes": 107837,
-      "remplissage": 6.7
+      "inscriptions": 429,
+      "cours": 88,
+      "recettes": 108317,
+      "remplissage": 4.9
     },
     {
       "code": "IFP",
       "name": "IFP Palermo",
       "color": "#EF4444",
-      "inscriptions": 514,
-      "cours": 58,
-      "recettes": 52429,
-      "remplissage": 8.9
+      "inscriptions": 516,
+      "cours": 82,
+      "recettes": 53289,
+      "remplissage": 6.3
     }
   ],
   "sectors": {
@@ -187,58 +187,58 @@
     "rows": [
       {
         "secteur": "PROGRAMMÉS",
-        "cours": 340,
-        "inscriptions": 2034,
-        "nouv": 671,
-        "pctNouv": 33.0,
-        "recettes": 504287,
-        "remplissage": 5.98
+        "cours": 422,
+        "inscriptions": 2066,
+        "nouv": 688,
+        "pctNouv": 33.3,
+        "recettes": 506447,
+        "remplissage": 4.9
       },
       {
         "secteur": "PLATEFORMES",
-        "cours": 38,
-        "inscriptions": 39,
+        "cours": 39,
+        "inscriptions": 40,
         "nouv": 28,
-        "pctNouv": 71.8,
-        "recettes": 21555,
+        "pctNouv": 70.0,
+        "recettes": 22205,
         "remplissage": 1.03
       },
       {
         "secteur": "ECOLES",
-        "cours": 199,
-        "inscriptions": 6715,
-        "nouv": 6710,
+        "cours": 198,
+        "inscriptions": 6690,
+        "nouv": 6685,
         "pctNouv": 99.9,
         "recettes": 59256,
-        "remplissage": 33.74
+        "remplissage": 33.79
       },
       {
         "secteur": "INTENSIFS",
-        "cours": 151,
-        "inscriptions": 186,
-        "nouv": 64,
-        "pctNouv": 34.4,
-        "recettes": 137028,
+        "cours": 157,
+        "inscriptions": 193,
+        "nouv": 69,
+        "pctNouv": 35.8,
+        "recettes": 140508,
         "remplissage": 1.23
       },
       {
         "secteur": "ENTREPRISES",
-        "cours": 89,
-        "inscriptions": 143,
-        "nouv": 75,
-        "pctNouv": 52.4,
-        "recettes": 114059,
-        "remplissage": 1.61
+        "cours": 103,
+        "inscriptions": 188,
+        "nouv": 74,
+        "pctNouv": 39.4,
+        "recettes": 139913,
+        "remplissage": 1.83
       }
     ],
     "total": {
       "secteur": "TOTAL",
-      "cours": 817,
-      "inscriptions": 9117,
-      "nouv": 7548,
-      "pctNouv": 82.8,
-      "recettes": 836185,
-      "remplissage": 11.16
+      "cours": 919,
+      "inscriptions": 9177,
+      "nouv": 7544,
+      "pctNouv": 82.2,
+      "recettes": 868329,
+      "remplissage": 9.99
     }
   },
   "evolution": {
@@ -255,18 +255,18 @@
         "name": "IFM Milano",
         "color": "#FF8C00",
         "inscriptions": [
-          1,
-          6216,
-          6845,
+          2141,
+          6219,
+          6844,
           8534,
-          6877
+          6909
         ],
         "recettes": [
-          0,
-          1053417,
+          490300,
+          1055667,
           1164348,
-          1086804,
-          534519
+          1115829,
+          564574
         ]
       },
       {
@@ -274,18 +274,18 @@
         "name": "IFF Firenze",
         "color": "#8B5CF6",
         "inscriptions": [
-          1,
+          478,
           1294,
           1848,
           2086,
-          1322
+          1323
         ],
         "recettes": [
-          0,
+          90814,
           219947,
           249886,
-          288652,
-          141399
+          291120,
+          142148
         ]
       },
       {
@@ -293,18 +293,18 @@
         "name": "IFN Napoli",
         "color": "#22C55E",
         "inscriptions": [
-          0,
-          802,
+          387,
+          867,
           895,
           924,
-          404
+          429
         ],
         "recettes": [
-          0,
-          174003,
+          89898,
+          174703,
           192217,
           212162,
-          107837
+          108317
         ]
       },
       {
@@ -312,18 +312,18 @@
         "name": "IFP Palermo",
         "color": "#EF4444",
         "inscriptions": [
-          4,
-          574,
+          234,
+          575,
           445,
           706,
-          514
+          516
         ],
         "recettes": [
-          2090,
-          78209,
+          48212,
+          78799,
           103660,
           111281,
-          52429
+          53289
         ]
       }
     ]
@@ -333,58 +333,58 @@
       "rows": [
         {
           "label": "ECOLES",
-          "cours": 199,
-          "inscriptions": 6715,
-          "nouv": 6710,
+          "cours": 198,
+          "inscriptions": 6690,
+          "nouv": 6685,
           "pctNouv": 99.9,
           "recettes": 59256,
-          "remplissage": 33.74
+          "remplissage": 33.79
         },
         {
           "label": "PROGRAMMÉS",
-          "cours": 340,
-          "inscriptions": 2034,
-          "nouv": 671,
-          "pctNouv": 33.0,
-          "recettes": 504287,
-          "remplissage": 5.98
+          "cours": 422,
+          "inscriptions": 2066,
+          "nouv": 688,
+          "pctNouv": 33.3,
+          "recettes": 506447,
+          "remplissage": 4.9
         },
         {
           "label": "SUR MESURE",
-          "cours": 151,
-          "inscriptions": 186,
-          "nouv": 64,
-          "pctNouv": 34.4,
-          "recettes": 137028,
+          "cours": 157,
+          "inscriptions": 193,
+          "nouv": 69,
+          "pctNouv": 35.8,
+          "recettes": 140508,
           "remplissage": 1.23
         },
         {
           "label": "SOCIÉTÉS",
-          "cours": 89,
-          "inscriptions": 143,
-          "nouv": 75,
-          "pctNouv": 52.4,
-          "recettes": 114059,
-          "remplissage": 1.61
+          "cours": 103,
+          "inscriptions": 188,
+          "nouv": 74,
+          "pctNouv": 39.4,
+          "recettes": 139913,
+          "remplissage": 1.83
         },
         {
           "label": "PLATEFORMES",
-          "cours": 38,
-          "inscriptions": 39,
+          "cours": 39,
+          "inscriptions": 40,
           "nouv": 28,
-          "pctNouv": 71.8,
-          "recettes": 21555,
+          "pctNouv": 70.0,
+          "recettes": 22205,
           "remplissage": 1.03
         }
       ],
       "total": {
         "label": "TOTAL",
-        "cours": 817,
-        "inscriptions": 9117,
-        "nouv": 7548,
-        "pctNouv": 82.8,
-        "recettes": 836185,
-        "remplissage": 11.16
+        "cours": 919,
+        "inscriptions": 9177,
+        "nouv": 7544,
+        "pctNouv": 82.2,
+        "recettes": 868329,
+        "remplissage": 9.99
       },
       "key": "secteur",
       "label": "Secteur"
@@ -393,12 +393,12 @@
       "rows": [
         {
           "label": "ECOLES - Ateliers",
-          "cours": 72,
-          "inscriptions": 3751,
-          "nouv": 3751,
+          "cours": 71,
+          "inscriptions": 3726,
+          "nouv": 3726,
           "pctNouv": 100.0,
           "recettes": 15078,
-          "remplissage": 52.1
+          "remplissage": 52.48
         },
         {
           "label": "ECOLES - Matinée",
@@ -420,30 +420,30 @@
         },
         {
           "label": "COLL ADULTES - GRL",
-          "cours": 205,
-          "inscriptions": 941,
-          "nouv": 350,
-          "pctNouv": 37.2,
-          "recettes": 405717,
-          "remplissage": 4.59
+          "cours": 251,
+          "inscriptions": 945,
+          "nouv": 351,
+          "pctNouv": 37.1,
+          "recettes": 407337,
+          "remplissage": 3.76
         },
         {
           "label": "Ateliers thématiques",
           "cours": 55,
-          "inscriptions": 544,
-          "nouv": 146,
-          "pctNouv": 26.8,
-          "recettes": 7810,
-          "remplissage": 9.89
+          "inscriptions": 572,
+          "nouv": 162,
+          "pctNouv": 28.3,
+          "recettes": 8350,
+          "remplissage": 10.4
         },
         {
           "label": "COLL ADULTES - SPE",
-          "cours": 56,
+          "cours": 72,
           "inscriptions": 372,
           "nouv": 120,
           "pctNouv": 32.3,
           "recettes": 75937,
-          "remplissage": 6.64
+          "remplissage": 5.17
         },
         {
           "label": "ECOLES - PCTO",
@@ -455,30 +455,30 @@
           "remplissage": 40.86
         },
         {
+          "label": "ENTREPRISES - GRL",
+          "cours": 100,
+          "inscriptions": 178,
+          "nouv": 74,
+          "pctNouv": 41.6,
+          "recettes": 139013,
+          "remplissage": 1.78
+        },
+        {
           "label": "COLLECTIFS ADOS/ENFANTS",
-          "cours": 24,
+          "cours": 44,
           "inscriptions": 177,
           "nouv": 55,
           "pctNouv": 31.1,
           "recettes": 14822,
-          "remplissage": 7.38
-        },
-        {
-          "label": "ENTREPRISES - GRL",
-          "cours": 88,
-          "inscriptions": 142,
-          "nouv": 75,
-          "pctNouv": 52.8,
-          "recettes": 113159,
-          "remplissage": 1.61
+          "remplissage": 4.02
         },
         {
           "label": "SUR MESURE - GRL",
-          "cours": 111,
-          "inscriptions": 140,
-          "nouv": 51,
-          "pctNouv": 36.4,
-          "recettes": 102325,
+          "cours": 116,
+          "inscriptions": 146,
+          "nouv": 56,
+          "pctNouv": 38.4,
+          "recettes": 105455,
           "remplissage": 1.26
         },
         {
@@ -492,21 +492,30 @@
         },
         {
           "label": "SUR MESURE - SPE",
-          "cours": 40,
-          "inscriptions": 46,
+          "cours": 41,
+          "inscriptions": 47,
           "nouv": 13,
-          "pctNouv": 28.3,
-          "recettes": 34702,
+          "pctNouv": 27.7,
+          "recettes": 35052,
           "remplissage": 1.15
         },
         {
           "label": "PLATEFORME - Tuteur",
-          "cours": 36,
-          "inscriptions": 37,
+          "cours": 37,
+          "inscriptions": 38,
           "nouv": 27,
-          "pctNouv": 73.0,
-          "recettes": 21315,
+          "pctNouv": 71.1,
+          "recettes": 21965,
           "remplissage": 1.03
+        },
+        {
+          "label": "ENTREPRISES - SPE",
+          "cours": 3,
+          "inscriptions": 10,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 900,
+          "remplissage": 3.33
         },
         {
           "label": "PLATEFORME - Autonomie",
@@ -516,25 +525,16 @@
           "pctNouv": 50.0,
           "recettes": 240,
           "remplissage": 1.0
-        },
-        {
-          "label": "ENTREPRISES - SPE",
-          "cours": 1,
-          "inscriptions": 1,
-          "nouv": 0,
-          "pctNouv": 0.0,
-          "recettes": 900,
-          "remplissage": 1.0
         }
       ],
       "total": {
         "label": "TOTAL",
-        "cours": 817,
-        "inscriptions": 9117,
-        "nouv": 7548,
-        "pctNouv": 82.8,
-        "recettes": 836185,
-        "remplissage": 11.16
+        "cours": 919,
+        "inscriptions": 9177,
+        "nouv": 7544,
+        "pctNouv": 82.2,
+        "recettes": 868329,
+        "remplissage": 9.99
       },
       "key": "sous_secteur",
       "label": "Sous-secteur"
@@ -543,12 +543,12 @@
       "rows": [
         {
           "label": "ECOLES - Ateliers",
-          "cours": 72,
-          "inscriptions": 3751,
-          "nouv": 3751,
+          "cours": 71,
+          "inscriptions": 3726,
+          "nouv": 3726,
           "pctNouv": 100.0,
           "recettes": 15078,
-          "remplissage": 52.1
+          "remplissage": 52.48
         },
         {
           "label": "ECOLES - Matinée",
@@ -569,22 +569,22 @@
           "remplissage": 34.15
         },
         {
-          "label": "COLL- GRL P ",
-          "cours": 131,
-          "inscriptions": 575,
-          "nouv": 181,
-          "pctNouv": 31.5,
-          "recettes": 256139,
-          "remplissage": 4.39
-        },
-        {
           "label": "ATELIERS ADULTES",
           "cours": 55,
-          "inscriptions": 544,
-          "nouv": 146,
-          "pctNouv": 26.8,
-          "recettes": 7810,
-          "remplissage": 9.89
+          "inscriptions": 572,
+          "nouv": 162,
+          "pctNouv": 28.3,
+          "recettes": 8350,
+          "remplissage": 10.4
+        },
+        {
+          "label": "COLL- GRL P ",
+          "cours": 155,
+          "inscriptions": 567,
+          "nouv": 170,
+          "pctNouv": 30.0,
+          "recettes": 251228,
+          "remplissage": 3.66
         },
         {
           "label": "ECOLES - PCTO",
@@ -597,39 +597,39 @@
         },
         {
           "label": "COLL- GRL D",
-          "cours": 57,
-          "inscriptions": 251,
-          "nouv": 89,
-          "pctNouv": 35.5,
-          "recettes": 110046,
-          "remplissage": 4.4
+          "cours": 77,
+          "inscriptions": 263,
+          "nouv": 101,
+          "pctNouv": 38.4,
+          "recettes": 116577,
+          "remplissage": 3.42
         },
         {
           "label": "COLL- CONV",
-          "cours": 40,
+          "cours": 47,
           "inscriptions": 226,
           "nouv": 34,
           "pctNouv": 15.0,
           "recettes": 51361,
-          "remplissage": 5.65
+          "remplissage": 4.81
         },
         {
           "label": "ENTREPRISES - GRL",
-          "cours": 88,
-          "inscriptions": 142,
-          "nouv": 75,
-          "pctNouv": 52.8,
-          "recettes": 113159,
-          "remplissage": 1.61
+          "cours": 100,
+          "inscriptions": 178,
+          "nouv": 74,
+          "pctNouv": 41.6,
+          "recettes": 139013,
+          "remplissage": 1.78
         },
         {
           "label": "PART-FR GRL",
-          "cours": 104,
-          "inscriptions": 125,
-          "nouv": 48,
-          "pctNouv": 38.4,
-          "recettes": 95415,
-          "remplissage": 1.2
+          "cours": 108,
+          "inscriptions": 129,
+          "nouv": 51,
+          "pctNouv": 39.5,
+          "recettes": 98335,
+          "remplissage": 1.19
         },
         {
           "label": "ATELIERS ADOS/ ENFANTS",
@@ -642,12 +642,12 @@
         },
         {
           "label": "PREP EXAMENS",
-          "cours": 10,
+          "cours": 14,
           "inscriptions": 95,
           "nouv": 79,
           "pctNouv": 83.2,
           "recettes": 18057,
-          "remplissage": 9.5
+          "remplissage": 6.79
         },
         {
           "label": "ECOLES - Classes Découverte",
@@ -660,75 +660,84 @@
         },
         {
           "label": "INTENSIFS D",
-          "cours": 10,
+          "cours": 11,
           "inscriptions": 67,
           "nouv": 49,
           "pctNouv": 73.1,
           "recettes": 23448,
-          "remplissage": 6.7
+          "remplissage": 6.09
         },
         {
           "label": "COLL- THÉMATIQUES",
-          "cours": 6,
+          "cours": 11,
           "inscriptions": 51,
           "nouv": 7,
           "pctNouv": 13.7,
           "recettes": 6520,
-          "remplissage": 8.5
+          "remplissage": 4.64
         },
         {
           "label": "CAMPUS JEUNES",
-          "cours": 8,
+          "cours": 13,
           "inscriptions": 50,
           "nouv": 39,
           "pctNouv": 78.0,
           "recettes": 11286,
-          "remplissage": 6.25
+          "remplissage": 3.85
         },
         {
           "label": "INTENSIFS P",
-          "cours": 7,
+          "cours": 8,
           "inscriptions": 48,
           "nouv": 31,
           "pctNouv": 64.6,
           "recettes": 16085,
-          "remplissage": 6.86
+          "remplissage": 6.0
         },
         {
           "label": "PART-FR SPE",
-          "cours": 40,
-          "inscriptions": 46,
+          "cours": 41,
+          "inscriptions": 47,
           "nouv": 13,
-          "pctNouv": 28.3,
-          "recettes": 34702,
+          "pctNouv": 27.7,
+          "recettes": 35052,
           "remplissage": 1.15
         },
         {
           "label": "PLATEFORME Madrid -  Tuteur",
-          "cours": 30,
-          "inscriptions": 30,
+          "cours": 31,
+          "inscriptions": 31,
           "nouv": 22,
-          "pctNouv": 73.3,
-          "recettes": 18850,
+          "pctNouv": 71.0,
+          "recettes": 19500,
           "remplissage": 1.0
         },
         {
           "label": "PART-SEMI COLL",
-          "cours": 7,
-          "inscriptions": 15,
-          "nouv": 3,
-          "pctNouv": 20.0,
-          "recettes": 6910,
-          "remplissage": 2.14
+          "cours": 8,
+          "inscriptions": 17,
+          "nouv": 5,
+          "pctNouv": 29.4,
+          "recettes": 7120,
+          "remplissage": 2.12
+        },
+        {
+          "label": "ENTREPRISES - SPE",
+          "cours": 3,
+          "inscriptions": 10,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 900,
+          "remplissage": 3.33
         },
         {
           "label": "COURS COLL ENFANTS",
-          "cours": 1,
+          "cours": 7,
           "inscriptions": 9,
           "nouv": 2,
           "pctNouv": 22.2,
           "recettes": 1901,
-          "remplissage": 9.0
+          "remplissage": 1.29
         },
         {
           "label": "PLATEFORME AbcDelf - Tuteur",
@@ -749,23 +758,23 @@
           "remplissage": 1.0
         },
         {
-          "label": "ENTREPRISES - SPE",
-          "cours": 1,
-          "inscriptions": 1,
+          "label": "COLL- ADOS",
+          "cours": 9,
+          "inscriptions": 0,
           "nouv": 0,
           "pctNouv": 0.0,
-          "recettes": 900,
-          "remplissage": 1.0
+          "recettes": 0,
+          "remplissage": 0.0
         }
       ],
       "total": {
         "label": "TOTAL",
-        "cours": 817,
-        "inscriptions": 9117,
-        "nouv": 7548,
-        "pctNouv": 82.8,
-        "recettes": 836185,
-        "remplissage": 11.16
+        "cours": 919,
+        "inscriptions": 9177,
+        "nouv": 7544,
+        "pctNouv": 82.2,
+        "recettes": 868329,
+        "remplissage": 9.99
       },
       "key": "macro",
       "label": "Macro-catégorie"
@@ -774,12 +783,12 @@
       "rows": [
         {
           "label": "ECOLES - Ateliers",
-          "cours": 72,
-          "inscriptions": 3751,
-          "nouv": 3751,
+          "cours": 71,
+          "inscriptions": 3726,
+          "nouv": 3726,
           "pctNouv": 100.0,
           "recettes": 15078,
-          "remplissage": 52.1
+          "remplissage": 52.48
         },
         {
           "label": "ECOLES - Matinée",
@@ -802,20 +811,20 @@
         {
           "label": "Ateliers thématiques",
           "cours": 55,
-          "inscriptions": 544,
-          "nouv": 146,
-          "pctNouv": 26.8,
-          "recettes": 7810,
-          "remplissage": 9.89
+          "inscriptions": 572,
+          "nouv": 162,
+          "pctNouv": 28.3,
+          "recettes": 8350,
+          "remplissage": 10.4
         },
         {
           "label": "GRL-45h (P)",
-          "cours": 80,
+          "cours": 85,
           "inscriptions": 353,
           "nouv": 66,
           "pctNouv": 18.7,
           "recettes": 168470,
-          "remplissage": 4.41
+          "remplissage": 4.15
         },
         {
           "label": "ECOLES - GRL",
@@ -837,21 +846,21 @@
         },
         {
           "label": "SOC-GEN",
-          "cours": 88,
-          "inscriptions": 142,
-          "nouv": 75,
-          "pctNouv": 52.8,
-          "recettes": 113159,
-          "remplissage": 1.61
+          "cours": 100,
+          "inscriptions": 178,
+          "nouv": 74,
+          "pctNouv": 41.6,
+          "recettes": 139013,
+          "remplissage": 1.78
         },
         {
           "label": "GRL-45H (D) ",
-          "cours": 31,
+          "cours": 44,
           "inscriptions": 119,
           "nouv": 24,
           "pctNouv": 20.2,
           "recettes": 58212,
-          "remplissage": 3.84
+          "remplissage": 2.7
         },
         {
           "label": "ADOS/ENFANTS ATELIERS",
@@ -864,11 +873,11 @@
         },
         {
           "label": "GRL-30H (P)",
-          "cours": 21,
-          "inscriptions": 106,
+          "cours": 22,
+          "inscriptions": 111,
           "nouv": 42,
-          "pctNouv": 39.6,
-          "recettes": 33797,
+          "pctNouv": 37.8,
+          "recettes": 35417,
           "remplissage": 5.05
         },
         {
@@ -890,15 +899,6 @@
           "remplissage": 16.8
         },
         {
-          "label": "GRL-60H (P)",
-          "cours": 18,
-          "inscriptions": 82,
-          "nouv": 65,
-          "pctNouv": 79.3,
-          "recettes": 48075,
-          "remplissage": 4.56
-        },
-        {
           "label": "SPE-CONV-5H",
           "cours": 9,
           "inscriptions": 71,
@@ -908,58 +908,67 @@
           "remplissage": 7.89
         },
         {
+          "label": "GRL-60H (P)",
+          "cours": 18,
+          "inscriptions": 70,
+          "nouv": 53,
+          "pctNouv": 75.7,
+          "recettes": 41544,
+          "remplissage": 3.89
+        },
+        {
           "label": "INT-30H (D)",
-          "cours": 10,
+          "cours": 11,
           "inscriptions": 67,
           "nouv": 49,
           "pctNouv": 73.1,
           "recettes": 23448,
-          "remplissage": 6.7
+          "remplissage": 6.09
         },
         {
           "label": "PART-FR GRL>=20",
-          "cours": 48,
-          "inscriptions": 64,
+          "cours": 49,
+          "inscriptions": 65,
           "nouv": 25,
-          "pctNouv": 39.1,
-          "recettes": 54210,
+          "pctNouv": 38.5,
+          "recettes": 54660,
           "remplissage": 1.33
         },
         {
           "label": "PART-FR GRL<20",
-          "cours": 56,
-          "inscriptions": 61,
-          "nouv": 23,
-          "pctNouv": 37.7,
-          "recettes": 41205,
-          "remplissage": 1.09
+          "cours": 59,
+          "inscriptions": 64,
+          "nouv": 26,
+          "pctNouv": 40.6,
+          "recettes": 43675,
+          "remplissage": 1.08
+        },
+        {
+          "label": "GRL-60H (D) ",
+          "cours": 11,
+          "inscriptions": 63,
+          "nouv": 32,
+          "pctNouv": 50.8,
+          "recettes": 36141,
+          "remplissage": 5.73
         },
         {
           "label": "SPE-CONV-21H (P)",
-          "cours": 13,
+          "cours": 15,
           "inscriptions": 60,
           "nouv": 5,
           "pctNouv": 8.3,
           "recettes": 18117,
-          "remplissage": 4.62
-        },
-        {
-          "label": "GRL-60H (D) ",
-          "cours": 8,
-          "inscriptions": 51,
-          "nouv": 20,
-          "pctNouv": 39.2,
-          "recettes": 29610,
-          "remplissage": 6.38
+          "remplissage": 4.0
         },
         {
           "label": "INT-30H (P)",
-          "cours": 7,
+          "cours": 8,
           "inscriptions": 48,
           "nouv": 31,
           "pctNouv": 64.6,
           "recettes": 16085,
-          "remplissage": 6.86
+          "remplissage": 6.0
         },
         {
           "label": "ECOLES - immersion (GRL)",
@@ -981,48 +990,48 @@
         },
         {
           "label": "GRL-20H (D)",
-          "cours": 7,
+          "cours": 11,
           "inscriptions": 40,
           "nouv": 15,
           "pctNouv": 37.5,
           "recettes": 8096,
-          "remplissage": 5.71
+          "remplissage": 3.64
         },
         {
           "label": "SPE-DELF B2 EXPRESS (6+10)",
-          "cours": 4,
+          "cours": 5,
           "inscriptions": 37,
           "nouv": 32,
           "pctNouv": 86.5,
           "recettes": 6290,
-          "remplissage": 9.25
+          "remplissage": 7.4
         },
         {
           "label": "SPE-LECT-6H ",
-          "cours": 4,
+          "cours": 9,
           "inscriptions": 35,
           "nouv": 4,
           "pctNouv": 11.4,
           "recettes": 2520,
-          "remplissage": 8.75
+          "remplissage": 3.89
         },
         {
           "label": "PLAT-MCEL-INDIV",
-          "cours": 30,
-          "inscriptions": 30,
+          "cours": 31,
+          "inscriptions": 31,
           "nouv": 22,
-          "pctNouv": 73.3,
-          "recettes": 18850,
+          "pctNouv": 71.0,
+          "recettes": 19500,
           "remplissage": 1.0
         },
         {
           "label": "SPE-CONV-21H (D)",
-          "cours": 7,
+          "cours": 9,
           "inscriptions": 28,
           "nouv": 2,
           "pctNouv": 7.1,
           "recettes": 8277,
-          "remplissage": 4.0
+          "remplissage": 3.11
         },
         {
           "label": "SPE-DALF EXPRESS (10+10)",
@@ -1053,11 +1062,11 @@
         },
         {
           "label": "PART-FR SPE>=20",
-          "cours": 22,
-          "inscriptions": 24,
+          "cours": 23,
+          "inscriptions": 25,
           "nouv": 10,
-          "pctNouv": 41.7,
-          "recettes": 24935,
+          "pctNouv": 40.0,
+          "recettes": 25285,
           "remplissage": 1.09
         },
         {
@@ -1071,12 +1080,12 @@
         },
         {
           "label": "SPE-DELF B2 EXT",
-          "cours": 2,
+          "cours": 3,
           "inscriptions": 22,
           "nouv": 20,
           "pctNouv": 90.9,
           "recettes": 3367,
-          "remplissage": 11.0
+          "remplissage": 7.33
         },
         {
           "label": "ECOLES - PON",
@@ -1089,21 +1098,21 @@
         },
         {
           "label": "SPE-CONV-30H",
-          "cours": 3,
+          "cours": 4,
           "inscriptions": 21,
           "nouv": 1,
           "pctNouv": 4.8,
           "recettes": 6768,
-          "remplissage": 7.0
+          "remplissage": 5.25
         },
         {
           "label": "SPE-CONV-28H",
-          "cours": 4,
+          "cours": 5,
           "inscriptions": 20,
           "nouv": 0,
           "pctNouv": 0.0,
           "recettes": 7560,
-          "remplissage": 5.0
+          "remplissage": 4.0
         },
         {
           "label": "ADOS/ENFANTS CAMPUS 30H",
@@ -1116,30 +1125,21 @@
         },
         {
           "label": "SPE-CONV-15H",
-          "cours": 2,
+          "cours": 3,
           "inscriptions": 19,
           "nouv": 3,
           "pctNouv": 15.8,
           "recettes": 3348,
-          "remplissage": 9.5
+          "remplissage": 6.33
         },
         {
           "label": "ADOS/ENFANTS CAMPUS 15H",
-          "cours": 3,
+          "cours": 8,
           "inscriptions": 18,
           "nouv": 16,
           "pctNouv": 88.9,
           "recettes": 2952,
-          "remplissage": 6.0
-        },
-        {
-          "label": "GRL-15H (P)",
-          "cours": 7,
-          "inscriptions": 16,
-          "nouv": 4,
-          "pctNouv": 25.0,
-          "recettes": 1944,
-          "remplissage": 2.29
+          "remplissage": 2.25
         },
         {
           "label": "SPE-THÉÂTRE",
@@ -1151,6 +1151,24 @@
           "remplissage": 8.0
         },
         {
+          "label": "GRL-15H (P)",
+          "cours": 25,
+          "inscriptions": 15,
+          "nouv": 5,
+          "pctNouv": 33.3,
+          "recettes": 1944,
+          "remplissage": 0.6
+        },
+        {
+          "label": "PART-DUO",
+          "cours": 7,
+          "inscriptions": 14,
+          "nouv": 5,
+          "pctNouv": 35.7,
+          "recettes": 6370,
+          "remplissage": 2.0
+        },
+        {
           "label": "ADOS/ENFANTS CAMPUS 20H",
           "cours": 2,
           "inscriptions": 13,
@@ -1160,22 +1178,22 @@
           "remplissage": 6.5
         },
         {
-          "label": "PART-DUO",
-          "cours": 6,
-          "inscriptions": 12,
-          "nouv": 3,
-          "pctNouv": 25.0,
-          "recettes": 6160,
-          "remplissage": 2.0
+          "label": "SOC-SPE",
+          "cours": 3,
+          "inscriptions": 10,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 900,
+          "remplissage": 3.33
         },
         {
           "label": "SPE-DALF EXT",
-          "cours": 1,
+          "cours": 3,
           "inscriptions": 10,
           "nouv": 4,
           "pctNouv": 40.0,
           "recettes": 3150,
-          "remplissage": 10.0
+          "remplissage": 3.33
         },
         {
           "label": "ENFANTS 18H",
@@ -1259,13 +1277,31 @@
           "remplissage": 1.0
         },
         {
-          "label": "SOC-SPE",
-          "cours": 1,
-          "inscriptions": 1,
+          "label": "ADOS-EXT-IFM",
+          "cours": 4,
+          "inscriptions": 0,
           "nouv": 0,
           "pctNouv": 0.0,
-          "recettes": 900,
-          "remplissage": 1.0
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "ADOS-EXT-IFN",
+          "cours": 5,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "ENFANTS 25H",
+          "cours": 6,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
         },
         {
           "label": "GRL-90H (D)",
@@ -1288,12 +1324,12 @@
       ],
       "total": {
         "label": "TOTAL",
-        "cours": 817,
-        "inscriptions": 9117,
-        "nouv": 7548,
-        "pctNouv": 82.8,
-        "recettes": 836185,
-        "remplissage": 11.16
+        "cours": 919,
+        "inscriptions": 9177,
+        "nouv": 7544,
+        "pctNouv": 82.2,
+        "recettes": 868329,
+        "remplissage": 9.99
       },
       "key": "categorie",
       "label": "Catégorie"
@@ -1302,147 +1338,147 @@
       "rows": [
         {
           "label": "A2",
-          "cours": 146,
-          "inscriptions": 3382,
-          "nouv": 3308,
-          "pctNouv": 97.8,
-          "recettes": 85574,
-          "remplissage": 23.16
+          "cours": 154,
+          "inscriptions": 3398,
+          "nouv": 3327,
+          "pctNouv": 97.9,
+          "recettes": 88024,
+          "remplissage": 22.06
         },
         {
           "label": "A2.1",
-          "cours": 80,
-          "inscriptions": 2068,
+          "cours": 85,
+          "inscriptions": 2075,
           "nouv": 1967,
-          "pctNouv": 95.1,
-          "recettes": 80834,
-          "remplissage": 25.85
+          "pctNouv": 94.8,
+          "recettes": 84009,
+          "remplissage": 24.41
         },
         {
           "label": "Tous les niveaux ",
           "cours": 109,
-          "inscriptions": 1064,
-          "nouv": 501,
-          "pctNouv": 47.1,
-          "recettes": 48560,
-          "remplissage": 9.76
+          "inscriptions": 1067,
+          "nouv": 502,
+          "pctNouv": 47.0,
+          "recettes": 48620,
+          "remplissage": 9.79
         },
         {
           "label": "B1",
-          "cours": 59,
-          "inscriptions": 556,
-          "nouv": 469,
-          "pctNouv": 84.4,
-          "recettes": 45363,
-          "remplissage": 9.42
+          "cours": 67,
+          "inscriptions": 584,
+          "nouv": 487,
+          "pctNouv": 83.4,
+          "recettes": 50428,
+          "remplissage": 8.72
         },
         {
           "label": "A1 (niveau complet)",
-          "cours": 45,
-          "inscriptions": 381,
+          "cours": 57,
+          "inscriptions": 380,
           "nouv": 372,
-          "pctNouv": 97.6,
+          "pctNouv": 97.9,
           "recettes": 64424,
-          "remplissage": 8.47
+          "remplissage": 6.67
         },
         {
           "label": "A1.1 (demi-niveau)",
-          "cours": 75,
-          "inscriptions": 258,
-          "nouv": 222,
-          "pctNouv": 86.0,
-          "recettes": 93905,
-          "remplissage": 3.44
+          "cours": 83,
+          "inscriptions": 265,
+          "nouv": 227,
+          "pctNouv": 85.7,
+          "recettes": 98405,
+          "remplissage": 3.19
         },
         {
           "label": "B2",
-          "cours": 57,
+          "cours": 66,
           "inscriptions": 222,
           "nouv": 96,
           "pctNouv": 43.2,
-          "recettes": 61263,
-          "remplissage": 3.89
+          "recettes": 66340,
+          "remplissage": 3.36
         },
         {
           "label": "B1.1",
-          "cours": 43,
-          "inscriptions": 154,
-          "nouv": 51,
-          "pctNouv": 33.1,
-          "recettes": 73248,
-          "remplissage": 3.58
+          "cours": 50,
+          "inscriptions": 156,
+          "nouv": 47,
+          "pctNouv": 30.1,
+          "recettes": 75118,
+          "remplissage": 3.12
         },
         {
           "label": "A1.2",
-          "cours": 30,
-          "inscriptions": 120,
-          "nouv": 39,
+          "cours": 37,
+          "inscriptions": 126,
+          "nouv": 41,
           "pctNouv": 32.5,
-          "recettes": 43873,
-          "remplissage": 4.0
-        },
-        {
-          "label": "B1.2",
-          "cours": 27,
-          "inscriptions": 96,
-          "nouv": 20,
-          "pctNouv": 20.8,
-          "recettes": 46340,
-          "remplissage": 3.56
+          "recettes": 44873,
+          "remplissage": 3.41
         },
         {
           "label": "A2.2",
-          "cours": 37,
-          "inscriptions": 90,
-          "nouv": 18,
-          "pctNouv": 20.0,
-          "recettes": 46673,
-          "remplissage": 2.43
+          "cours": 44,
+          "inscriptions": 112,
+          "nouv": 20,
+          "pctNouv": 17.9,
+          "recettes": 50268,
+          "remplissage": 2.55
+        },
+        {
+          "label": "B1.2",
+          "cours": 35,
+          "inscriptions": 98,
+          "nouv": 20,
+          "pctNouv": 20.4,
+          "recettes": 48190,
+          "remplissage": 2.8
         },
         {
           "label": "B2.1",
-          "cours": 27,
+          "cours": 33,
           "inscriptions": 87,
           "nouv": 20,
           "pctNouv": 23.0,
-          "recettes": 42891,
-          "remplissage": 3.22
+          "recettes": 46293,
+          "remplissage": 2.64
         },
         {
           "label": "C1",
-          "cours": 20,
+          "cours": 27,
           "inscriptions": 71,
           "nouv": 16,
           "pctNouv": 22.5,
           "recettes": 28371,
-          "remplissage": 3.55
+          "remplissage": 2.63
         },
         {
           "label": "B2.2",
-          "cours": 16,
-          "inscriptions": 58,
+          "cours": 25,
+          "inscriptions": 68,
           "nouv": 10,
-          "pctNouv": 17.2,
+          "pctNouv": 14.7,
           "recettes": 30497,
-          "remplissage": 3.62
+          "remplissage": 2.72
         },
         {
           "label": "C1.1",
-          "cours": 5,
-          "inscriptions": 34,
+          "cours": 6,
+          "inscriptions": 35,
           "nouv": 11,
-          "pctNouv": 32.4,
-          "recettes": 11717,
-          "remplissage": 6.8
+          "pctNouv": 31.4,
+          "recettes": 12167,
+          "remplissage": 5.83
         },
         {
           "label": "C2",
-          "cours": 4,
+          "cours": 6,
           "inscriptions": 23,
           "nouv": 13,
           "pctNouv": 56.5,
           "recettes": 6712,
-          "remplissage": 5.75
+          "remplissage": 3.83
         },
         {
           "label": "Avancé (à partir du niveau B2 acquis)",
@@ -1454,6 +1490,15 @@
           "remplissage": 8.5
         },
         {
+          "label": "C1.2",
+          "cours": 6,
+          "inscriptions": 17,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 6426,
+          "remplissage": 2.83
+        },
+        {
           "label": "Supérieur (à partir du niveau C1 acquis)",
           "cours": 4,
           "inscriptions": 15,
@@ -1463,17 +1508,8 @@
           "remplissage": 3.75
         },
         {
-          "label": "C1.2",
-          "cours": 5,
-          "inscriptions": 13,
-          "nouv": 0,
-          "pctNouv": 0.0,
-          "recettes": 6426,
-          "remplissage": 2.6
-        },
-        {
           "label": "C2.1",
-          "cours": 1,
+          "cours": 2,
           "inscriptions": 0,
           "nouv": 0,
           "pctNouv": 0.0,
@@ -1483,12 +1519,12 @@
       ],
       "total": {
         "label": "TOTAL",
-        "cours": 792,
-        "inscriptions": 8709,
-        "nouv": 7141,
-        "pctNouv": 82.0,
-        "recettes": 827514,
-        "remplissage": 11.0
+        "cours": 898,
+        "inscriptions": 8816,
+        "nouv": 7184,
+        "pctNouv": 81.5,
+        "recettes": 860008,
+        "remplissage": 9.82
       },
       "key": "niveau",
       "label": "Niveau"
@@ -1497,39 +1533,39 @@
       "rows": [
         {
           "label": "En présence ",
-          "cours": 480,
-          "inscriptions": 7356,
-          "nouv": 6386,
-          "pctNouv": 86.8,
-          "recettes": 465862,
-          "remplissage": 15.32
+          "cours": 535,
+          "inscriptions": 7325,
+          "nouv": 6353,
+          "pctNouv": 86.7,
+          "recettes": 471446,
+          "remplissage": 13.69
         },
         {
           "label": "À distance",
-          "cours": 272,
-          "inscriptions": 899,
-          "nouv": 510,
-          "pctNouv": 56.7,
-          "recettes": 311835,
-          "remplissage": 3.31
+          "cours": 314,
+          "inscriptions": 975,
+          "nouv": 526,
+          "pctNouv": 53.9,
+          "recettes": 330004,
+          "remplissage": 3.11
         },
         {
           "label": "Hors les murs",
           "cours": 19,
-          "inscriptions": 425,
-          "nouv": 276,
-          "pctNouv": 64.9,
-          "recettes": 12280,
-          "remplissage": 22.37
+          "inscriptions": 428,
+          "nouv": 277,
+          "pctNouv": 64.7,
+          "recettes": 12340,
+          "remplissage": 22.53
         },
         {
           "label": "Comodal",
-          "cours": 10,
-          "inscriptions": 53,
-          "nouv": 20,
-          "pctNouv": 37.7,
-          "recettes": 25350,
-          "remplissage": 5.3
+          "cours": 14,
+          "inscriptions": 65,
+          "nouv": 32,
+          "pctNouv": 49.2,
+          "recettes": 31881,
+          "remplissage": 4.64
         },
         {
           "label": "Hybride (alterné P/D)",
@@ -1543,12 +1579,12 @@
       ],
       "total": {
         "label": "TOTAL",
-        "cours": 784,
-        "inscriptions": 8736,
-        "nouv": 7195,
-        "pctNouv": 82.4,
-        "recettes": 817277,
-        "remplissage": 11.14
+        "cours": 885,
+        "inscriptions": 8796,
+        "nouv": 7191,
+        "pctNouv": 81.8,
+        "recettes": 847621,
+        "remplissage": 9.94
       },
       "key": "format",
       "label": "Présentiel / en ligne"
@@ -1557,52 +1593,745 @@
       "rows": [
         {
           "label": "ADOLESCENTS",
-          "cours": 240,
-          "inscriptions": 6763,
-          "nouv": 6728,
+          "cours": 254,
+          "inscriptions": 6739,
+          "nouv": 6704,
           "pctNouv": 99.5,
-          "recettes": 97166,
-          "remplissage": 28.18
+          "recettes": 98141,
+          "remplissage": 26.53
         },
         {
           "label": "ADULTES",
-          "cours": 545,
-          "inscriptions": 2143,
-          "nouv": 744,
-          "pctNouv": 34.7,
-          "recettes": 717245,
-          "remplissage": 3.93
+          "cours": 627,
+          "inscriptions": 2227,
+          "nouv": 764,
+          "pctNouv": 34.3,
+          "recettes": 748414,
+          "remplissage": 3.55
         },
         {
           "label": "ENFANTS 6-11 ANS",
-          "cours": 29,
+          "cours": 34,
           "inscriptions": 206,
           "nouv": 73,
           "pctNouv": 35.4,
           "recettes": 19424,
-          "remplissage": 7.1
+          "remplissage": 6.06
         },
         {
           "label": "ENFANTS 2-6 ANS",
-          "cours": 3,
+          "cours": 4,
           "inscriptions": 5,
           "nouv": 3,
           "pctNouv": 60.0,
           "recettes": 2350,
-          "remplissage": 1.67
+          "remplissage": 1.25
         }
       ],
       "total": {
         "label": "TOTAL",
-        "cours": 817,
-        "inscriptions": 9117,
-        "nouv": 7548,
-        "pctNouv": 82.8,
-        "recettes": 836185,
-        "remplissage": 11.16
+        "cours": 919,
+        "inscriptions": 9177,
+        "nouv": 7544,
+        "pctNouv": 82.2,
+        "recettes": 868329,
+        "remplissage": 9.99
       },
       "key": "age",
       "label": "Tranche d'âge"
+    },
+    "periode": {
+      "rows": [
+        {
+          "label": "2026-MARS",
+          "cours": 146,
+          "inscriptions": 2987,
+          "nouv": 2817,
+          "pctNouv": 94.3,
+          "recettes": 88324,
+          "remplissage": 20.46
+        },
+        {
+          "label": "2026-FEVRIER",
+          "cours": 199,
+          "inscriptions": 2402,
+          "nouv": 1600,
+          "pctNouv": 66.6,
+          "recettes": 471782,
+          "remplissage": 12.07
+        },
+        {
+          "label": "2026-MAI",
+          "cours": 81,
+          "inscriptions": 1518,
+          "nouv": 1363,
+          "pctNouv": 89.8,
+          "recettes": 57010,
+          "remplissage": 18.74
+        },
+        {
+          "label": "2026-JANVIER",
+          "cours": 109,
+          "inscriptions": 1192,
+          "nouv": 1067,
+          "pctNouv": 89.5,
+          "recettes": 108748,
+          "remplissage": 10.94
+        },
+        {
+          "label": "2026-AVRIL",
+          "cours": 86,
+          "inscriptions": 652,
+          "nouv": 516,
+          "pctNouv": 79.1,
+          "recettes": 60019,
+          "remplissage": 7.58
+        },
+        {
+          "label": "2026-JUIN",
+          "cours": 60,
+          "inscriptions": 286,
+          "nouv": 137,
+          "pctNouv": 47.9,
+          "recettes": 61450,
+          "remplissage": 4.77
+        },
+        {
+          "label": "2026-JUILLET",
+          "cours": 19,
+          "inscriptions": 77,
+          "nouv": 36,
+          "pctNouv": 46.8,
+          "recettes": 11855,
+          "remplissage": 4.05
+        },
+        {
+          "label": "2026-OCTOBRE",
+          "cours": 180,
+          "inscriptions": 41,
+          "nouv": 1,
+          "pctNouv": 2.4,
+          "recettes": 486,
+          "remplissage": 0.23
+        },
+        {
+          "label": "2026-SEPTEMBRE",
+          "cours": 23,
+          "inscriptions": 20,
+          "nouv": 6,
+          "pctNouv": 30.0,
+          "recettes": 8655,
+          "remplissage": 0.87
+        },
+        {
+          "label": "2026-DECEMBRE",
+          "cours": 8,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.12
+        },
+        {
+          "label": "2026-NOVEMBRE",
+          "cours": 8,
+          "inscriptions": 1,
+          "nouv": 1,
+          "pctNouv": 100.0,
+          "recettes": 0,
+          "remplissage": 0.12
+        }
+      ],
+      "total": {
+        "label": "TOTAL",
+        "cours": 919,
+        "inscriptions": 9177,
+        "nouv": 7544,
+        "pctNouv": 82.2,
+        "recettes": 868329,
+        "remplissage": 9.99
+      },
+      "key": "periode",
+      "label": "Période"
+    },
+    "matiere": {
+      "rows": [
+        {
+          "label": "Français spécifique",
+          "cours": 250,
+          "inscriptions": 5972,
+          "nouv": 5683,
+          "pctNouv": 95.2,
+          "recettes": 147302,
+          "remplissage": 23.89
+        },
+        {
+          "label": "Français général",
+          "cours": 547,
+          "inscriptions": 1724,
+          "nouv": 906,
+          "pctNouv": 52.6,
+          "recettes": 700752,
+          "remplissage": 3.15
+        },
+        {
+          "label": "Ateliers thématiques",
+          "cours": 117,
+          "inscriptions": 1467,
+          "nouv": 953,
+          "pctNouv": 65.0,
+          "recettes": 16029,
+          "remplissage": 12.54
+        },
+        {
+          "label": "Didactique du français",
+          "cours": 2,
+          "inscriptions": 11,
+          "nouv": 1,
+          "pctNouv": 9.1,
+          "recettes": 525,
+          "remplissage": 5.5
+        },
+        {
+          "label": "Italien",
+          "cours": 2,
+          "inscriptions": 2,
+          "nouv": 1,
+          "pctNouv": 50.0,
+          "recettes": 3600,
+          "remplissage": 1.0
+        }
+      ],
+      "total": {
+        "label": "TOTAL",
+        "cours": 918,
+        "inscriptions": 9176,
+        "nouv": 7544,
+        "pctNouv": 82.2,
+        "recettes": 868209,
+        "remplissage": 10.0
+      },
+      "key": "matiere",
+      "label": "Matière"
+    },
+    "ue": {
+      "rows": [
+        {
+          "label": "4",
+          "cours": 32,
+          "inscriptions": 1623,
+          "nouv": 1612,
+          "pctNouv": 99.3,
+          "recettes": 7915,
+          "remplissage": 50.72
+        },
+        {
+          "label": "3",
+          "cours": 42,
+          "inscriptions": 1530,
+          "nouv": 1524,
+          "pctNouv": 99.6,
+          "recettes": 7572,
+          "remplissage": 36.43
+        },
+        {
+          "label": "1.5",
+          "cours": 102,
+          "inscriptions": 1427,
+          "nouv": 1016,
+          "pctNouv": 71.2,
+          "recettes": 14987,
+          "remplissage": 13.99
+        },
+        {
+          "label": "2",
+          "cours": 58,
+          "inscriptions": 1152,
+          "nouv": 1085,
+          "pctNouv": 94.2,
+          "recettes": 7812,
+          "remplissage": 19.86
+        },
+        {
+          "label": "30",
+          "cours": 94,
+          "inscriptions": 605,
+          "nouv": 449,
+          "pctNouv": 74.2,
+          "recettes": 163255,
+          "remplissage": 6.44
+        },
+        {
+          "label": "45",
+          "cours": 136,
+          "inscriptions": 516,
+          "nouv": 91,
+          "pctNouv": 17.6,
+          "recettes": 231596,
+          "remplissage": 3.79
+        },
+        {
+          "label": "5",
+          "cours": 20,
+          "inscriptions": 431,
+          "nouv": 379,
+          "pctNouv": 87.9,
+          "recettes": 8850,
+          "remplissage": 21.55
+        },
+        {
+          "label": "4.5",
+          "cours": 6,
+          "inscriptions": 273,
+          "nouv": 273,
+          "pctNouv": 100.0,
+          "recettes": 1822,
+          "remplissage": 45.5
+        },
+        {
+          "label": "20",
+          "cours": 80,
+          "inscriptions": 254,
+          "nouv": 168,
+          "pctNouv": 66.1,
+          "recettes": 95982,
+          "remplissage": 3.17
+        },
+        {
+          "label": "6",
+          "cours": 17,
+          "inscriptions": 233,
+          "nouv": 196,
+          "pctNouv": 84.1,
+          "recettes": 9890,
+          "remplissage": 13.71
+        },
+        {
+          "label": "1",
+          "cours": 15,
+          "inscriptions": 206,
+          "nouv": 172,
+          "pctNouv": 83.5,
+          "recettes": 1050,
+          "remplissage": 13.73
+        },
+        {
+          "label": "10",
+          "cours": 52,
+          "inscriptions": 190,
+          "nouv": 161,
+          "pctNouv": 84.7,
+          "recettes": 36790,
+          "remplissage": 3.65
+        },
+        {
+          "label": "60",
+          "cours": 28,
+          "inscriptions": 133,
+          "nouv": 85,
+          "pctNouv": 63.9,
+          "recettes": 77685,
+          "remplissage": 4.75
+        },
+        {
+          "label": "21",
+          "cours": 36,
+          "inscriptions": 122,
+          "nouv": 18,
+          "pctNouv": 14.8,
+          "recettes": 41539,
+          "remplissage": 3.39
+        },
+        {
+          "label": "15",
+          "cours": 29,
+          "inscriptions": 78,
+          "nouv": 45,
+          "pctNouv": 57.7,
+          "recettes": 20749,
+          "remplissage": 2.69
+        },
+        {
+          "label": "0",
+          "cours": 7,
+          "inscriptions": 47,
+          "nouv": 46,
+          "pctNouv": 97.9,
+          "recettes": 450,
+          "remplissage": 6.71
+        },
+        {
+          "label": "3.5",
+          "cours": 1,
+          "inscriptions": 45,
+          "nouv": 45,
+          "pctNouv": 100.0,
+          "recettes": 245,
+          "remplissage": 45.0
+        },
+        {
+          "label": "14",
+          "cours": 4,
+          "inscriptions": 44,
+          "nouv": 44,
+          "pctNouv": 100.0,
+          "recettes": 840,
+          "remplissage": 11.0
+        },
+        {
+          "label": "2.5",
+          "cours": 2,
+          "inscriptions": 38,
+          "nouv": 38,
+          "pctNouv": 100.0,
+          "recettes": 475,
+          "remplissage": 19.0
+        },
+        {
+          "label": "9",
+          "cours": 33,
+          "inscriptions": 33,
+          "nouv": 20,
+          "pctNouv": 60.6,
+          "recettes": 20460,
+          "remplissage": 1.0
+        },
+        {
+          "label": "18",
+          "cours": 4,
+          "inscriptions": 31,
+          "nouv": 24,
+          "pctNouv": 77.4,
+          "recettes": 3881,
+          "remplissage": 7.75
+        },
+        {
+          "label": "28",
+          "cours": 8,
+          "inscriptions": 27,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 9526,
+          "remplissage": 3.38
+        },
+        {
+          "label": "40",
+          "cours": 9,
+          "inscriptions": 22,
+          "nouv": 5,
+          "pctNouv": 22.7,
+          "recettes": 14700,
+          "remplissage": 2.44
+        },
+        {
+          "label": "16",
+          "cours": 15,
+          "inscriptions": 17,
+          "nouv": 6,
+          "pctNouv": 35.3,
+          "recettes": 6920,
+          "remplissage": 1.13
+        },
+        {
+          "label": "24",
+          "cours": 2,
+          "inscriptions": 12,
+          "nouv": 11,
+          "pctNouv": 91.7,
+          "recettes": 2880,
+          "remplissage": 6.0
+        },
+        {
+          "label": "31",
+          "cours": 8,
+          "inscriptions": 11,
+          "nouv": 3,
+          "pctNouv": 27.3,
+          "recettes": 14700,
+          "remplissage": 1.38
+        },
+        {
+          "label": "32",
+          "cours": 3,
+          "inscriptions": 11,
+          "nouv": 4,
+          "pctNouv": 36.4,
+          "recettes": 4050,
+          "remplissage": 3.67
+        },
+        {
+          "label": "25",
+          "cours": 16,
+          "inscriptions": 10,
+          "nouv": 1,
+          "pctNouv": 10.0,
+          "recettes": 16750,
+          "remplissage": 0.62
+        },
+        {
+          "label": "31.5",
+          "cours": 5,
+          "inscriptions": 10,
+          "nouv": 6,
+          "pctNouv": 60.0,
+          "recettes": 9150,
+          "remplissage": 2.0
+        },
+        {
+          "label": "5.75",
+          "cours": 1,
+          "inscriptions": 7,
+          "nouv": 2,
+          "pctNouv": 28.6,
+          "recettes": 525,
+          "remplissage": 7.0
+        },
+        {
+          "label": "8",
+          "cours": 7,
+          "inscriptions": 7,
+          "nouv": 2,
+          "pctNouv": 28.6,
+          "recettes": 3120,
+          "remplissage": 1.0
+        },
+        {
+          "label": "19.5",
+          "cours": 2,
+          "inscriptions": 4,
+          "nouv": 4,
+          "pctNouv": 100.0,
+          "recettes": 0,
+          "remplissage": 2.0
+        },
+        {
+          "label": "27",
+          "cours": 2,
+          "inscriptions": 4,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 3650,
+          "remplissage": 2.0
+        },
+        {
+          "label": "11",
+          "cours": 3,
+          "inscriptions": 3,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 2000,
+          "remplissage": 1.0
+        },
+        {
+          "label": "12",
+          "cours": 8,
+          "inscriptions": 3,
+          "nouv": 2,
+          "pctNouv": 66.7,
+          "recettes": 1560,
+          "remplissage": 0.38
+        },
+        {
+          "label": "22",
+          "cours": 1,
+          "inscriptions": 3,
+          "nouv": 3,
+          "pctNouv": 100.0,
+          "recettes": 1800,
+          "remplissage": 3.0
+        },
+        {
+          "label": "7",
+          "cours": 2,
+          "inscriptions": 2,
+          "nouv": 2,
+          "pctNouv": 100.0,
+          "recettes": 819,
+          "remplissage": 1.0
+        },
+        {
+          "label": "10.25",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 1260,
+          "remplissage": 1.0
+        },
+        {
+          "label": "10.5",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 682,
+          "remplissage": 1.0
+        },
+        {
+          "label": "16.5",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 675,
+          "remplissage": 1.0
+        },
+        {
+          "label": "21.5",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 1,
+          "pctNouv": 100.0,
+          "recettes": 1200,
+          "remplissage": 1.0
+        },
+        {
+          "label": "26",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 1500,
+          "remplissage": 1.0
+        },
+        {
+          "label": "29",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 1800,
+          "remplissage": 1.0
+        },
+        {
+          "label": "34.5",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 2070,
+          "remplissage": 1.0
+        },
+        {
+          "label": "35.75",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 1,
+          "pctNouv": 100.0,
+          "recettes": 2145,
+          "remplissage": 1.0
+        },
+        {
+          "label": "42",
+          "cours": 6,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 486,
+          "remplissage": 0.17
+        },
+        {
+          "label": "48",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 2025,
+          "remplissage": 1.0
+        },
+        {
+          "label": "62",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 3600,
+          "remplissage": 1.0
+        },
+        {
+          "label": "7.5",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 450,
+          "remplissage": 1.0
+        },
+        {
+          "label": "77",
+          "cours": 1,
+          "inscriptions": 1,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 4440,
+          "remplissage": 1.0
+        },
+        {
+          "label": "13",
+          "cours": 1,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "37.5",
+          "cours": 4,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "43.5",
+          "cours": 2,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "46.5",
+          "cours": 1,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "63",
+          "cours": 1,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        },
+        {
+          "label": "90",
+          "cours": 2,
+          "inscriptions": 0,
+          "nouv": 0,
+          "pctNouv": 0.0,
+          "recettes": 0,
+          "remplissage": 0.0
+        }
+      ],
+      "total": {
+        "label": "TOTAL",
+        "cours": 919,
+        "inscriptions": 9177,
+        "nouv": 7544,
+        "pctNouv": 82.2,
+        "recettes": 868329,
+        "remplissage": 9.99
+      },
+      "key": "ue",
+      "label": "UE planifiées"
     }
   },
   "yoy": {
@@ -1616,48 +2345,48 @@
     "rows": [
       {
         "year": 2022,
-        "inscriptions": 6,
-        "cours": 5,
-        "recettes": 2090,
-        "heures": 48,
+        "inscriptions": 3240,
+        "cours": 594,
+        "recettes": 719223,
+        "heures": 66522,
         "inscriptionsVar": null,
         "recettesVar": null
       },
       {
         "year": 2023,
-        "inscriptions": 8886,
-        "cours": 1204,
-        "recettes": 1525576,
-        "heures": 139493,
-        "inscriptionsVar": 148000.0,
-        "recettesVar": 72894.1
+        "inscriptions": 8955,
+        "cours": 1210,
+        "recettes": 1529116,
+        "heures": 140202,
+        "inscriptionsVar": 176.4,
+        "recettesVar": 112.6
       },
       {
         "year": 2024,
-        "inscriptions": 10033,
-        "cours": 1277,
+        "inscriptions": 10032,
+        "cours": 1276,
         "recettes": 1710111,
         "heures": 154069,
-        "inscriptionsVar": 12.9,
-        "recettesVar": 12.1
+        "inscriptionsVar": 12.0,
+        "recettesVar": 11.8
       },
       {
         "year": 2025,
         "inscriptions": 12250,
         "cours": 1213,
-        "recettes": 1698900,
-        "heures": 159174,
+        "recettes": 1730393,
+        "heures": 159170,
         "inscriptionsVar": 22.1,
-        "recettesVar": -0.7
+        "recettesVar": 1.2
       },
       {
         "year": 2026,
-        "inscriptions": 9117,
-        "cours": 817,
-        "recettes": 836185,
-        "heures": 84310,
-        "inscriptionsVar": -25.6,
-        "recettesVar": -50.8
+        "inscriptions": 9177,
+        "cours": 919,
+        "recettes": 868329,
+        "heures": 86437,
+        "inscriptionsVar": -25.1,
+        "recettesVar": -49.8
       }
     ]
   },
@@ -1665,63 +2394,63 @@
     "bySector": [
       {
         "label": "SOCIÉTÉS",
-        "inscriptions": 143,
-        "recettes": 114059,
-        "arpi": 797.62
+        "inscriptions": 188,
+        "recettes": 139913,
+        "arpi": 744.22
       },
       {
         "label": "SUR MESURE",
-        "inscriptions": 186,
-        "recettes": 137028,
-        "arpi": 736.71
+        "inscriptions": 193,
+        "recettes": 140508,
+        "arpi": 728.02
       },
       {
         "label": "PLATEFORMES",
-        "inscriptions": 39,
-        "recettes": 21555,
-        "arpi": 552.69
+        "inscriptions": 40,
+        "recettes": 22205,
+        "arpi": 555.12
       },
       {
         "label": "PROGRAMMÉS",
-        "inscriptions": 2034,
-        "recettes": 504287,
-        "arpi": 247.93
+        "inscriptions": 2066,
+        "recettes": 506447,
+        "arpi": 245.13
       },
       {
         "label": "ECOLES",
-        "inscriptions": 6715,
+        "inscriptions": 6690,
         "recettes": 59256,
-        "arpi": 8.82
+        "arpi": 8.86
       }
     ],
     "byAntenna": [
       {
         "code": "IFN",
         "color": "#22C55E",
-        "inscriptions": 404,
-        "recettes": 107837,
-        "arpi": 266.92
+        "inscriptions": 429,
+        "recettes": 108317,
+        "arpi": 252.49
       },
       {
         "code": "IFF",
         "color": "#8B5CF6",
-        "inscriptions": 1322,
-        "recettes": 141399,
-        "arpi": 106.96
+        "inscriptions": 1323,
+        "recettes": 142148,
+        "arpi": 107.44
       },
       {
         "code": "IFP",
         "color": "#EF4444",
-        "inscriptions": 514,
-        "recettes": 52429,
-        "arpi": 102.0
+        "inscriptions": 516,
+        "recettes": 53289,
+        "arpi": 103.27
       },
       {
         "code": "IFM",
         "color": "#FF8C00",
-        "inscriptions": 6877,
-        "recettes": 534519,
-        "arpi": 77.73
+        "inscriptions": 6909,
+        "recettes": 564574,
+        "arpi": 81.72
       }
     ]
   }
