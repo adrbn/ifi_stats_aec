@@ -291,6 +291,43 @@ def course_mapping_edit(payload: dict = Body(default={})) -> dict:
         return {"ok": False, "reason": "error", "message": str(e)[:200]}
 
 
+@app.get("/api/data-updates")
+def data_updates() -> dict:
+    """Date de dernière mise à jour des données de chaque domaine, pour la page
+    d'accueil. On lit le timestamp EMBARQUÉ dans les fixtures (meta.updated,
+    posé au moment du build des données) → survit au déploiement Vercel (le
+    mtime des fichiers, lui, vaut la date de déploiement). Repli : mtime.
+
+    - cours    → fixtures/snapshot.json  (build_snapshot après refresh du cache)
+    - produits → fixtures/produits.json
+    - profils  → fixtures/profils.json
+    """
+    import datetime as _dt
+
+    def _mtime(path: str):
+        try:
+            return _dt.datetime.fromtimestamp(os.path.getmtime(path), tz=_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        except OSError:
+            return None
+
+    def _fixture_updated(name: str):
+        p = os.path.join(HERE, "fixtures", f"{name}.json")
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                meta = (json.load(f) or {}).get("meta", {})
+            return meta.get("updated") or _mtime(p)
+        except Exception:  # noqa: BLE001
+            return _mtime(p)
+
+    cours = _fixture_updated("snapshot") or _mtime(
+        os.path.join(HERE, "data", "new_cours", "cache_cours.xlsx"))
+    return {
+        "cours": cours,
+        "produits": _fixture_updated("produits"),
+        "profils": _fixture_updated("profils"),
+    }
+
+
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok"}
